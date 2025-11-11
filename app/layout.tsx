@@ -1,4 +1,3 @@
-import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
@@ -45,7 +44,6 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
-          <Footer />
           <Toaster />
           <Analytics />
         </ThemeProvider>
