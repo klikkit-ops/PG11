@@ -25,20 +25,60 @@ export async function GET(req: NextRequest) {
   }
 
   // If no code parameter, check if user is already authenticated
+  // This can happen when Supabase redirects to Site URL after verification
+  // and sets cookies directly (without a code parameter)
   if (!code) {
-    console.warn("[auth/callback] No code parameter in callback URL");
+    console.log("[auth/callback] No code parameter - checking for existing session");
     const supabase = createRouteHandlerClient<Database>({ cookies });
+    
+    // Try to get the session from cookies (set by Supabase after verification)
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      console.log("[auth/callback] Session found in cookies, user authenticated:", session.user.id);
+      
+      // Ensure user has a credits record
+      const { data: creditsData, error: creditsError } = await supabase
+        .from("credits")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (creditsError && creditsError.code === "PGRST116") {
+        // No credits record found, create one
+        const { error: createCreditsError } = await supabase
+          .from("credits")
+          .insert({
+            user_id: session.user.id,
+            credits: 0,
+          });
+
+        if (createCreditsError) {
+          console.error("[auth/callback] Error creating credits record:", createCreditsError);
+        }
+      }
+
+      // User is authenticated via session, redirect to overview
+      return NextResponse.redirect(`${requestUrl.origin}/overview/videos`);
+    }
+
+    // Also try getUser() as a fallback
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
     if (user) {
-      // User is already authenticated, redirect to overview
+      console.log("[auth/callback] User found via getUser(), user authenticated:", user.id);
       return NextResponse.redirect(`${requestUrl.origin}/overview/videos`);
-    } else {
-      // No code and no user, redirect to login
-      return NextResponse.redirect(`${requestUrl.origin}/login?error=no_code`);
     }
+
+    // No session or user found, redirect to login
+    console.warn("[auth/callback] No session or user found, redirecting to login");
+    return NextResponse.redirect(`${requestUrl.origin}/login?error=no_session`);
   }
 
   // Exchange code for session

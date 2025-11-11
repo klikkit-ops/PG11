@@ -8,8 +8,17 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient<Database>({ req, res })
   
-  // Refresh session if expired - this ensures the session is always up to date
-  await supabase.auth.getSession()
+  // Refresh session - this establishes the session from cookies set by Supabase
+  // This is especially important after Supabase redirects from verification
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  
+  // If we have a session but are on the homepage, redirect to overview
+  // This handles the case where Supabase redirects to the Site URL after verification
+  if (session?.user && req.nextUrl.pathname === '/') {
+    return NextResponse.redirect(new URL('/overview/videos', req.url))
+  }
   
   return res
 }
