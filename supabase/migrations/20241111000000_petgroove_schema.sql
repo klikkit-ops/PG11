@@ -1,4 +1,34 @@
--- Migration for PetGroove: Add videos table and update credits table
+-- Migration for PetGroove: Complete schema for video generation app
+-- This migration creates all necessary tables for PetGroove
+
+-- Create extensions if they don't exist
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
+
+-- Create credits table (if it doesn't exist)
+CREATE TABLE IF NOT EXISTS "public"."credits" (
+    "id" bigint NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "credits" integer DEFAULT 0 NOT NULL,
+    "user_id" uuid NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+ALTER TABLE "public"."credits" OWNER TO "postgres";
+
+-- Set up credits id sequence if it doesn't exist
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'credits_id_seq') THEN
+    CREATE SEQUENCE "public"."credits_id_seq"
+        START WITH 1
+        INCREMENT BY 1
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    ALTER TABLE "public"."credits" ALTER COLUMN "id" SET DEFAULT nextval('credits_id_seq');
+    ALTER SEQUENCE "public"."credits_id_seq" OWNED BY "public"."credits"."id";
+  END IF;
+END $$;
 
 -- Add updated_at column to credits table if it doesn't exist
 DO $$ 
@@ -30,20 +60,94 @@ CREATE TABLE IF NOT EXISTS "public"."videos" (
 
 ALTER TABLE "public"."videos" OWNER TO "postgres";
 
-ALTER TABLE ONLY "public"."videos"
-    ADD CONSTRAINT "videos_pkey" PRIMARY KEY ("id");
+-- Primary keys and constraints
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'credits_pkey'
+  ) THEN
+    ALTER TABLE ONLY "public"."credits"
+        ADD CONSTRAINT "credits_pkey" PRIMARY KEY ("id");
+  END IF;
 
-ALTER TABLE ONLY "public"."videos"
-    ADD CONSTRAINT "videos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'videos_pkey'
+  ) THEN
+    ALTER TABLE ONLY "public"."videos"
+        ADD CONSTRAINT "videos_pkey" PRIMARY KEY ("id");
+  END IF;
+END $$;
 
--- Create index on user_id for faster queries
+-- Foreign keys
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'credits_user_id_fkey'
+  ) THEN
+    ALTER TABLE ONLY "public"."credits"
+        ADD CONSTRAINT "credits_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'videos_user_id_fkey'
+  ) THEN
+    ALTER TABLE ONLY "public"."videos"
+        ADD CONSTRAINT "videos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+  END IF;
+END $$;
+
+-- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS "videos_user_id_idx" ON "public"."videos" USING btree ("user_id");
-
--- Create index on status for filtering
 CREATE INDEX IF NOT EXISTS "videos_status_idx" ON "public"."videos" USING btree ("status");
+CREATE INDEX IF NOT EXISTS "credits_user_id_idx" ON "public"."credits" USING btree ("user_id");
 
--- Enable RLS on videos table
+-- Enable RLS
+ALTER TABLE "public"."credits" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."videos" ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON "public"."credits";
+DROP POLICY IF EXISTS "Enable read access for authenticated users" ON "public"."credits";
+DROP POLICY IF EXISTS "Enable update for authenticated users" ON "public"."credits";
+DROP POLICY IF EXISTS "Enable insert for service role" ON "public"."credits";
+DROP POLICY IF EXISTS "Enable update for service role" ON "public"."credits";
+
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON "public"."videos";
+DROP POLICY IF EXISTS "Enable read access for authenticated users" ON "public"."videos";
+DROP POLICY IF EXISTS "Enable update for authenticated users" ON "public"."videos";
+DROP POLICY IF EXISTS "Enable delete for authenticated users" ON "public"."videos";
+DROP POLICY IF EXISTS "Enable all access for service role" ON "public"."videos";
+
+-- RLS Policies for credits table
+CREATE POLICY "Enable insert for authenticated users only" ON "public"."credits" 
+    FOR INSERT TO "authenticated" 
+    WITH CHECK (("auth"."uid"() = "user_id"));
+
+CREATE POLICY "Enable read access for authenticated users" ON "public"."credits" 
+    FOR SELECT TO "authenticated" 
+    USING (("auth"."uid"() = "user_id"));
+
+CREATE POLICY "Enable update for authenticated users" ON "public"."credits" 
+    FOR UPDATE TO "authenticated" 
+    USING (("auth"."uid"() = "user_id")) 
+    WITH CHECK (("auth"."uid"() = "user_id"));
+
+CREATE POLICY "Enable insert for service role" ON "public"."credits" 
+    FOR INSERT TO "service_role" 
+    WITH CHECK (true);
+
+CREATE POLICY "Enable update for service role" ON "public"."credits" 
+    FOR UPDATE TO "service_role" 
+    USING (true) 
+    WITH CHECK (true);
+
+CREATE POLICY "Enable read access for service role" ON "public"."credits" 
+    FOR SELECT TO "service_role" 
+    USING (true);
 
 -- RLS Policies for videos table
 CREATE POLICY "Enable insert for authenticated users" ON "public"."videos" 
@@ -69,9 +173,22 @@ CREATE POLICY "Enable all access for service role" ON "public"."videos"
     WITH CHECK (true);
 
 -- Grant permissions
+GRANT ALL ON TABLE "public"."credits" TO "anon";
+GRANT ALL ON TABLE "public"."credits" TO "authenticated";
+GRANT ALL ON TABLE "public"."credits" TO "service_role";
 GRANT ALL ON TABLE "public"."videos" TO "anon";
 GRANT ALL ON TABLE "public"."videos" TO "authenticated";
 GRANT ALL ON TABLE "public"."videos" TO "service_role";
+
+-- Grant sequence permissions
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'credits_id_seq') THEN
+    GRANT ALL ON SEQUENCE "public"."credits_id_seq" TO "anon";
+    GRANT ALL ON SEQUENCE "public"."credits_id_seq" TO "authenticated";
+    GRANT ALL ON SEQUENCE "public"."credits_id_seq" TO "service_role";
+  END IF;
+END $$;
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION "public"."update_updated_at_column"()
@@ -82,15 +199,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger to automatically update updated_at
+-- Create triggers to automatically update updated_at
+DROP TRIGGER IF EXISTS "update_videos_updated_at" ON "public"."videos";
 CREATE TRIGGER "update_videos_updated_at"
     BEFORE UPDATE ON "public"."videos"
     FOR EACH ROW
     EXECUTE FUNCTION "public"."update_updated_at_column"();
 
--- Create trigger for credits updated_at
+DROP TRIGGER IF EXISTS "update_credits_updated_at" ON "public"."credits";
 CREATE TRIGGER "update_credits_updated_at"
     BEFORE UPDATE ON "public"."credits"
     FOR EACH ROW
     EXECUTE FUNCTION "public"."update_updated_at_column"();
-
