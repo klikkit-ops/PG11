@@ -7,10 +7,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 -- Create credits table (if it doesn't exist)
 CREATE TABLE IF NOT EXISTS "public"."credits" (
     "id" bigint NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "credits" integer DEFAULT 0 NOT NULL,
     "user_id" uuid NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
+    "updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 
 ALTER TABLE "public"."credits" OWNER TO "postgres";
@@ -39,7 +39,7 @@ BEGIN
     AND table_name = 'credits' 
     AND column_name = 'updated_at'
   ) THEN
-    ALTER TABLE "public"."credits" ADD COLUMN "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL;
+    ALTER TABLE "public"."credits" ADD COLUMN "updated_at" timestamp with time zone DEFAULT now() NOT NULL;
   END IF;
 END $$;
 
@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS "public"."videos" (
     "prompt" text NOT NULL,
     "provider" text DEFAULT 'runway'::text NOT NULL,
     "error_message" text,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now()" NOT NULL
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 
 ALTER TABLE "public"."videos" OWNER TO "postgres";
@@ -194,7 +194,7 @@ END $$;
 CREATE OR REPLACE FUNCTION "public"."update_updated_at_column"()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW."updated_at" = "now"();
+    NEW."updated_at" = now();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
