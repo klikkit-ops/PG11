@@ -49,34 +49,34 @@ export default function FAQSection() {
 
   const faqs = [
     {
-      question: "How does AI headshot generation work?",
+      question: "How does pet dancing video generation work?",
       answer:
-        "Our AI technology analyzes your uploaded selfies to understand your facial features, expressions, and style. It then generates professional headshots that maintain your likeness while enhancing quality, lighting, and background. The entire process takes about 20 minutes from upload to delivery.",
+        "Our AI technology uses advanced image-to-video models to transform your pet's photo into a dancing video. Simply upload a clear photo of your pet, choose a dance style, and our AI creates an amazing 5-10 second video of your pet dancing. The entire process takes 2-5 minutes from upload to delivery.",
     },
     {
       question: "What kind of photos should I upload?",
       answer:
-        "For best results, upload at least 4 high-quality selfies with good lighting. Photos should be front-facing with only one person in the frame. Avoid wearing glasses or hats, and try to capture different expressions and angles for more variety in your results.",
+        "For best results, upload a clear, front-facing photo of your pet with good lighting. The photo should have only one pet in the frame, and your pet should be clearly visible. Photos with good contrast and clear features work best for video generation.",
     },
     {
-      question: "Can I use these headshots professionally?",
+      question: "Can I share these videos on social media?",
       answer:
-        "All our plans include commercial usage rights. You can use your AI-generated headshots for LinkedIn profiles, company websites, social media, resumes, portfolios, and any other professional purpose.",
+        "Absolutely! All our plans include usage rights for personal and commercial purposes. You can share your pet's dancing videos on social media, use them in videos, or share them with friends and family. They're perfect for TikTok, Instagram, Facebook, and more!",
     },
     {
-      question: "How many different styles can I get?",
+      question: "How many dance styles are available?",
       answer:
-        "The number of styles depends on your plan. Basic and Premium plans include multiple style options such as professional, corporate, creative, casual, and industry-specific looks. You can preview all available styles before making your final selection.",
+        "We offer 10+ different dance styles including Macarena, Salsa, Hip Hop, Robot, Ballet, Disco, Breakdance, Waltz, Tango, and Cha Cha. You can choose any style for each video you create. More styles are being added regularly!",
     },
     {
       question: "What if I'm not satisfied with the results?",
       answer:
-        "We stand behind our AI technology and want you to be completely satisfied. If you're not happy with your headshots, contact our support team within 7 days of delivery, and we'll work with you to improve the results or provide a refund.",
+        "We stand behind our AI technology and want you to be completely satisfied. If you're not happy with your video, contact our support team within 7 days, and we'll work with you to improve the results or provide a refund.",
     },
     {
-      question: "How quickly will I receive my headshots?",
+      question: "How quickly will I receive my video?",
       answer:
-        "Standard processing time is approximately 20 minutes. Premium plan users receive priority processing. Once your headshots are ready, you'll receive an email notification with a link to view and download your images.",
+        "Video generation typically takes 2-5 minutes. Once your video is ready, you'll receive an email notification and can view it directly in your account. You can also download the video in HD quality to share or save.",
     },
   ]
 

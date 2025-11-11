@@ -35,10 +35,10 @@ export default function TrustBadges() {
       </div>
 
       <p className="text-center font-medium">
-        <span className="text-muted-foreground">Trusted by over</span> <span className="font-bold">100,000+</span>{" "}
-        <span className="text-primary font-bold">professionals</span> <span className="text-muted-foreground">and</span>{" "}
-        <span className="text-primary font-bold">teams</span>. <span className="font-bold">5,000,000+</span>{" "}
-        <span className="text-muted-foreground">headshots generated to date.</span>
+        <span className="text-muted-foreground">Trusted by over</span> <span className="font-bold">50,000+</span>{" "}
+        <span className="text-primary font-bold">pet owners</span> <span className="text-muted-foreground">worldwide.</span>{" "}
+        <span className="font-bold">500,000+</span>{" "}
+        <span className="text-muted-foreground">dancing videos created to date.</span>
       </p>
     </div>
   )

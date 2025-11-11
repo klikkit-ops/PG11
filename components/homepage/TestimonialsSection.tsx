@@ -3,21 +3,21 @@ import TestimonialCard from "@/components/homepage/testimonial-card"
 
 const testimonials = [
   {
-    quote: "The quality of these AI headshots is incredible. I've updated all my professional profiles and received so many compliments.",
-    author: "Sarah Johnson",
-    role: "Marketing Director",
+    quote: "My dog's dancing video went viral on TikTok! The quality is incredible and everyone loves watching my pup do the Macarena.",
+    author: "Emma Rodriguez",
+    role: "Pet Owner",
     avatarUrl: "/homepage/example0001.png"
   },
   {
-    quote: "As a freelancer, having professional headshots was a game-changer for my personal brand. The process was so quick and easy!",
-    author: "Michael Chen",
-    role: "UX Designer",
+    quote: "I've created videos of all my pets dancing and they're absolutely hilarious! The process is so quick and easy - my cats are now internet famous!",
+    author: "David Kim",
+    role: "Cat Lover",
     avatarUrl: "/homepage/example0002.png"
   },
   {
-    quote: "I was skeptical at first, but the results blew me away. These look better than the professional photos I paid hundreds for.",
-    author: "Mark Williams",
-    role: "Software Engineer",
+    quote: "I was skeptical at first, but the results are amazing! My pet's dancing videos bring so much joy to my family and friends. Worth every penny!",
+    author: "Jessica Martinez",
+    role: "Dog Mom",
     avatarUrl: "/homepage/example0003.png"
   }
 ]
@@ -32,7 +32,7 @@ export default function TestimonialsSection() {
           </Badge>
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">What Our Users Say</h2>
           <p className="max-w-[700px] text-muted-foreground text-lg">
-            Thousands of professionals have transformed their online presence with our AI headshots.
+            Thousands of pet owners have created hilarious and adorable dancing videos of their furry friends.
           </p>
         </div>
         <div className="mt-16 grid gap-8 md:grid-cols-3">

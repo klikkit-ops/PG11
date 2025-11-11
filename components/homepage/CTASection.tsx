@@ -15,14 +15,14 @@ export default function CTASection() {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center gap-4 text-center md:gap-8">
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-            Get your AI headshots today
+            Create Your Pet's Dancing Video Today
           </h2>
           <p className="max-w-[700px] text-gray-300 text-lg">
-            Join thousands of professionals who have elevated their online presence with our AI-generated headshots.
+            Join thousands of pet owners who have created hilarious and adorable dancing videos of their furry friends.
           </p>
           <Link href="/login" className="mt-4">
             <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
-              Create your headshots now
+              Create Your Pet's Video Now
             </Button>
           </Link>
         </div>
@@ -32,7 +32,7 @@ export default function CTASection() {
             <div key={i} className="overflow-hidden rounded-lg">
               <Image
                 src={src || "/placeholder.svg"}
-                alt="AI Generated Headshot"
+                alt="Pet Dancing Video"
                 width={300}
                 height={400}
                 className="h-auto w-full object-cover"

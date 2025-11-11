@@ -19,47 +19,47 @@ export default function ThreeDBeforeAfterGallery() {
   const containerRef = useRef<HTMLDivElement>(null)
   const autoplayRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Real headshot examples
+  // Pet dancing video examples
   const galleryItems: GalleryItem[] = [
     {
       before: "/homepage/before0001.png",
       after: "/homepage/example0001.png",
-      label: "Professional Corporate",
+      label: "Macarena Dance",
     },
     {
       before: "/homepage/before0002.png",
       after: "/homepage/example0002.png",
-      label: "Executive Style",
+      label: "Hip Hop Moves",
     },
     {
       before: "/homepage/before0001.png",
       after: "/homepage/example0004.png",
-      label: "Professional Pattern",
+      label: "Salsa Dancing",
     },
     {
       before: "/homepage/before0001.png",
       after: "/homepage/example0005.png",
-      label: "Urban Professional",
+      label: "Ballet Performance",
     },
     {
       before: "/homepage/before0002.png",
       after: "/homepage/example0006.png",
-      label: "Formal Business",
+      label: "Disco Groove",
     },
     {
       before: "/homepage/before0002.png",
       after: "/homepage/example0007.png",
-      label: "Executive Portrait",
+      label: "Robot Dance",
     },
     {
       before: "/homepage/before0001.png",
       after: "/homepage/example0008.png",
-      label: "Modern Business",
+      label: "Breakdance",
     },
     {
       before: "/homepage/before0002.png",
       after: "/homepage/example0009.png",
-      label: "Formal Event",
+      label: "Tango",
     },
   ]
 

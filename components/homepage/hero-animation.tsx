@@ -15,17 +15,17 @@ export default function HeroAnimation() {
     {
       before: "/placeholder.svg?height=400&width=400",
       after: "/homepage/example0001.jpeg",
-      label: "Professional LinkedIn",
+      label: "Macarena Dance",
     },
     {
       before: "/placeholder.svg?height=400&width=400",
       after: "/homepage/example0002.jpeg",
-      label: "Corporate Style",
+      label: "Hip Hop Style",
     },
     {
       before: "/placeholder.svg?height=400&width=400",
       after: "/homepage/example0003.jpeg",
-      label: "Creative Portfolio",
+      label: "Ballet Performance",
     },
   ]
 

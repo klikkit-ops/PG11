@@ -6,7 +6,6 @@ const companies = [
   { name: "Microsoft", logo: "/logos/microsoft.svg" },
   { name: "Amazon", logo: "/logos/amazon.svg" },
   { name: "Meta", logo: "/logos/meta.svg" },
-  { name: "LinkedIn", logo: "/logos/linkedin.png" },
 ];
 
   return (
