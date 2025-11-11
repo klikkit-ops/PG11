@@ -63,10 +63,12 @@ export const Login = ({
     inviteToken = searchParams["inviteToken"];
   }
 
+  // Determine the redirect URL for authentication
+  // Host is passed from the server component which gets it from headers
   const protocol = host?.includes("localhost") ? "http" : "https";
-  const redirectUrl = `${protocol}://${host}/auth/callback`;
+  const redirectUrl = host ? `${protocol}://${host}/auth/callback` : `${window.location.origin}/auth/callback`;
 
-  console.log({ redirectUrl });
+  console.log("[Login] Using redirect URL:", redirectUrl, "host:", host);
 
   const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
