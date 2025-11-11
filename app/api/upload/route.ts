@@ -1,6 +1,7 @@
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { Database } from "@/types/supabase";
 import { put } from "@vercel/blob";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export const runtime = "nodejs";
  */
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createRouteHandlerClient<Database>({ cookies });
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -53,7 +54,6 @@ export async function POST(request: Request) {
     // Upload to Vercel Blob
     const blob = await put(`${user.id}/${Date.now()}-${file.name}`, file, {
       access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
     return NextResponse.json({

@@ -62,8 +62,8 @@ export async function POST(request: Request) {
 
     // Create video record in database
     const serviceSupabase = createClient<Database>(
-      supabaseUrl,
-      supabaseServiceRoleKey,
+      supabaseUrl as string,
+      supabaseServiceRoleKey as string,
       {
         auth: {
           autoRefreshToken: false,
@@ -85,8 +85,16 @@ export async function POST(request: Request) {
       .select()
       .single();
 
-    if (videoError || !videoRecord) {
+    if (videoError) {
       console.error("Error creating video record:", videoError);
+      return NextResponse.json(
+        { error: "Failed to create video record" },
+        { status: 500 }
+      );
+    }
+
+    if (!videoRecord) {
+      console.error("Video record was not created");
       return NextResponse.json(
         { error: "Failed to create video record" },
         { status: 500 }
@@ -110,23 +118,25 @@ export async function POST(request: Request) {
 
     // Start video generation asynchronously
     // In a production environment, you might want to use a job queue
-    generateVideoAsync(videoRecord.id, imageUrl, prompt, serviceSupabase).catch(
+    const videoId = videoRecord.id;
+    generateVideoAsync(videoId, imageUrl, prompt, serviceSupabase).catch(
       (error) => {
         console.error("Error in async video generation:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
         // Update video status to failed
         serviceSupabase
           .from("videos")
           .update({
             status: "failed",
-            error_message: error.message,
+            error_message: errorMessage,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", videoRecord.id);
+          .eq("id", videoId);
       }
     );
 
     return NextResponse.json({
-      videoId: videoRecord.id,
+      videoId: videoId,
       status: "queued",
       message: "Video generation started",
     });
@@ -147,7 +157,7 @@ async function generateVideoAsync(
   videoId: string,
   imageUrl: string,
   prompt: string,
-  supabase: ReturnType<typeof createClient<Database>>
+  supabase: ReturnType<typeof createClient<Database, "public">>
 ) {
   try {
     // Update status to processing
