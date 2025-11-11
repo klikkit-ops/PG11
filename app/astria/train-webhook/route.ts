@@ -5,31 +5,39 @@ import { Resend } from "resend";
 
 export const dynamic = "force-dynamic";
 
-const resendApiKey = process.env.RESEND_API_KEY;
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const appWebhookSecret = process.env.APP_WEBHOOK_SECRET;
-
-if (!resendApiKey) {
-  console.warn(
-    "We detected that the RESEND_API_KEY is missing from your environment variables. The app should still work but email notifications will not be sent. Please add your RESEND_API_KEY to your environment variables if you want to enable email notifications."
-  );
-}
-
-if (!supabaseUrl) {
-  throw new Error("MISSING NEXT_PUBLIC_SUPABASE_URL!");
-}
-
-if (!supabaseServiceRoleKey) {
-  throw new Error("MISSING SUPABASE_SERVICE_ROLE_KEY!");
-}
-
-if (!appWebhookSecret) {
-  throw new Error("MISSING APP_WEBHOOK_SECRET!");
-}
-
 export async function POST(request: Request) {
+  // Check environment variables at runtime, not during build
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const appWebhookSecret = process.env.APP_WEBHOOK_SECRET;
+
+  if (!resendApiKey) {
+    console.warn(
+      "We detected that the RESEND_API_KEY is missing from your environment variables. The app should still work but email notifications will not be sent. Please add your RESEND_API_KEY to your environment variables if you want to enable email notifications."
+    );
+  }
+
+  if (!supabaseUrl) {
+    return NextResponse.json(
+      { message: "MISSING NEXT_PUBLIC_SUPABASE_URL!" },
+      { status: 500 }
+    );
+  }
+
+  if (!supabaseServiceRoleKey) {
+    return NextResponse.json(
+      { message: "MISSING SUPABASE_SERVICE_ROLE_KEY!" },
+      { status: 500 }
+    );
+  }
+
+  if (!appWebhookSecret) {
+    return NextResponse.json(
+      { message: "MISSING APP_WEBHOOK_SECRET!" },
+      { status: 500 }
+    );
+  }
   type TuneData = {
     id: number;
     title: string;
@@ -70,7 +78,9 @@ export async function POST(request: Request) {
     );
   }
 
-  if (webhook_secret.toLowerCase() !== appWebhookSecret?.toLowerCase()) {
+  // At this point, we know appWebhookSecret, supabaseUrl, and supabaseServiceRoleKey are defined
+  // because we returned early if they weren't
+  if (webhook_secret.toLowerCase() !== appWebhookSecret!.toLowerCase()) {
     return NextResponse.json(
       {
         message: "Unauthorized!",
@@ -89,8 +99,8 @@ export async function POST(request: Request) {
   }
 
   const supabase = createClient<Database>(
-    supabaseUrl as string,
-    supabaseServiceRoleKey as string,
+    supabaseUrl!,
+    supabaseServiceRoleKey!,
     {
       auth: {
         autoRefreshToken: false,

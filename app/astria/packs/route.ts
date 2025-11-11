@@ -8,16 +8,21 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 export const dynamic = "force-dynamic";
 
 // Environment Variables
-const API_KEY = process.env.ASTRIA_API_KEY;
-const QUERY_TYPE = process.env.PACK_QUERY_TYPE || "users"; // Default to 'users'
 const DOMAIN = "https://api.astria.ai";
 
-// Check if API Key is missing
-if (!API_KEY) {
-  throw new Error("MISSING API_KEY!");
-}
-
 export async function GET(request: Request) {
+  // Check API key at runtime, not during build
+  const API_KEY = process.env.ASTRIA_API_KEY;
+  const QUERY_TYPE = process.env.PACK_QUERY_TYPE || "users"; // Default to 'users'
+  
+  if (!API_KEY) {
+    return NextResponse.json(
+      {
+        message: "Astria API key is not configured. This feature is not available.",
+      },
+      { status: 503 }
+    );
+  }
   const supabase = createRouteHandlerClient<Database>({ cookies });
 
   const {
@@ -35,7 +40,7 @@ export async function GET(request: Request) {
   
   try {
     // Authorization header
-    const headers = { Authorization: `Bearer ${API_KEY}` };
+    const headers = { Authorization: `Bearer ${API_KEY!}` };
 
     // Define the endpoints based on the query type
     const endpoints: string[] = [];

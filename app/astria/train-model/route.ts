@@ -6,19 +6,31 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const astriaApiKey = process.env.ASTRIA_API_KEY;
-const astriaTestModeIsOn = process.env.ASTRIA_TEST_MODE === "true";
-const packsIsEnabled = process.env.NEXT_PUBLIC_TUNE_TYPE === "packs";
-// For local development, recommend using an Ngrok tunnel for the domain
-
-const appWebhookSecret = process.env.APP_WEBHOOK_SECRET;
-const stripeIsConfigured = process.env.NEXT_PUBLIC_STRIPE_IS_ENABLED === "true";
-
-if (!appWebhookSecret) {
-  throw new Error("MISSING APP_WEBHOOK_SECRET!");
-}
-
 export async function POST(request: Request) {
+  // Check environment variables at runtime, not during build
+  const astriaApiKey = process.env.ASTRIA_API_KEY;
+  const astriaTestModeIsOn = process.env.ASTRIA_TEST_MODE === "true";
+  const packsIsEnabled = process.env.NEXT_PUBLIC_TUNE_TYPE === "packs";
+  const appWebhookSecret = process.env.APP_WEBHOOK_SECRET;
+  const stripeIsConfigured = process.env.NEXT_PUBLIC_STRIPE_IS_ENABLED === "true";
+
+  if (!appWebhookSecret) {
+    return NextResponse.json(
+      {
+        message: "APP_WEBHOOK_SECRET is not configured. This feature is not available.",
+      },
+      { status: 503 }
+    );
+  }
+  
+  if (!astriaApiKey) {
+    return NextResponse.json(
+      {
+        message: "Astria API key is not configured. This feature is not available.",
+      },
+      { status: 503 }
+    );
+  }
   const payload = await request.json();
   const images = payload.urls;
   const type = payload.type;
@@ -38,18 +50,6 @@ export async function POST(request: Request) {
         message: "Unauthorized",
       },
       { status: 401 }
-    );
-  }
-
-  if (!astriaApiKey) {
-    return NextResponse.json(
-      {
-        message:
-          "Missing API Key: Add your Astria API Key to generate headshots",
-      },
-      {
-        status: 500,
-      }
     );
   }
 
@@ -149,14 +149,17 @@ export async function POST(request: Request) {
       ? deploymentUrl 
       : `https://${deploymentUrl}`;
 
+    // At this point, we know appWebhookSecret is defined because we returned early if it wasn't
     const trainWebhook = `${baseUrl}/astria/train-webhook`;
-    const trainWebhookWithParams = `${trainWebhook}?user_id=${user.id}&model_id=${modelId}&webhook_secret=${appWebhookSecret}`;
+    const trainWebhookWithParams = `${trainWebhook}?user_id=${user.id}&model_id=${modelId}&webhook_secret=${appWebhookSecret!}`;
 
     const promptWebhook = `${baseUrl}/astria/prompt-webhook`;
-    const promptWebhookWithParams = `${promptWebhook}?user_id=${user.id}&model_id=${modelId}&webhook_secret=${appWebhookSecret}`;
+    const promptWebhookWithParams = `${promptWebhook}?user_id=${user.id}&model_id=${modelId}&webhook_secret=${appWebhookSecret!}`;
 
     console.log({ trainWebhookWithParams, promptWebhookWithParams });
-    const API_KEY = astriaApiKey;
+    // At this point, we know astriaApiKey and appWebhookSecret are defined
+    // because we returned early if they weren't
+    const API_KEY = astriaApiKey!;
     const DOMAIN = "https://api.astria.ai";
 
     // Create a fine tuned model using Astria tune API
