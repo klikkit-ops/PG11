@@ -8,7 +8,7 @@ import { PLANS } from "@/lib/billing";
 export const dynamic = "force-dynamic";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const deploymentUrl = process.env.DEPLOYMENT_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://petgroove.app";
+const deploymentUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.DEPLOYMENT_URL || "https://petgroove.app";
 
 if (!stripeSecretKey) {
   throw new Error("STRIPE_SECRET_KEY is not set");
