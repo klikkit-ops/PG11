@@ -3,22 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { DANCE_STYLES } from "@/lib/dance-styles";
-import { Upload, Video, Loader2 } from "lucide-react";
+import { DANCE_STYLES, getDanceStyleById } from "@/lib/dance-styles";
+import { Upload, Loader2, ChevronDown, Film } from "lucide-react";
 import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function GenerateVideoPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedDanceStyle, setSelectedDanceStyle] = useState<string>("");
-  const [petDescription, setPetDescription] = useState<string>("");
+  const [selectedDanceStyle, setSelectedDanceStyle] = useState<string>("robot");
   const [isGenerating, setIsGenerating] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -115,7 +117,6 @@ export default function GenerateVideoPage() {
         body: JSON.stringify({
           imageUrl,
           danceStyle: selectedDanceStyle,
-          petDescription: petDescription || undefined,
         }),
       });
 
@@ -144,133 +145,133 @@ export default function GenerateVideoPage() {
     }
   };
 
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Create Your Pet's Dancing Video</h1>
-        <p className="text-muted-foreground">
-          Upload a photo of your pet and choose a dance style to generate an amazing video!
-        </p>
-      </div>
+  const selectedStyle = getDanceStyleById(selectedDanceStyle);
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Image Upload Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>1. Upload Pet Photo</CardTitle>
-            <CardDescription>Choose a clear photo of your pet</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="border-2 border-dashed rounded-lg p-8 text-center">
-              {imagePreview ? (
-                <div className="space-y-4">
-                  <div className="relative w-full aspect-square rounded-lg overflow-hidden">
-                    <Image
-                      src={imagePreview}
-                      alt="Pet preview"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedImage(null);
-                      setImagePreview(null);
-                    }}
-                  >
-                    Change Image
-                  </Button>
-                </div>
-              ) : (
-                <label className="cursor-pointer">
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <Upload className="w-12 h-12 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Click to upload</p>
-                      <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column */}
+          <div className="space-y-8">
+            {/* Step 1: Upload Your Pet's Photo */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-yellow-400">1. Upload Your Pet's Photo</h2>
+              <label className="block">
+                <div className="border-2 border-dashed border-gray-600 rounded-lg p-12 cursor-pointer hover:border-gray-500 transition-colors bg-gray-900/50">
+                  {imagePreview ? (
+                    <div className="space-y-4">
+                      <div className="relative w-full aspect-square rounded-lg overflow-hidden">
+                        <Image
+                          src={imagePreview}
+                          alt="Pet preview"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedImage(null);
+                          setImagePreview(null);
+                        }}
+                        className="w-full"
+                      >
+                        Change Image
+                      </Button>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                      <Upload className="w-16 h-16 text-gray-400" />
+                      <div>
+                        <p className="text-lg font-medium text-white">Click to upload an image</p>
+                        <p className="text-sm text-gray-400 mt-2">PNG, JPG, WEBP</p>
+                      </div>
+                    </div>
+                  )}
                   <input
                     type="file"
                     className="hidden"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
                     onChange={handleImageSelect}
                   />
-                </label>
+                </div>
+              </label>
+            </div>
+
+            {/* Step 2: Choose a Dance */}
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-yellow-400">2. Choose a Dance</h2>
+              <Select value={selectedDanceStyle} onValueChange={setSelectedDanceStyle}>
+                <SelectTrigger className="w-full h-12 border-purple-500/50 bg-gray-900/50 text-white">
+                  <SelectValue>
+                    {selectedStyle ? (
+                      <span className="flex items-center gap-2">
+                        <span>{selectedStyle.emoji}</span>
+                        <span>The {selectedStyle.name}</span>
+                      </span>
+                    ) : (
+                      "Select a dance style"
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-gray-700">
+                  {DANCE_STYLES.map((style) => (
+                    <SelectItem
+                      key={style.id}
+                      value={style.id}
+                      className="text-white hover:bg-gray-800"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{style.emoji}</span>
+                        <span>The {style.name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleGenerate}
+                disabled={!selectedImage || !selectedDanceStyle || isGenerating || uploadingImage}
+                className="w-full h-12 text-white font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGenerating || uploadingImage ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {uploadingImage ? "Uploading..." : "Generating..."}
+                  </>
+                ) : (
+                  "Generate Video (1 Credit)"
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-yellow-400">3. Watch The Magic!</h2>
+            <div className="bg-black rounded-lg aspect-video flex items-center justify-center border-2 border-gray-800">
+              {imagePreview && !isGenerating ? (
+                <div className="text-center space-y-4 p-8">
+                  <Film className="w-16 h-16 text-gray-600 mx-auto" />
+                  <p className="text-gray-400 text-lg">Your generated video will appear here</p>
+                </div>
+              ) : isGenerating || uploadingImage ? (
+                <div className="text-center space-y-4 p-8">
+                  <Loader2 className="w-16 h-16 text-purple-500 mx-auto animate-spin" />
+                  <p className="text-gray-400 text-lg">
+                    {uploadingImage ? "Uploading image..." : "Generating your video..."}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center space-y-4 p-8">
+                  <Film className="w-16 h-16 text-gray-600 mx-auto" />
+                  <p className="text-gray-400 text-lg">Your generated video will appear here</p>
+                </div>
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Dance Style Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle>2. Choose Dance Style</CardTitle>
-            <CardDescription>Select how your pet should dance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-              {DANCE_STYLES.map((style) => (
-                <button
-                  key={style.id}
-                  onClick={() => setSelectedDanceStyle(style.id)}
-                  className={`p-4 border-2 rounded-lg text-left transition-all ${
-                    selectedDanceStyle === style.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{style.emoji}</div>
-                  <div className="font-semibold text-sm">{style.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {style.description}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pet Description (Optional) */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>3. Pet Description (Optional)</CardTitle>
-          <CardDescription>
-            Help us create a better video by describing your pet
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            placeholder="e.g., Golden retriever, fluffy white cat, small brown dog..."
-            value={petDescription}
-            onChange={(e) => setPetDescription(e.target.value)}
-            rows={3}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Generate Button */}
-      <div className="mt-6 flex justify-end">
-        <Button
-          size="lg"
-          onClick={handleGenerate}
-          disabled={!selectedImage || !selectedDanceStyle || isGenerating || uploadingImage}
-          className="min-w-32"
-        >
-          {isGenerating || uploadingImage ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {uploadingImage ? "Uploading..." : "Generating..."}
-            </>
-          ) : (
-            <>
-              <Video className="mr-2 h-4 w-4" />
-              Generate Video
-            </>
-          )}
-        </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
