@@ -24,6 +24,7 @@ export const Login = ({
 }) => {
   const supabase = createClientComponentClient<Database>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
   const { toast } = useToast();
 
@@ -52,7 +53,7 @@ export const Login = ({
         title: "Something went wrong",
         variant: "destructive",
         description:
-          "Please try again, if the problem persists, contact us at hello@tryleap.ai",
+          "Please try again, if the problem persists, contact us at support@petgroove.app",
         duration: 5000,
       });
     }
@@ -71,14 +72,38 @@ export const Login = ({
   console.log("[Login] Using redirect URL:", redirectUrl, "host:", host);
 
   const signInWithGoogle = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
+    setIsGoogleLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
 
-    console.log(data, error);
+      if (error) {
+        console.error("Google sign-in error:", error);
+        setIsGoogleLoading(false);
+        toast({
+          title: "Authentication Error",
+          variant: "destructive",
+          description: error.message || "Failed to sign in with Google. Please try again.",
+          duration: 5000,
+        });
+      }
+      // If successful, the user will be redirected to the OAuth provider
+      // and then back to the callback URL. No need to set loading to false
+      // as the page will redirect.
+    } catch (error) {
+      console.error("Unexpected error during Google sign-in:", error);
+      setIsGoogleLoading(false);
+      toast({
+        title: "Something went wrong",
+        variant: "destructive",
+        description: "An unexpected error occurred. Please try again.",
+        duration: 5000,
+      });
+    }
   };
 
   const signInWithMagicLink = async (email: string) => {
@@ -108,15 +133,18 @@ export const Login = ({
           <p className="text-xs opacity-60">
             Sign in or create an account to get started.
           </p>
-          {/* <Button
+          <Button
             onClick={signInWithGoogle}
             variant={"outline"}
-            className="font-semibold"
+            className="font-semibold w-full"
+            type="button"
+            isLoading={isGoogleLoading}
+            disabled={isGoogleLoading}
           >
-            <AiOutlineGoogle size={20} />
+            <AiOutlineGoogle size={20} className="mr-2" />
             Continue with Google
           </Button>
-          <OR /> */}
+          <OR />
 
           <form
             onSubmit={handleSubmit(onSubmit)}
