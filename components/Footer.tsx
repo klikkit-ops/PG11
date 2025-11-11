@@ -9,10 +9,10 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl">
               <Camera className="h-5 w-5 text-primary" />
-              <span>Headshots AI</span>
+              <span>PetGroove</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Professional AI-generated headshots for your online presence.
+              Turn your pet into a dancing superstar with AI-powered video generation.
             </p>
           </div>
           <div className="space-y-4">

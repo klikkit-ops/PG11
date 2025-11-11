@@ -15,22 +15,74 @@ export interface Database {
           credits: number
           id: number
           user_id: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
           credits?: number
           id?: number
           user_id: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
           credits?: number
           id?: number
           user_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "credits_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      videos: {
+        Row: {
+          id: string
+          user_id: string
+          input_image_url: string
+          video_url: string | null
+          status: string
+          dance_style: string
+          prompt: string
+          provider: string
+          error_message: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          input_image_url: string
+          video_url?: string | null
+          status?: string
+          dance_style: string
+          prompt: string
+          provider?: string
+          error_message?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          input_image_url?: string
+          video_url?: string | null
+          status?: string
+          dance_style?: string
+          prompt?: string
+          provider?: string
+          error_message?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "videos_user_id_fkey"
             columns: ["user_id"]
             referencedRelation: "users"
             referencedColumns: ["id"]

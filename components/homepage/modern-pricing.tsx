@@ -25,26 +25,19 @@ interface PricingTier {
 export default function ModernPricing() {
   const tiers: PricingTier[] = [
     {
-      title: "Starter",
-      price: "1 Credit",
-      description: "Perfect for individuals looking to enhance their online presence.",
-      features: ["4 AI Headshots"],
-      buttonText: "Choose Starter",
+      title: "Weekly",
+      price: "$7.99",
+      description: "Perfect for trying out PetGroove or creating videos for special occasions.",
+      features: ["10 Videos per week", "All dance styles", "HD Video quality", "Download anytime"],
+      buttonText: "Choose Weekly",
     },
     {
-      title: "Basic",
-      price: "3 Credits",
-      description: "Ideal for professionals requiring frequent updates to their profiles.",
-      features: ["12 AI Headshots"],
-      buttonText: "Choose Basic",
+      title: "Annual",
+      price: "$69.99",
+      description: "The best value for pet lovers who want to create videos regularly.",
+      features: ["600 Videos per year", "All dance styles", "HD Video quality", "Download anytime", "Save 27%"],
+      buttonText: "Choose Annual",
       popular: true,
-    },
-    {
-      title: "Premium",
-      price: "5 Credits",
-      description: "The best value with unlimited possibilities.",
-      features: ["20 AI Headshots"],
-      buttonText: "Choose Premium",
       bestValue: true,
     },
   ]
@@ -93,6 +86,12 @@ export default function ModernPricing() {
 
               <div className="mt-4 flex items-baseline">
                 <span className="text-5xl font-extrabold">{tier.price}</span>
+                {tier.title === "Weekly" && (
+                  <span className="ml-2 text-muted-foreground">/week</span>
+                )}
+                {tier.title === "Annual" && (
+                  <span className="ml-2 text-muted-foreground">/year</span>
+                )}
               </div>
 
               <p className="mt-4 text-sm text-muted-foreground">{tier.description}</p>

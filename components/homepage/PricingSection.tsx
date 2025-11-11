@@ -10,10 +10,10 @@ export default function PricingSection() {
             Pricing
           </Badge>
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-            Professional-grade headshots for <span className="text-primary">a fraction</span> of the cost
+            Affordable plans for <span className="text-primary">unlimited fun</span>
           </h2>
           <p className="max-w-[700px] text-muted-foreground text-lg">
-            Professional photographers charge $200-$500 for a session. Our AI creates stunning headshots for much less.
+            Create amazing dancing videos of your pet with our simple subscription plans. Choose weekly or annual billing.
           </p>
         </div>
         <div className="mt-16">

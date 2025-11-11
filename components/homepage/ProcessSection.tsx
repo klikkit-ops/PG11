@@ -9,22 +9,22 @@ import { cn } from "@/lib/utils"
 const processSteps = [
   {
     number: 1,
-    title: "Upload Your Photos",
-    description: "Upload 4+ high-quality selfies: front facing, 1 person in frame, no glasses or hats.",
+    title: "Upload Your Pet Photo",
+    description: "Upload a clear photo of your pet: front facing, good lighting, one pet in frame.",
     icon: <Camera className="h-5 w-5" />,
     images: ["/example1.png", "/example2.png", "/example3.png"]
   },
   {
     number: 2,
-    title: "Our AI Gets to Work",
-    description: "The AI magic takes ~20 minutes. You'll get an email when it's ready!",
+    title: "Choose a Dance Style",
+    description: "Select from 10+ dance styles like Macarena, Hip Hop, Ballet, and more!",
     icon: <Sparkles className="h-5 w-5" />,
     processingImage: "/blur.png"
   },
   {
     number: 3,
-    title: "Get Amazing Headshots",
-    description: "Once your model is trained, we'll give you amazing headshots!",
+    title: "Get Your Dancing Video",
+    description: "Our AI creates an amazing 5-10 second video of your pet dancing! Ready in minutes.",
     icon: <Download className="h-5 w-5" />,
     resultImages: ["/result1.png", "/result2.png", "/result3.png"]
   }
@@ -136,7 +136,7 @@ export default function ProcessSection() {
           </Badge>
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">How It Works</h2>
           <p className="max-w-[700px] text-muted-foreground text-lg">
-            Our AI-powered platform transforms your selfies into professional headshots in just three simple steps.
+            Our AI-powered platform transforms your pet photos into amazing dancing videos in just three simple steps.
           </p>
         </div>
         <div className="mt-16 grid gap-8 md:grid-cols-3 md:gap-12">

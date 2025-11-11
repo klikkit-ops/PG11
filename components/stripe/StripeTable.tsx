@@ -32,11 +32,18 @@ const StripePricingTable = ({ user }: Props) => {
     }
   }, []);
 
+  // TODO: Replace with your Stripe Pricing Table ID and Publishable Key
+  // Create a Stripe Pricing Table in your Stripe Dashboard:
+  // https://dashboard.stripe.com/test/pricing-tables
+  // Then update the pricing-table-id and publishable-key below
+  const pricingTableId = process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID || "prctbl_1P0TL0C3ic5Sd20TGpWOU2Fi";
+  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_live_51P0SikC3ic5Sd20T9QRaRKIkqy8l951LDgeOxcP24ZRXHnQzjnOFM7tfhsYdWksn1wNBdejJzvaxXGq0yRAxm14A00Py0XreGk";
+
   return (
     <div className='flex flex-1 flex-col w-full'>
       <stripe-pricing-table
-          pricing-table-id="prctbl_1P0TL0C3ic5Sd20TGpWOU2Fi"
-          publishable-key="pk_live_51P0SikC3ic5Sd20T9QRaRKIkqy8l951LDgeOxcP24ZRXHnQzjnOFM7tfhsYdWksn1wNBdejJzvaxXGq0yRAxm14A00Py0XreGk"
+          pricing-table-id={pricingTableId}
+          publishable-key={publishableKey}
           client-reference-id={user.id}
           customer-email={user.email}
       >

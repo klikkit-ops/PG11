@@ -18,8 +18,8 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: "Headshots AI",
-  description: "Generate awesome headshots in minutes using AI",
+  title: "PetGroove - Pet Dancing Videos with AI",
+  description: "Turn your pet into a dancing superstar! Create amazing dancing videos of your pet using AI in minutes.",
 };
 
 export default function RootLayout({

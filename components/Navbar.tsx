@@ -41,19 +41,17 @@ export default async function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
           <Camera className="h-5 w-5 text-primary" />
-          <span>Headshots AI</span>
+          <span>PetGroove</span>
         </Link>
         
         {user && (
           <nav className="hidden md:flex gap-6">
-            <Link href="/overview" className="text-sm font-medium hover:text-primary transition-colors">
-              Home
+            <Link href="/overview/videos" className="text-sm font-medium hover:text-primary transition-colors">
+              Videos
             </Link>
-            {packsIsEnabled && (
-              <Link href="/overview/packs" className="text-sm font-medium hover:text-primary transition-colors">
-                Packs
-              </Link>
-            )}
+            <Link href="/overview/videos/generate" className="text-sm font-medium hover:text-primary transition-colors">
+              Create Video
+            </Link>
             {stripeIsConfigured && (
               <Link href="/get-credits" className="text-sm font-medium hover:text-primary transition-colors">
                 Get Credits
@@ -71,7 +69,7 @@ export default async function Navbar() {
                 Login
               </Link>
               <Link href="/login">
-                <Button>Create headshots</Button>
+                <Button>Create Videos</Button>
               </Link>
             </>
           )}
