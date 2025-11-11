@@ -20,7 +20,6 @@ import { ThemeToggle } from "./homepage/theme-toggle";
 export const dynamic = "force-dynamic";
 
 const stripeIsConfigured = process.env.NEXT_PUBLIC_STRIPE_IS_ENABLED === "true";
-const packsIsEnabled = process.env.NEXT_PUBLIC_TUNE_TYPE === "packs";
 export const revalidate = 0;
 
 export default async function Navbar() {
