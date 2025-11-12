@@ -70,8 +70,8 @@ export async function GET(request: Request) {
           // Update database if status changed
           if (statusResponse.status !== video.status || statusResponse.videoUrl) {
             const serviceSupabase = createClient<Database>(
-              supabaseUrl,
-              supabaseServiceRoleKey,
+              supabaseUrl!,
+              supabaseServiceRoleKey!,
               {
                 auth: {
                   autoRefreshToken: false,
