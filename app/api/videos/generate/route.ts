@@ -116,63 +116,113 @@ export async function POST(request: Request) {
       // or implement a transaction
     }
 
-    // Start video generation asynchronously
-    // Note: In Vercel serverless, we need to ensure the function completes
-    // The async operation will run, but we return immediately to the user
+    // CRITICAL FIX: Vercel serverless functions terminate when the response is sent
+    // We MUST create the Runway task and save the runway_video_id BEFORE returning
+    // Otherwise, the background async operation will be killed and never complete
+    
     const videoId = videoRecord.id;
-    console.log(`[Video Generation] Starting async video generation for video ${videoId}`);
+    console.log(`[Video Generation] Starting video generation for video ${videoId}`);
     console.log(`[Video Generation] Environment check:`, {
       hasRunwayApiKey: !!process.env.RUNWAY_API_KEY,
-      runwayBaseUrl: process.env.RUNWAY_BASE_URL || 'not set',
       runwayModelId: process.env.RUNWAY_MODEL_ID || 'not set',
     });
     
-    // Start the async operation - don't await it
-    // Vercel serverless functions will continue running for a short time after response
-    // For production, consider using a job queue (e.g., Inngest, Trigger.dev, or Vercel Cron + API)
-    generateVideoAsync(videoId, imageUrl, prompt, serviceSupabase).catch(
-      async (error) => {
-        console.error(`[Video Generation] Error in async video generation for video ${videoId}:`, error);
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        const errorStack = error instanceof Error ? error.stack : String(error);
+    try {
+      // Update status to processing immediately
+      console.log(`[Video Generation] Updating video ${videoId} status to processing`);
+      const { error: updateError } = await serviceSupabase
+        .from("videos")
+        .update({
+          status: "processing",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", videoId);
         
-        console.error(`[Video Generation] Full error details:`, {
-          videoId,
-          errorMessage,
-          errorStack,
-          error: error instanceof Error ? error : String(error),
-        });
-        
-        // Update video status to failed
-        try {
-          const { error: updateError } = await serviceSupabase
-            .from("videos")
-            .update({
-              status: "failed",
-              error_message: errorMessage.substring(0, 500), // Limit error message length
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", videoId);
-            
-          if (updateError) {
-            console.error(`[Video Generation] Failed to update video status to failed:`, updateError);
-          } else {
-            console.log(`[Video Generation] Updated video ${videoId} status to failed`);
-          }
-        } catch (updateErr) {
-          console.error(`[Video Generation] Exception while updating video status:`, updateErr);
-        }
+      if (updateError) {
+        console.error(`[Video Generation] Failed to update status to processing:`, updateError);
+        throw new Error(`Failed to update video status: ${updateError.message}`);
       }
-    );
-    
-    // Log that we've started the async operation
-    console.log(`[Video Generation] Async operation started for video ${videoId}. Function will continue in background.`);
 
-    return NextResponse.json({
-      videoId: videoId,
-      status: "queued",
-      message: "Video generation started",
-    });
+      // CRITICAL: Call Runway API to create the task BEFORE returning
+      // This ensures the runway_video_id is saved before Vercel kills the function
+      console.log(`[Video Generation] Calling Runway API to create task for video ${videoId}`);
+      const videoResponse = await generateVideo({
+        imageUrl,
+        prompt,
+        duration: 8,
+      });
+      
+      console.log(`[Video Generation] Runway API response for video ${videoId}:`, {
+        id: videoResponse.id,
+        status: videoResponse.status,
+        hasVideoUrl: !!videoResponse.videoUrl,
+        error: videoResponse.error,
+      });
+
+      if (!videoResponse.id) {
+        console.error(`[Video Generation] CRITICAL: Runway API returned no ID for video ${videoId}!`);
+        throw new Error('Runway API did not return a video ID');
+      }
+
+      // CRITICAL: Save the runway_video_id BEFORE returning the response
+      // This is the key fix - we must save it synchronously, not in a background task
+      console.log(`[Video Generation] Saving runway_video_id for video ${videoId}: ${videoResponse.id}`);
+      const { error: updateResponseError, data: updateData } = await serviceSupabase
+        .from("videos")
+        .update({
+          status: videoResponse.status,
+          video_url: videoResponse.videoUrl || null,
+          error_message: videoResponse.error || null,
+          runway_video_id: videoResponse.id, // CRITICAL: Save the Runway video ID
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", videoId)
+        .select();
+        
+      if (updateResponseError) {
+        console.error(`[Video Generation] FAILED to save runway_video_id:`, updateResponseError);
+        throw new Error(`Failed to save runway_video_id: ${updateResponseError.message}`);
+      }
+      
+      console.log(`[Video Generation] Successfully saved runway_video_id for video ${videoId}: ${videoResponse.id}`);
+      console.log(`[Video Generation] Updated record:`, updateData?.[0] ? {
+        id: updateData[0].id,
+        status: updateData[0].status,
+        runway_video_id: updateData[0].runway_video_id,
+      } : 'No data returned');
+
+      // Return success response
+      // The status endpoint will poll for completion
+      return NextResponse.json({
+        videoId: videoId,
+        status: videoResponse.status,
+        message: "Video generation started",
+      });
+    } catch (error) {
+      // If Runway API call fails, update video status to failed
+      console.error(`[Video Generation] Error creating Runway task for video ${videoId}:`, error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      try {
+        await serviceSupabase
+          .from("videos")
+          .update({
+            status: "failed",
+            error_message: errorMessage.substring(0, 500),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", videoId);
+        console.log(`[Video Generation] Updated video ${videoId} status to failed`);
+      } catch (updateErr) {
+        console.error(`[Video Generation] Failed to update video status to failed:`, updateErr);
+      }
+      
+      // Return error response
+      return NextResponse.json(
+        { error: `Failed to start video generation: ${errorMessage}` },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Error generating video:", error);
     return NextResponse.json(
