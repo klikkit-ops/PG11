@@ -214,11 +214,29 @@ async function generateVideoAsync(
 
     // Call Runway API to generate video
     console.log(`[Video Generation] Calling Runway API for video ${videoId}`);
-    const videoResponse = await generateVideo({
-      imageUrl,
-      prompt,
-      duration: 8, // 8 seconds default
+    console.log(`[Video Generation] Runway API call parameters:`, {
+      imageUrl: imageUrl.substring(0, 100) + '...',
+      promptLength: prompt.length,
+      duration: 8,
     });
+    
+    let videoResponse;
+    try {
+      videoResponse = await generateVideo({
+        imageUrl,
+        prompt,
+        duration: 8, // 8 seconds default
+      });
+      console.log(`[Video Generation] Runway API call SUCCESS for video ${videoId}`);
+    } catch (sdkError) {
+      console.error(`[Video Generation] Runway API call FAILED for video ${videoId}:`, {
+        error: sdkError instanceof Error ? sdkError.message : String(sdkError),
+        stack: sdkError instanceof Error ? sdkError.stack : undefined,
+        errorType: sdkError?.constructor?.name,
+        fullError: sdkError,
+      });
+      throw sdkError; // Re-throw to be caught by outer catch
+    }
     
     console.log(`[Video Generation] Runway API response for video ${videoId}:`, {
       id: videoResponse.id,
@@ -226,24 +244,51 @@ async function generateVideoAsync(
       hasVideoUrl: !!videoResponse.videoUrl,
       error: videoResponse.error,
     });
+    
+    if (!videoResponse.id) {
+      console.error(`[Video Generation] CRITICAL: Runway API returned no ID for video ${videoId}!`);
+      console.error(`[Video Generation] Full response:`, JSON.stringify(videoResponse, null, 2));
+      throw new Error('Runway API did not return a video ID');
+    }
 
     // Update video record with result, including Runway video ID
     console.log(`[Video Generation] Updating video ${videoId} with Runway response`);
-    const { error: updateResponseError } = await supabase
+    console.log(`[Video Generation] Update payload:`, {
+      status: videoResponse.status,
+      hasVideoUrl: !!videoResponse.videoUrl,
+      runway_video_id: videoResponse.id,
+      error: videoResponse.error,
+    });
+    
+    const { error: updateResponseError, data: updateData } = await supabase
       .from("videos")
       .update({
         status: videoResponse.status,
         video_url: videoResponse.videoUrl || null,
         error_message: videoResponse.error || null,
-        runway_video_id: videoResponse.id || null,
+        runway_video_id: videoResponse.id || null, // CRITICAL: This must be saved!
         updated_at: new Date().toISOString(),
       })
-      .eq("id", videoId);
+      .eq("id", videoId)
+      .select();
       
     if (updateResponseError) {
-      console.error(`[Video Generation] Failed to update video with Runway response:`, updateResponseError);
+      console.error(`[Video Generation] FAILED to update video with Runway response:`, updateResponseError);
+      console.error(`[Video Generation] Update error details:`, {
+        code: updateResponseError.code,
+        message: updateResponseError.message,
+        details: updateResponseError.details,
+        hint: updateResponseError.hint,
+      });
       throw new Error(`Failed to update video record: ${updateResponseError.message}`);
     }
+    
+    console.log(`[Video Generation] Successfully updated video ${videoId} with runway_video_id: ${videoResponse.id}`);
+    console.log(`[Video Generation] Updated record:`, updateData?.[0] ? {
+      id: updateData[0].id,
+      status: updateData[0].status,
+      runway_video_id: updateData[0].runway_video_id,
+    } : 'No data returned');
 
     // If status is still processing or queued, the status endpoint will poll for updates
     if (videoResponse.status === "processing" || videoResponse.status === "queued") {
