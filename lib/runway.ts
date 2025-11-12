@@ -35,8 +35,18 @@ const RUNWAY_BASE_URL = process.env.RUNWAY_BASE_URL || 'https://api.runwayml.com
  * based on the actual Runway API documentation.
  */
 export async function generateVideo(request: RunwayVideoRequest): Promise<RunwayVideoResponse> {
+  console.log('[Runway API] generateVideo function called');
+  console.log('[Runway API] Environment variables check:', {
+    hasApiKey: !!RUNWAY_API_KEY,
+    apiKeyPrefix: RUNWAY_API_KEY ? RUNWAY_API_KEY.substring(0, 10) + '...' : 'MISSING',
+    baseUrl: RUNWAY_BASE_URL,
+    modelId: RUNWAY_MODEL_ID,
+  });
+  
   if (!RUNWAY_API_KEY) {
-    throw new Error('RUNWAY_API_KEY is not set. Please configure it in your environment variables.');
+    const error = 'RUNWAY_API_KEY is not set. Please configure it in your environment variables.';
+    console.error('[Runway API]', error);
+    throw new Error(error);
   }
 
   console.log('[Runway API] Starting video generation request');
@@ -44,7 +54,7 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
     baseUrl: RUNWAY_BASE_URL,
     modelId: RUNWAY_MODEL_ID,
     hasApiKey: !!RUNWAY_API_KEY,
-    imageUrl: request.imageUrl,
+    imageUrl: request.imageUrl?.substring(0, 100) + '...',
     promptLength: request.prompt.length,
     duration: request.duration || 8,
   });

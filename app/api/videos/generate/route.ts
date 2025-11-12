@@ -117,10 +117,19 @@ export async function POST(request: Request) {
     }
 
     // Start video generation asynchronously
-    // In a production environment, you might want to use a job queue
+    // Note: In Vercel serverless, we need to ensure the function completes
+    // The async operation will run, but we return immediately to the user
     const videoId = videoRecord.id;
     console.log(`[Video Generation] Starting async video generation for video ${videoId}`);
+    console.log(`[Video Generation] Environment check:`, {
+      hasRunwayApiKey: !!process.env.RUNWAY_API_KEY,
+      runwayBaseUrl: process.env.RUNWAY_BASE_URL || 'not set',
+      runwayModelId: process.env.RUNWAY_MODEL_ID || 'not set',
+    });
     
+    // Start the async operation - don't await it
+    // Vercel serverless functions will continue running for a short time after response
+    // For production, consider using a job queue (e.g., Inngest, Trigger.dev, or Vercel Cron + API)
     generateVideoAsync(videoId, imageUrl, prompt, serviceSupabase).catch(
       async (error) => {
         console.error(`[Video Generation] Error in async video generation for video ${videoId}:`, error);
@@ -155,6 +164,9 @@ export async function POST(request: Request) {
         }
       }
     );
+    
+    // Log that we've started the async operation
+    console.log(`[Video Generation] Async operation started for video ${videoId}. Function will continue in background.`);
 
     return NextResponse.json({
       videoId: videoId,

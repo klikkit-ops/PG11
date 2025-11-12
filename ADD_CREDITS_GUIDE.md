@@ -29,7 +29,7 @@ Open the **SQL Editor** in Supabase Dashboard and run one of these queries:
 -- Add 10 credits to a user (adds to existing balance)
 -- Replace 'USER_ID_HERE' with the actual user ID
 INSERT INTO public.credits (user_id, credits, updated_at)
-VALUES ('USER_ID_HERE', 10, NOW())
+VALUES ('88e3ba29-d35d-4d61-a700-aa1b66827e06', 10, NOW())
 ON CONFLICT (user_id) DO UPDATE
 SET credits = credits.credits + 10,
     updated_at = NOW();
@@ -44,7 +44,7 @@ SET credits = credits.credits + 10,
 -- This will update if record exists, or create if it doesn't
 DO $$
 DECLARE
-    target_user_id UUID := 'USER_ID_HERE'; -- Replace with actual user ID
+    target_user_id UUID := '88e3ba29-d35d-4d61-a700-aa1b66827e06'; -- Replace with actual user ID
     credits_to_add INTEGER := 10; -- Change this to the number of credits you want to add
 BEGIN
     -- Check if credits record exists
