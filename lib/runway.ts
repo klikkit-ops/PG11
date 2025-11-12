@@ -60,23 +60,37 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
   });
 
   try {
-    // Runway API v1 uses /v1/image-to-video endpoint
-    // Documentation: https://docs.dev.runwayml.com/reference/gen4-turbo-image-to-video
+    // TODO: Verify the correct endpoint from Runway API documentation
+    // Official docs: https://docs.dev.runwayml.com/api/
+    // Check the Image to Video endpoint documentation for the correct path
+    // Current implementation is a best-guess and may need adjustment
+    
+    // Possible endpoints (verify in docs):
+    // - /v1/image-to-video
+    // - /v1/tasks/image-to-video
+    // - /v1/gen4-turbo/image-to-video
     const endpoint = `${RUNWAY_BASE_URL}/image-to-video`;
     
     console.log(`[Runway API] Calling endpoint: ${endpoint}`);
+    console.log(`[Runway API] NOTE: Verify this endpoint matches the official Runway API documentation`);
+    console.log(`[Runway API] Documentation: https://docs.dev.runwayml.com/api/`);
     
+    // TODO: Verify the request body format matches Runway API specification
+    // Check the official API docs for required fields and format
+    // The field names and structure may need adjustment
     const requestBody = {
-      image: request.imageUrl, // Runway expects 'image' not 'imageUrl'
+      image: request.imageUrl, // Verify: Does Runway expect 'image' or 'imageUrl'?
       prompt: request.prompt,
       model: RUNWAY_MODEL_ID,
       duration: request.duration || 8,
-      // Additional parameters that might be needed:
+      // Additional parameters that might be needed (check docs):
       // seed: optional seed for reproducibility
       // ratio: optional aspect ratio (e.g., "16:9", "9:16", "1:1")
+      // Other fields as specified in the API documentation
     };
     
     console.log('[Runway API] Request body:', JSON.stringify(requestBody, null, 2));
+    console.log('[Runway API] WARNING: Request format may need adjustment based on official API docs');
     
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -106,13 +120,32 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
 
     const data = await response.json();
     console.log('[Runway API] Success response:', JSON.stringify(data, null, 2));
+    console.log('[Runway API] NOTE: Verify this response structure matches the official API documentation');
     
-    // Map Runway API response to our expected format
-    // Runway API typically returns: { id, status, output: [{ url }] }
-    const runwayVideoId = data.id || data.videoId || data.taskId || data.jobId || '';
-    const runwayStatus = data.status || data.state || 'queued';
-    const videoUrl = data.output?.[0]?.url || data.videoUrl || data.video_url || data.url || undefined;
-    const error = data.error?.message || data.error || data.error_message || undefined;
+    // TODO: Map Runway API response to our expected format
+    // The response structure may be different - check the official API docs
+    // Common response formats:
+    // - { id, status, output: [{ url }] }
+    // - { taskId, status, result: { url } }
+    // - { data: { id, status, output: [...] } }
+    // Verify the actual structure in the Runway API documentation
+    
+    const runwayVideoId = data.id || data.taskId || data.videoId || data.jobId || data.data?.id || '';
+    const runwayStatus = data.status || data.state || data.data?.status || 'queued';
+    const videoUrl = data.output?.[0]?.url || data.result?.url || data.videoUrl || data.video_url || data.url || data.data?.output?.[0]?.url || undefined;
+    const error = data.error?.message || data.error || data.error_message || data.data?.error || undefined;
+    
+    console.log('[Runway API] Extracted values:', {
+      runwayVideoId,
+      runwayStatus,
+      hasVideoUrl: !!videoUrl,
+      error,
+    });
+    
+    if (!runwayVideoId) {
+      console.warn('[Runway API] WARNING: No video ID found in response! Response structure may be different than expected.');
+      console.warn('[Runway API] Full response:', JSON.stringify(data, null, 2));
+    }
     
     console.log('[Runway API] Mapped response:', {
       id: runwayVideoId,
