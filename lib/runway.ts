@@ -253,7 +253,7 @@ export async function generateDancePrompt(
 
     const styleDescription = styleDescriptions[danceStyle.toLowerCase()] || `dancing in the ${danceStyle} style`;
     
-    return `A pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription}. The pet's face, features, and identity are clearly preserved throughout the video. The dance movements are smooth, natural, and match the ${danceStyle} style accurately. Professional video quality, well-lit environment, stable camera, 8-10 second duration.`;
+    return `A realistic, photorealistic pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription}. The pet maintains its authentic, photographic appearance exactly as in the source image - preserving the original fur texture, colors, markings, and facial features. The pet's face, features, and unique identity are clearly preserved throughout the video. The dance movements are smooth, natural, and match the ${danceStyle} style accurately. High-quality photography, realistic appearance, well-lit environment, stable camera, 8-10 second duration. No cartoon style, no illustration, purely photorealistic.`;
   };
 
   // If OpenAI is not configured, use fallback
@@ -278,23 +278,28 @@ export async function generateDancePrompt(
           {
             role: 'system',
             content: `You are an expert prompt engineer specializing in creating detailed, effective prompts for AI image-to-video generation models. Your prompts must:
-1. Clearly describe specific dance movements and choreography
-2. Emphasize preserving the subject's face, features, and identity throughout the video
-3. Include technical quality keywords (high quality, smooth motion, professional)
-4. Be concise but descriptive (150-250 words)
-5. Focus on the dance style's unique characteristics
-6. Ensure the prompt works well for pet/animal subjects
+1. STRONGLY emphasize PHOTOGRAPHIC REALISM - the pet must look exactly like a real photograph, not a cartoon or illustration
+2. Preserve the EXACT appearance from the source image - same fur texture, colors, markings, facial features
+3. Clearly describe specific dance movements and choreography
+4. Include technical quality keywords (photorealistic, high quality, smooth motion, professional photography)
+5. Be concise but descriptive (150-250 words)
+6. Focus on the dance style's unique characteristics
+7. Explicitly avoid cartoon, animated, illustrated, or stylized appearances
 
-Create prompts that result in high-quality, natural-looking video animations.`,
+CRITICAL: The pet must maintain its realistic, photographic appearance throughout the entire video. The output should look like a real pet dancing, not an animated character.`,
           },
           {
             role: 'user',
             content: `Create a detailed, optimized prompt for an AI image-to-video model that will animate a pet${petDescription ? ` (${petDescription})` : ''} performing the ${danceStyle} dance. 
 
-Requirements:
-- The pet's face, features, and unique characteristics must be preserved and clearly visible
+CRITICAL REQUIREMENTS:
+- The pet MUST maintain its PHOTOGRAPHIC, REALISTIC appearance - it should look exactly like the original photo, just animated
+- NO cartoon style, NO illustration style, NO animated character appearance - it must look like a real pet
+- The pet's face, features, fur texture, colors, and unique characteristics must be preserved EXACTLY as in the source image
 - Describe specific ${danceStyle} dance movements and choreography
-- Include quality keywords for best results
+- Include keywords: photorealistic, realistic, natural, authentic, high-quality photography
+- Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look"
+- Avoid any mention of cartoon, animation, illustration, or stylized art
 - Keep it concise but descriptive
 - Focus on smooth, natural movements that match the ${danceStyle} style
 
@@ -302,7 +307,7 @@ Return ONLY the prompt text, no explanations or additional text.`,
           },
         ],
         max_tokens: 300,
-        temperature: 0.8, // Slightly higher for more creative variations
+        temperature: 0.6, // Lower temperature for more consistent, realistic results
       }),
     });
 
