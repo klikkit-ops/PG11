@@ -84,13 +84,38 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
     // SDK handles authentication, request formatting, and error handling
     console.log('[Runway API] Calling SDK imageToVideo.create()');
     
+    // Runway API has a maximum of 1000 characters for promptText
+    // Ensure we don't exceed this limit
+    const MAX_PROMPT_LENGTH = 1000;
+    let promptText = request.prompt;
+    
+    if (promptText.length > MAX_PROMPT_LENGTH) {
+      console.warn(`[Runway API] Prompt is ${promptText.length} characters, truncating to ${MAX_PROMPT_LENGTH}`);
+      // Truncate intelligently at a sentence boundary if possible
+      let truncated = promptText.substring(0, MAX_PROMPT_LENGTH);
+      const lastPeriod = truncated.lastIndexOf('.');
+      if (lastPeriod > MAX_PROMPT_LENGTH - 100) {
+        truncated = truncated.substring(0, lastPeriod + 1);
+      } else {
+        // Just truncate at word boundary
+        const lastSpace = truncated.lastIndexOf(' ');
+        if (lastSpace > MAX_PROMPT_LENGTH - 20) {
+          truncated = truncated.substring(0, lastSpace);
+        }
+      }
+      promptText = truncated;
+      console.log(`[Runway API] Truncated prompt to ${promptText.length} characters`);
+    }
+    
+    console.log(`[Runway API] Final prompt length: ${promptText.length} characters`);
+    
     // For gen4_turbo, ratio is REQUIRED
     // Available ratios: '1280:720', '720:1280', '1104:832', '832:1104', '960:960', '1584:672'
     // Using '1280:720' (16:9 landscape) as default - adjust based on your needs
     const task = await client.imageToVideo.create({
       model: RUNWAY_MODEL_ID as 'gen4_turbo',
       promptImage: request.imageUrl, // SDK expects 'promptImage' not 'image'
-      promptText: request.prompt, // SDK expects 'promptText' - optional for gen4_turbo but we're providing it
+      promptText: promptText, // SDK expects 'promptText' - truncated to max 1000 characters
       duration: request.duration || 8,
       ratio: '1280:720', // REQUIRED for gen4_turbo - using 16:9 landscape as default
     });
@@ -282,15 +307,18 @@ export async function generateDancePrompt(
 2. Preserve the EXACT appearance from the source image - same fur texture, colors, markings, facial features
 3. Clearly describe specific dance movements and choreography
 4. Include technical quality keywords (photorealistic, high quality, smooth motion, professional photography)
-5. Be concise but descriptive (150-250 words)
+5. Be concise but descriptive (100-150 words, MAX 900 characters)
 6. Focus on the dance style's unique characteristics
 7. Explicitly avoid cartoon, animated, illustrated, or stylized appearances
 
-CRITICAL: The pet must maintain its realistic, photographic appearance throughout the entire video. The output should look like a real pet dancing, not an animated character.`,
+CRITICAL: 
+- The pet must maintain its realistic, photographic appearance throughout the entire video
+- The output should look like a real pet dancing, not an animated character
+- Keep the prompt under 900 characters to ensure it fits within API limits`,
           },
           {
             role: 'user',
-            content: `Create a detailed, optimized prompt for an AI image-to-video model that will animate a pet${petDescription ? ` (${petDescription})` : ''} performing the ${danceStyle} dance. 
+            content: `Create a concise, optimized prompt (MAX 900 characters) for an AI image-to-video model that will animate a pet${petDescription ? ` (${petDescription})` : ''} performing the ${danceStyle} dance. 
 
 CRITICAL REQUIREMENTS:
 - The pet MUST maintain its PHOTOGRAPHIC, REALISTIC appearance - it should look exactly like the original photo, just animated
@@ -300,13 +328,13 @@ CRITICAL REQUIREMENTS:
 - Include keywords: photorealistic, realistic, natural, authentic, high-quality photography
 - Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look"
 - Avoid any mention of cartoon, animation, illustration, or stylized art
-- Keep it concise but descriptive
+- Keep it concise (100-150 words, under 900 characters)
 - Focus on smooth, natural movements that match the ${danceStyle} style
 
-Return ONLY the prompt text, no explanations or additional text.`,
+Return ONLY the prompt text, no explanations or additional text. Keep it under 900 characters.`,
           },
         ],
-        max_tokens: 300,
+        max_tokens: 200, // Reduced to ensure prompt stays under 1000 character limit
         temperature: 0.6, // Lower temperature for more consistent, realistic results
       }),
     });
@@ -324,14 +352,39 @@ Return ONLY the prompt text, no explanations or additional text.`,
       throw new Error('OpenAI returned unexpected response format');
     }
 
-    const generatedPrompt = data.choices[0].message.content.trim();
+    let generatedPrompt = data.choices[0].message.content.trim();
     
     if (!generatedPrompt || generatedPrompt.length < 50) {
       console.warn('[OpenAI] Generated prompt is too short, using fallback');
       return getFallbackPrompt();
     }
 
+    // Runway API has a maximum of 1000 characters for promptText
+    // Truncate if necessary, but try to preserve the most important parts
+    const MAX_PROMPT_LENGTH = 1000;
+    if (generatedPrompt.length > MAX_PROMPT_LENGTH) {
+      console.warn(`[OpenAI] Generated prompt is ${generatedPrompt.length} characters, truncating to ${MAX_PROMPT_LENGTH}`);
+      // Truncate to 1000 characters, but try to end at a sentence boundary if possible
+      let truncated = generatedPrompt.substring(0, MAX_PROMPT_LENGTH);
+      const lastPeriod = truncated.lastIndexOf('.');
+      const lastComma = truncated.lastIndexOf(',');
+      const lastSpace = truncated.lastIndexOf(' ');
+      
+      // If we can find a sentence end within the last 100 chars, use that
+      if (lastPeriod > MAX_PROMPT_LENGTH - 100) {
+        truncated = truncated.substring(0, lastPeriod + 1);
+      } else if (lastComma > MAX_PROMPT_LENGTH - 50) {
+        truncated = truncated.substring(0, lastComma + 1);
+      } else if (lastSpace > MAX_PROMPT_LENGTH - 20) {
+        truncated = truncated.substring(0, lastSpace);
+      }
+      
+      generatedPrompt = truncated;
+      console.log(`[OpenAI] Truncated prompt to ${generatedPrompt.length} characters`);
+    }
+
     console.log('[OpenAI] Successfully generated enhanced prompt:', generatedPrompt.substring(0, 100) + '...');
+    console.log('[OpenAI] Prompt length:', generatedPrompt.length, 'characters');
     return generatedPrompt;
     
   } catch (error) {
