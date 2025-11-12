@@ -119,19 +119,40 @@ export async function POST(request: Request) {
     // Start video generation asynchronously
     // In a production environment, you might want to use a job queue
     const videoId = videoRecord.id;
+    console.log(`[Video Generation] Starting async video generation for video ${videoId}`);
+    
     generateVideoAsync(videoId, imageUrl, prompt, serviceSupabase).catch(
-      (error) => {
-        console.error("Error in async video generation:", error);
+      async (error) => {
+        console.error(`[Video Generation] Error in async video generation for video ${videoId}:`, error);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorStack = error instanceof Error ? error.stack : String(error);
+        
+        console.error(`[Video Generation] Full error details:`, {
+          videoId,
+          errorMessage,
+          errorStack,
+          error: error instanceof Error ? error : String(error),
+        });
+        
         // Update video status to failed
-        serviceSupabase
-          .from("videos")
-          .update({
-            status: "failed",
-            error_message: errorMessage,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", videoId);
+        try {
+          const { error: updateError } = await serviceSupabase
+            .from("videos")
+            .update({
+              status: "failed",
+              error_message: errorMessage.substring(0, 500), // Limit error message length
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", videoId);
+            
+          if (updateError) {
+            console.error(`[Video Generation] Failed to update video status to failed:`, updateError);
+          } else {
+            console.log(`[Video Generation] Updated video ${videoId} status to failed`);
+          }
+        } catch (updateErr) {
+          console.error(`[Video Generation] Exception while updating video status:`, updateErr);
+        }
       }
     );
 
@@ -159,54 +180,100 @@ async function generateVideoAsync(
   prompt: string,
   supabase: ReturnType<typeof createClient<Database, "public">>
 ) {
+  console.log(`[Video Generation] Starting generateVideoAsync for video ${videoId}`);
+  console.log(`[Video Generation] Image URL: ${imageUrl}`);
+  console.log(`[Video Generation] Prompt: ${prompt.substring(0, 100)}...`);
+  
   try {
     // Update status to processing
-    await supabase
+    console.log(`[Video Generation] Updating video ${videoId} status to processing`);
+    const { error: updateError } = await supabase
       .from("videos")
       .update({
         status: "processing",
         updated_at: new Date().toISOString(),
       })
       .eq("id", videoId);
+      
+    if (updateError) {
+      console.error(`[Video Generation] Failed to update status to processing:`, updateError);
+      throw new Error(`Failed to update video status: ${updateError.message}`);
+    }
 
     // Call Runway API to generate video
+    console.log(`[Video Generation] Calling Runway API for video ${videoId}`);
     const videoResponse = await generateVideo({
       imageUrl,
       prompt,
       duration: 8, // 8 seconds default
     });
+    
+    console.log(`[Video Generation] Runway API response for video ${videoId}:`, {
+      id: videoResponse.id,
+      status: videoResponse.status,
+      hasVideoUrl: !!videoResponse.videoUrl,
+      error: videoResponse.error,
+    });
 
-    // Update video record with result
-    await supabase
+    // Update video record with result, including Runway video ID
+    console.log(`[Video Generation] Updating video ${videoId} with Runway response`);
+    const { error: updateResponseError } = await supabase
       .from("videos")
       .update({
         status: videoResponse.status,
         video_url: videoResponse.videoUrl || null,
         error_message: videoResponse.error || null,
+        runway_video_id: videoResponse.id || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", videoId);
+      
+    if (updateResponseError) {
+      console.error(`[Video Generation] Failed to update video with Runway response:`, updateResponseError);
+      throw new Error(`Failed to update video record: ${updateResponseError.message}`);
+    }
 
-    // If status is still processing, we need to poll for completion
+    // If status is still processing or queued, the status endpoint will poll for updates
     if (videoResponse.status === "processing" || videoResponse.status === "queued") {
-      // In a real implementation, you would set up a webhook or polling mechanism
-      // to check the video status and update the database when it's ready
-      // For now, we'll leave it in processing state
-      console.log(`Video ${videoId} is processing. Set up webhook or polling to check status.`);
+      console.log(
+        `[Video Generation] Video ${videoId} is ${videoResponse.status}. ` +
+        `Runway video ID: ${videoResponse.id}. ` +
+        `Status will be checked via polling.`
+      );
+    } else if (videoResponse.status === "succeeded") {
+      console.log(`[Video Generation] Video ${videoId} generation succeeded! Video URL: ${videoResponse.videoUrl}`);
+    } else if (videoResponse.status === "failed") {
+      console.error(`[Video Generation] Video ${videoId} generation failed. Error: ${videoResponse.error}`);
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error in video generation:", errorMessage);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    console.error(`[Video Generation] Exception in generateVideoAsync for video ${videoId}:`, {
+      errorMessage,
+      errorStack,
+      error: error instanceof Error ? error : String(error),
+    });
 
     // Update video status to failed
-    await supabase
-      .from("videos")
-      .update({
-        status: "failed",
-        error_message: errorMessage,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", videoId);
+    try {
+      const { error: updateError } = await supabase
+        .from("videos")
+        .update({
+          status: "failed",
+          error_message: errorMessage.substring(0, 500), // Limit error message length
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", videoId);
+        
+      if (updateError) {
+        console.error(`[Video Generation] Failed to update video status to failed:`, updateError);
+      } else {
+        console.log(`[Video Generation] Updated video ${videoId} status to failed`);
+      }
+    } catch (updateErr) {
+      console.error(`[Video Generation] Exception while updating video status to failed:`, updateErr);
+    }
 
     throw error;
   }

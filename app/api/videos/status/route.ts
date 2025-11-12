@@ -60,38 +60,52 @@ export async function GET(request: Request) {
     // If video is still processing, check with Runway API
     if (video.status === "processing" || video.status === "queued") {
       try {
-        // Note: This assumes you have a runway_video_id stored somewhere
-        // You might need to add this field to the videos table
-        // For now, we'll just return the current status from the database
+        // Get the Runway video ID from the database
+        const runwayVideoId = video.runway_video_id;
         
-        // TODO: Implement actual status check with Runway API
-        // const runwayVideoId = video.runway_video_id;
-        // if (runwayVideoId) {
-        //   const statusResponse = await checkVideoStatus(runwayVideoId);
-        //   
-        //   // Update database if status changed
-        //   if (statusResponse.status !== video.status) {
-        //     const serviceSupabase = createClient<Database>(
-        //       supabaseUrl,
-        //       supabaseServiceRoleKey
-        //     );
-        //     await serviceSupabase
-        //       .from("videos")
-        //       .update({
-        //         status: statusResponse.status,
-        //         video_url: statusResponse.videoUrl || null,
-        //         error_message: statusResponse.error || null,
-        //         updated_at: new Date().toISOString(),
-        //       })
-        //       .eq("id", videoId);
-        //     
-        //     video.status = statusResponse.status;
-        //     video.video_url = statusResponse.videoUrl || null;
-        //   }
-        // }
+        if (runwayVideoId) {
+          // Check status with Runway API
+          const statusResponse = await checkVideoStatus(runwayVideoId);
+          
+          // Update database if status changed
+          if (statusResponse.status !== video.status || statusResponse.videoUrl) {
+            const serviceSupabase = createClient<Database>(
+              supabaseUrl,
+              supabaseServiceRoleKey,
+              {
+                auth: {
+                  autoRefreshToken: false,
+                  persistSession: false,
+                },
+              }
+            );
+            
+            await serviceSupabase
+              .from("videos")
+              .update({
+                status: statusResponse.status,
+                video_url: statusResponse.videoUrl || video.video_url || null,
+                error_message: statusResponse.error || video.error_message || null,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", videoId);
+            
+            // Update local video object for response
+            video.status = statusResponse.status;
+            if (statusResponse.videoUrl) {
+              video.video_url = statusResponse.videoUrl;
+            }
+            if (statusResponse.error) {
+              video.error_message = statusResponse.error;
+            }
+          }
+        } else {
+          console.warn(`Video ${videoId} is processing but no runway_video_id found.`);
+        }
       } catch (error) {
-        console.error("Error checking video status:", error);
+        console.error("Error checking video status with Runway API:", error);
         // Continue and return current database status
+        // Don't fail the request if Runway API check fails
       }
     }
 

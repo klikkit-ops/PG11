@@ -30,87 +30,190 @@ const RUNWAY_BASE_URL = process.env.RUNWAY_BASE_URL || 'https://api.runwayml.com
 /**
  * Generate a video from an image using Runway API
  * 
- * TODO: Implement actual Runway API integration
- * This is a placeholder that needs to be replaced with the actual API calls
+ * Note: This implementation is based on common API patterns.
+ * You may need to adjust the endpoint, request format, or response parsing
+ * based on the actual Runway API documentation.
  */
 export async function generateVideo(request: RunwayVideoRequest): Promise<RunwayVideoResponse> {
   if (!RUNWAY_API_KEY) {
     throw new Error('RUNWAY_API_KEY is not set. Please configure it in your environment variables.');
   }
 
-  // TODO: Replace with actual Runway API implementation
-  // Example structure (actual API may differ):
-  /*
-  const response = await fetch(`${RUNWAY_BASE_URL}/video/generate`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      image: request.imageUrl,
+  console.log('[Runway API] Starting video generation request');
+  console.log('[Runway API] Config:', {
+    baseUrl: RUNWAY_BASE_URL,
+    modelId: RUNWAY_MODEL_ID,
+    hasApiKey: !!RUNWAY_API_KEY,
+    imageUrl: request.imageUrl,
+    promptLength: request.prompt.length,
+    duration: request.duration || 8,
+  });
+
+  try {
+    // Runway API v1 uses /v1/image-to-video endpoint
+    // Documentation: https://docs.dev.runwayml.com/reference/gen4-turbo-image-to-video
+    const endpoint = `${RUNWAY_BASE_URL}/image-to-video`;
+    
+    console.log(`[Runway API] Calling endpoint: ${endpoint}`);
+    
+    const requestBody = {
+      image: request.imageUrl, // Runway expects 'image' not 'imageUrl'
       prompt: request.prompt,
       model: RUNWAY_MODEL_ID,
       duration: request.duration || 8,
-    }),
-  });
+      // Additional parameters that might be needed:
+      // seed: optional seed for reproducibility
+      // ratio: optional aspect ratio (e.g., "16:9", "9:16", "1:1")
+    };
+    
+    console.log('[Runway API] Request body:', JSON.stringify(requestBody, null, 2));
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RUNWAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Runway API error: ${response.statusText}`);
+    console.log(`[Runway API] Response status: ${response.status} ${response.statusText}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Runway API] Error response:`, errorText);
+      
+      let errorMessage = `Runway API error: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error?.message || errorData.error || errorMessage;
+        console.error(`[Runway API] Parsed error:`, errorData);
+      } catch {
+        errorMessage = `${errorMessage}. Response: ${errorText.substring(0, 500)}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    console.log('[Runway API] Success response:', JSON.stringify(data, null, 2));
+    
+    // Map Runway API response to our expected format
+    // Runway API typically returns: { id, status, output: [{ url }] }
+    const runwayVideoId = data.id || data.videoId || data.taskId || data.jobId || '';
+    const runwayStatus = data.status || data.state || 'queued';
+    const videoUrl = data.output?.[0]?.url || data.videoUrl || data.video_url || data.url || undefined;
+    const error = data.error?.message || data.error || data.error_message || undefined;
+    
+    console.log('[Runway API] Mapped response:', {
+      id: runwayVideoId,
+      status: runwayStatus,
+      hasVideoUrl: !!videoUrl,
+      error,
+    });
+    
+    return {
+      id: runwayVideoId,
+      status: mapRunwayStatus(runwayStatus),
+      videoUrl: videoUrl,
+      error: error,
+    };
+  } catch (error) {
+    console.error('[Runway API] Exception:', error);
+    
+    if (error instanceof Error) {
+      // If it's a network error or the endpoint doesn't exist, provide helpful guidance
+      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
+        throw new Error(
+          `Failed to connect to Runway API at ${RUNWAY_BASE_URL}. ` +
+          `Please verify the RUNWAY_BASE_URL is correct and the API is accessible. ` +
+          `Error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+    throw new Error(`Unexpected error calling Runway API: ${String(error)}`);
   }
+}
 
-  const data = await response.json();
-  return {
-    id: data.id,
-    status: data.status,
-    videoUrl: data.video_url,
-  };
-  */
-
-  // Placeholder implementation - replace with actual API call
-  throw new Error(
-    'Runway API integration not yet implemented. ' +
-    'Please implement the actual API calls according to Runway documentation. ' +
-    `Expected endpoint: ${RUNWAY_BASE_URL}/video/generate`
-  );
+/**
+ * Map Runway API status to our internal status format
+ */
+function mapRunwayStatus(runwayStatus: string): 'queued' | 'processing' | 'succeeded' | 'failed' {
+  const statusLower = runwayStatus.toLowerCase();
+  if (statusLower === 'succeeded' || statusLower === 'completed' || statusLower === 'done') {
+    return 'succeeded';
+  }
+  if (statusLower === 'failed' || statusLower === 'error') {
+    return 'failed';
+  }
+  if (statusLower === 'processing' || statusLower === 'running' || statusLower === 'in_progress') {
+    return 'processing';
+  }
+  return 'queued';
 }
 
 /**
  * Check the status of a video generation job
  * 
- * TODO: Implement actual status check API call
+ * Note: This implementation is based on common API patterns.
+ * You may need to adjust the endpoint or response parsing based on actual Runway API documentation.
  */
 export async function checkVideoStatus(videoId: string): Promise<RunwayVideoResponse> {
   if (!RUNWAY_API_KEY) {
     throw new Error('RUNWAY_API_KEY is not set');
   }
 
-  // TODO: Replace with actual Runway API status check
-  /*
-  const response = await fetch(`${RUNWAY_BASE_URL}/video/${videoId}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Runway API error: ${response.statusText}`);
+  if (!videoId) {
+    throw new Error('Video ID is required to check status');
   }
 
-  const data = await response.json();
-  return {
-    id: data.id,
-    status: data.status,
-    videoUrl: data.video_url,
-    error: data.error,
-  };
-  */
+  try {
+    // Common Runway API pattern: GET /v1/video/{videoId} or /v1/image-to-video/{videoId}
+    // Adjust the endpoint based on actual Runway API documentation
+    const endpoint = `${RUNWAY_BASE_URL}/image-to-video/${videoId}`;
+    
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${RUNWAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-  throw new Error(
-    'Runway API status check not yet implemented. ' +
-    `Expected endpoint: ${RUNWAY_BASE_URL}/video/${videoId}`
-  );
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Runway API error: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch {
+        errorMessage = `${errorMessage}. Response: ${errorText}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    
+    // Map Runway API response to our expected format
+    return {
+      id: data.id || data.videoId || data.taskId || data.jobId || videoId,
+      status: mapRunwayStatus(data.status || data.state || 'queued'),
+      videoUrl: data.videoUrl || data.video_url || data.output?.[0] || data.url || undefined,
+      error: data.error || data.error_message || undefined,
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
+        throw new Error(
+          `Failed to connect to Runway API at ${RUNWAY_BASE_URL}. ` +
+          `Please verify the RUNWAY_BASE_URL is correct. ` +
+          `Error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+    throw new Error(`Unexpected error checking Runway API status: ${String(error)}`);
+  }
 }
 
 /**
