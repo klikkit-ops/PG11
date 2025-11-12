@@ -1,14 +1,18 @@
 /**
  * Runway API integration for image-to-video generation
  * 
- * TODO: Replace with actual Runway API endpoints and authentication
- * Documentation: https://docs.runwayml.com/
+ * Uses the official RunwayML SDK for reliable API integration
+ * Documentation: https://docs.dev.runwayml.com/api/
+ * SDK Documentation: https://docs.dev.runwayml.com/api-details/sdks/
  * 
  * Environment variables required:
- * - RUNWAY_API_KEY: Your Runway API key
- * - RUNWAY_MODEL_ID: Model ID (e.g. 'gen4_turbo')
- * - RUNWAY_BASE_URL: Base URL for Runway API (e.g. 'https://api.runwayml.com/v1')
+ * - RUNWAY_API_KEY: Your Runway API key (or RUNWAYML_API_SECRET - SDK supports both)
+ * - RUNWAY_MODEL_ID: Model ID (e.g. 'gen4_turbo') - defaults to 'gen4_turbo'
+ * 
+ * Note: The SDK defaults to RUNWAYML_API_SECRET, but we support RUNWAY_API_KEY as well
  */
+
+import RunwayML from '@runwayml/sdk';
 
 export interface RunwayVideoRequest {
   imageUrl: string;
@@ -23,23 +27,38 @@ export interface RunwayVideoResponse {
   error?: string;
 }
 
-const RUNWAY_API_KEY = process.env.RUNWAY_API_KEY;
+// Environment variables
+// Note: The SDK defaults to RUNWAYML_API_SECRET, but we use RUNWAY_API_KEY for consistency
+// We pass it explicitly to the SDK, so either name will work
+const RUNWAY_API_KEY = process.env.RUNWAY_API_KEY || process.env.RUNWAYML_API_SECRET;
 const RUNWAY_MODEL_ID = process.env.RUNWAY_MODEL_ID || 'gen4_turbo';
-const RUNWAY_BASE_URL = process.env.RUNWAY_BASE_URL || 'https://api.runwayml.com/v1';
+
+// Initialize Runway client
+// The SDK defaults to RUNWAYML_API_SECRET from environment variables
+// But we pass apiKey explicitly to support RUNWAY_API_KEY as well
+const getRunwayClient = () => {
+  if (!RUNWAY_API_KEY) {
+    throw new Error(
+      'RUNWAY_API_KEY or RUNWAYML_API_SECRET is not set. ' +
+      'Please configure it in your environment variables.'
+    );
+  }
+  // Pass API key explicitly to the SDK
+  // The SDK will handle base URL and authentication automatically
+  return new RunwayML({ apiKey: RUNWAY_API_KEY });
+};
 
 /**
- * Generate a video from an image using Runway API
+ * Generate a video from an image using Runway API SDK
  * 
- * Note: This implementation is based on common API patterns.
- * You may need to adjust the endpoint, request format, or response parsing
- * based on the actual Runway API documentation.
+ * Uses the official RunwayML SDK for reliable API integration
+ * Documentation: https://docs.dev.runwayml.com/api/
  */
 export async function generateVideo(request: RunwayVideoRequest): Promise<RunwayVideoResponse> {
   console.log('[Runway API] generateVideo function called');
   console.log('[Runway API] Environment variables check:', {
     hasApiKey: !!RUNWAY_API_KEY,
     apiKeyPrefix: RUNWAY_API_KEY ? RUNWAY_API_KEY.substring(0, 10) + '...' : 'MISSING',
-    baseUrl: RUNWAY_BASE_URL,
     modelId: RUNWAY_MODEL_ID,
   });
   
@@ -49,9 +68,8 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
     throw new Error(error);
   }
 
-  console.log('[Runway API] Starting video generation request');
+  console.log('[Runway API] Starting video generation request using SDK');
   console.log('[Runway API] Config:', {
-    baseUrl: RUNWAY_BASE_URL,
     modelId: RUNWAY_MODEL_ID,
     hasApiKey: !!RUNWAY_API_KEY,
     imageUrl: request.imageUrl?.substring(0, 100) + '...',
@@ -60,103 +78,52 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
   });
 
   try {
-    // TODO: Verify the correct endpoint from Runway API documentation
-    // Official docs: https://docs.dev.runwayml.com/api/
-    // Check the Image to Video endpoint documentation for the correct path
-    // Current implementation is a best-guess and may need adjustment
+    const client = getRunwayClient();
     
-    // Possible endpoints (verify in docs):
-    // - /v1/image-to-video
-    // - /v1/tasks/image-to-video
-    // - /v1/gen4-turbo/image-to-video
-    const endpoint = `${RUNWAY_BASE_URL}/image-to-video`;
+    // Use SDK to create image-to-video task
+    // SDK handles authentication, request formatting, and error handling
+    console.log('[Runway API] Calling SDK imageToVideo.create()');
     
-    console.log(`[Runway API] Calling endpoint: ${endpoint}`);
-    console.log(`[Runway API] NOTE: Verify this endpoint matches the official Runway API documentation`);
-    console.log(`[Runway API] Documentation: https://docs.dev.runwayml.com/api/`);
-    
-    // TODO: Verify the request body format matches Runway API specification
-    // Check the official API docs for required fields and format
-    // The field names and structure may need adjustment
-    const requestBody = {
-      image: request.imageUrl, // Verify: Does Runway expect 'image' or 'imageUrl'?
-      prompt: request.prompt,
-      model: RUNWAY_MODEL_ID,
+    // For gen4_turbo, ratio is REQUIRED
+    // Available ratios: '1280:720', '720:1280', '1104:832', '832:1104', '960:960', '1584:672'
+    // Using '1280:720' (16:9 landscape) as default - adjust based on your needs
+    const task = await client.imageToVideo.create({
+      model: RUNWAY_MODEL_ID as 'gen4_turbo',
+      promptImage: request.imageUrl, // SDK expects 'promptImage' not 'image'
+      promptText: request.prompt, // SDK expects 'promptText' - optional for gen4_turbo but we're providing it
       duration: request.duration || 8,
-      // Additional parameters that might be needed (check docs):
-      // seed: optional seed for reproducibility
-      // ratio: optional aspect ratio (e.g., "16:9", "9:16", "1:1")
-      // Other fields as specified in the API documentation
-    };
-    
-    console.log('[Runway API] Request body:', JSON.stringify(requestBody, null, 2));
-    console.log('[Runway API] WARNING: Request format may need adjustment based on official API docs');
-    
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
+      ratio: '1280:720', // REQUIRED for gen4_turbo - using 16:9 landscape as default
     });
 
-    console.log(`[Runway API] Response status: ${response.status} ${response.statusText}`);
+    console.log('[Runway API] Task created with ID:', task.id);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[Runway API] Error response:`, errorText);
-      
-      let errorMessage = `Runway API error: ${response.status} ${response.statusText}`;
-      try {
-        const errorData = JSON.parse(errorText);
-        errorMessage = errorData.message || errorData.error?.message || errorData.error || errorMessage;
-        console.error(`[Runway API] Parsed error:`, errorData);
-      } catch {
-        errorMessage = `${errorMessage}. Response: ${errorText.substring(0, 500)}`;
-      }
-      throw new Error(errorMessage);
-    }
+    const runwayVideoId = task.id;
 
-    const data = await response.json();
-    console.log('[Runway API] Success response:', JSON.stringify(data, null, 2));
-    console.log('[Runway API] NOTE: Verify this response structure matches the official API documentation');
-    
-    // TODO: Map Runway API response to our expected format
-    // The response structure may be different - check the official API docs
-    // Common response formats:
-    // - { id, status, output: [{ url }] }
-    // - { taskId, status, result: { url } }
-    // - { data: { id, status, output: [...] } }
-    // Verify the actual structure in the Runway API documentation
-    
-    const runwayVideoId = data.id || data.taskId || data.videoId || data.jobId || data.data?.id || '';
-    const runwayStatus = data.status || data.state || data.data?.status || 'queued';
-    const videoUrl = data.output?.[0]?.url || data.result?.url || data.videoUrl || data.video_url || data.url || data.data?.output?.[0]?.url || undefined;
-    const error = data.error?.message || data.error || data.error_message || data.data?.error || undefined;
-    
-    console.log('[Runway API] Extracted values:', {
-      runwayVideoId,
-      runwayStatus,
-      hasVideoUrl: !!videoUrl,
-      error,
-    });
-    
     if (!runwayVideoId) {
-      console.warn('[Runway API] WARNING: No video ID found in response! Response structure may be different than expected.');
-      console.warn('[Runway API] Full response:', JSON.stringify(data, null, 2));
+      console.error('[Runway API] ERROR: No video ID found in SDK response!');
+      console.error('[Runway API] Full task response:', JSON.stringify(task, null, 2));
+      throw new Error('Runway API did not return a task ID');
     }
     
-    console.log('[Runway API] Mapped response:', {
-      id: runwayVideoId,
-      status: runwayStatus,
-      hasVideoUrl: !!videoUrl,
-      error,
+    // Retrieve the task immediately to get the initial status
+    // This ensures we have the correct status from the start
+    console.log('[Runway API] Retrieving initial task status for ID:', runwayVideoId);
+    const initialTask = await client.tasks.retrieve(runwayVideoId);
+    
+    console.log('[Runway API] Initial task status:', {
+      id: initialTask.id,
+      status: initialTask.status,
+      hasOutput: !!initialTask.output && initialTask.output.length > 0,
+      failure: initialTask.failure,
     });
+
+    // Extract video URL and error from initial task response
+    const videoUrl = initialTask.output && initialTask.output.length > 0 ? initialTask.output[0] : undefined;
+    const error = initialTask.failure || undefined;
     
     return {
       id: runwayVideoId,
-      status: mapRunwayStatus(runwayStatus),
+      status: mapRunwayStatus(initialTask.status),
       videoUrl: videoUrl,
       error: error,
     };
@@ -164,14 +131,7 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
     console.error('[Runway API] Exception:', error);
     
     if (error instanceof Error) {
-      // If it's a network error or the endpoint doesn't exist, provide helpful guidance
-      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
-        throw new Error(
-          `Failed to connect to Runway API at ${RUNWAY_BASE_URL}. ` +
-          `Please verify the RUNWAY_BASE_URL is correct and the API is accessible. ` +
-          `Error: ${error.message}`
-        );
-      }
+      // SDK provides better error messages
       throw error;
     }
     throw new Error(`Unexpected error calling Runway API: ${String(error)}`);
@@ -180,26 +140,31 @@ export async function generateVideo(request: RunwayVideoRequest): Promise<Runway
 
 /**
  * Map Runway API status to our internal status format
+ * 
+ * Runway SDK uses: 'PENDING', 'THROTTLED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELLED'
+ * We map to: 'queued', 'processing', 'succeeded', 'failed'
  */
 function mapRunwayStatus(runwayStatus: string): 'queued' | 'processing' | 'succeeded' | 'failed' {
-  const statusLower = runwayStatus.toLowerCase();
-  if (statusLower === 'succeeded' || statusLower === 'completed' || statusLower === 'done') {
+  const statusUpper = runwayStatus.toUpperCase();
+  
+  // Map Runway SDK status values to our internal format
+  if (statusUpper === 'SUCCEEDED') {
     return 'succeeded';
   }
-  if (statusLower === 'failed' || statusLower === 'error') {
+  if (statusUpper === 'FAILED' || statusUpper === 'CANCELLED') {
     return 'failed';
   }
-  if (statusLower === 'processing' || statusLower === 'running' || statusLower === 'in_progress') {
+  if (statusUpper === 'RUNNING') {
     return 'processing';
   }
+  // PENDING, THROTTLED, or any unknown status -> 'queued'
   return 'queued';
 }
 
 /**
- * Check the status of a video generation job
+ * Check the status of a video generation job using Runway SDK
  * 
- * Note: This implementation is based on common API patterns.
- * You may need to adjust the endpoint or response parsing based on actual Runway API documentation.
+ * Uses the official RunwayML SDK to retrieve task status
  */
 export async function checkVideoStatus(videoId: string): Promise<RunwayVideoResponse> {
   if (!RUNWAY_API_KEY) {
@@ -211,48 +176,49 @@ export async function checkVideoStatus(videoId: string): Promise<RunwayVideoResp
   }
 
   try {
-    // Common Runway API pattern: GET /v1/video/{videoId} or /v1/image-to-video/{videoId}
-    // Adjust the endpoint based on actual Runway API documentation
-    const endpoint = `${RUNWAY_BASE_URL}/image-to-video/${videoId}`;
+    console.log('[Runway API] Checking video status for task ID:', videoId);
     
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+    const client = getRunwayClient();
+    
+    // Use SDK to retrieve task status
+    // SDK handles authentication and request formatting
+    const task = await client.tasks.retrieve(videoId);
+
+    console.log('[Runway API] Task status response:', {
+      id: task.id,
+      status: task.status,
+      hasOutput: !!task.output && task.output.length > 0,
+      outputCount: task.output?.length || 0,
+      failure: task.failure,
+      failureCode: task.failureCode,
+      progress: task.progress,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `Runway API error: ${response.status} ${response.statusText}`;
-      try {
-        const errorData = JSON.parse(errorText);
-        errorMessage = errorData.message || errorData.error || errorMessage;
-      } catch {
-        errorMessage = `${errorMessage}. Response: ${errorText}`;
-      }
-      throw new Error(errorMessage);
-    }
-
-    const data = await response.json();
+    // Extract video URL from task.output array
+    // When status is 'SUCCEEDED', task.output is an array of URLs
+    // Each URL is a string (not an object with a url property)
+    const videoUrl = task.output && task.output.length > 0 ? task.output[0] : undefined;
     
-    // Map Runway API response to our expected format
+    // Extract error message from task.failure (when status is 'FAILED')
+    const error = task.failure || undefined;
+
+    console.log('[Runway API] Extracted from task:', {
+      hasVideoUrl: !!videoUrl,
+      videoUrl: videoUrl?.substring(0, 100) + '...' || 'none',
+      error,
+    });
+    
     return {
-      id: data.id || data.videoId || data.taskId || data.jobId || videoId,
-      status: mapRunwayStatus(data.status || data.state || 'queued'),
-      videoUrl: data.videoUrl || data.video_url || data.output?.[0] || data.url || undefined,
-      error: data.error || data.error_message || undefined,
+      id: task.id || videoId,
+      status: mapRunwayStatus(task.status),
+      videoUrl: videoUrl,
+      error: error,
     };
   } catch (error) {
+    console.error('[Runway API] Error checking video status:', error);
+    
     if (error instanceof Error) {
-      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
-        throw new Error(
-          `Failed to connect to Runway API at ${RUNWAY_BASE_URL}. ` +
-          `Please verify the RUNWAY_BASE_URL is correct. ` +
-          `Error: ${error.message}`
-        );
-      }
+      // SDK provides better error messages
       throw error;
     }
     throw new Error(`Unexpected error checking Runway API status: ${String(error)}`);
