@@ -233,60 +233,107 @@ export async function generateDancePrompt(
   danceStyle: string,
   petDescription?: string
 ): Promise<string> {
-  // TODO: Implement OpenAI GPT-4 mini integration for prompt generation
-  // This will help create more accurate and descriptive prompts for the video model
-  
   const openaiApiKey = process.env.OPENAI_API_KEY;
-  if (!openaiApiKey) {
-    // Fallback to a simple template if OpenAI is not configured
-    return `A pet ${petDescription ? `(${petDescription})` : ''} performing the ${danceStyle} dance style. The pet's face and identity are clearly preserved. The dance movements are smooth and natural, matching the ${danceStyle} style. Professional video quality, well-lit, stable camera.`;
-  }
+  
+  // Fallback prompt template (used if OpenAI is not configured or fails)
+  const getFallbackPrompt = (): string => {
+    const styleDescriptions: Record<string, string> = {
+      macarena: 'performing the Macarena with coordinated arm movements and hip sways',
+      salsa: 'dancing salsa with smooth, rhythmic movements and graceful turns',
+      'hip hop': 'performing hip hop dance with energetic moves and sharp transitions',
+      'hip_hop': 'performing hip hop dance with energetic moves and sharp transitions',
+      robot: 'doing the robot dance with mechanical, staccato movements',
+      ballet: 'performing ballet with elegant, graceful movements and poise',
+      disco: 'dancing disco with groovy moves and funky style',
+      breakdance: 'breakdancing with spins, freezes, and dynamic floor movements',
+      waltz: 'waltzing with smooth, flowing movements in 3/4 time',
+      tango: 'dancing the tango with dramatic, passionate movements',
+      cha_cha: 'performing the cha-cha with quick, rhythmic steps',
+    };
 
-  // TODO: Implement OpenAI API call
-  /*
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a prompt engineer specialized in creating detailed prompts for AI video generation. Create prompts that clearly describe dance movements while preserving the subject\'s identity.',
-        },
-        {
-          role: 'user',
-          content: `Create a detailed prompt for an image-to-video AI model that will make a pet ${petDescription ? `(${petDescription})` : ''} perform the ${danceStyle} dance. The prompt should preserve the pet's face and identity while clearly describing the dance movements.`,
-        },
-      ],
-      max_tokens: 200,
-      temperature: 0.7,
-    }),
-  });
-
-  const data = await response.json();
-  return data.choices[0].message.content;
-  */
-
-  // Fallback prompt template
-  const styleDescriptions: Record<string, string> = {
-    macarena: 'performing the Macarena with coordinated arm movements and hip sways',
-    salsa: 'dancing salsa with smooth, rhythmic movements and graceful turns',
-    'hip hop': 'performing hip hop dance with energetic moves and sharp transitions',
-    robot: 'doing the robot dance with mechanical, staccato movements',
-    ballet: 'performing ballet with elegant, graceful movements and poise',
-    disco: 'dancing disco with groovy moves and funky style',
-    breakdance: 'breakdancing with spins, freezes, and dynamic floor movements',
-    waltz: 'waltzing with smooth, flowing movements in 3/4 time',
-    tango: 'dancing the tango with dramatic, passionate movements',
-    cha_cha: 'performing the cha-cha with quick, rhythmic steps',
+    const styleDescription = styleDescriptions[danceStyle.toLowerCase()] || `dancing in the ${danceStyle} style`;
+    
+    return `A pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription}. The pet's face, features, and identity are clearly preserved throughout the video. The dance movements are smooth, natural, and match the ${danceStyle} style accurately. Professional video quality, well-lit environment, stable camera, 8-10 second duration.`;
   };
 
-  const styleDescription = styleDescriptions[danceStyle.toLowerCase()] || `dancing in the ${danceStyle} style`;
-  
-  return `A pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription}. The pet's face, features, and identity are clearly preserved throughout the video. The dance movements are smooth, natural, and match the ${danceStyle} style accurately. Professional video quality, well-lit environment, stable camera, 8-10 second duration.`;
+  // If OpenAI is not configured, use fallback
+  if (!openaiApiKey) {
+    console.log('[OpenAI] API key not found, using fallback prompt template');
+    return getFallbackPrompt();
+  }
+
+  // Use OpenAI to generate an optimized prompt
+  try {
+    console.log('[OpenAI] Generating enhanced prompt for dance style:', danceStyle);
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert prompt engineer specializing in creating detailed, effective prompts for AI image-to-video generation models. Your prompts must:
+1. Clearly describe specific dance movements and choreography
+2. Emphasize preserving the subject's face, features, and identity throughout the video
+3. Include technical quality keywords (high quality, smooth motion, professional)
+4. Be concise but descriptive (150-250 words)
+5. Focus on the dance style's unique characteristics
+6. Ensure the prompt works well for pet/animal subjects
+
+Create prompts that result in high-quality, natural-looking video animations.`,
+          },
+          {
+            role: 'user',
+            content: `Create a detailed, optimized prompt for an AI image-to-video model that will animate a pet${petDescription ? ` (${petDescription})` : ''} performing the ${danceStyle} dance. 
+
+Requirements:
+- The pet's face, features, and unique characteristics must be preserved and clearly visible
+- Describe specific ${danceStyle} dance movements and choreography
+- Include quality keywords for best results
+- Keep it concise but descriptive
+- Focus on smooth, natural movements that match the ${danceStyle} style
+
+Return ONLY the prompt text, no explanations or additional text.`,
+          },
+        ],
+        max_tokens: 300,
+        temperature: 0.8, // Slightly higher for more creative variations
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[OpenAI] API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('[OpenAI] Unexpected response format:', JSON.stringify(data, null, 2));
+      throw new Error('OpenAI returned unexpected response format');
+    }
+
+    const generatedPrompt = data.choices[0].message.content.trim();
+    
+    if (!generatedPrompt || generatedPrompt.length < 50) {
+      console.warn('[OpenAI] Generated prompt is too short, using fallback');
+      return getFallbackPrompt();
+    }
+
+    console.log('[OpenAI] Successfully generated enhanced prompt:', generatedPrompt.substring(0, 100) + '...');
+    return generatedPrompt;
+    
+  } catch (error) {
+    // If OpenAI fails, fall back to template
+    console.error('[OpenAI] Error generating prompt, using fallback:', error);
+    console.error('[OpenAI] Error details:', error instanceof Error ? error.message : String(error));
+    return getFallbackPrompt();
+  }
 }
 
