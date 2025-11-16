@@ -87,8 +87,8 @@ export default function SubscriptionPage({ user }: Props) {
     : 0;
 
   return (
-    <div className="min-h-screen bg-base-100 text-base-content p-6 md:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-6 md:p-8">
+      <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Plan Selection */}
           <div className="space-y-6">
@@ -129,8 +129,7 @@ export default function SubscriptionPage({ user }: Props) {
             </div>
 
             {/* Plan Details */}
-            <div className="card bg-base-200 border border-base-300">
-              <div className="card-body space-y-6">
+            <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6 space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">
                   PetGroove {currentPlan.label} Subscription
@@ -185,7 +184,7 @@ export default function SubscriptionPage({ user }: Props) {
                 <Button
                   onClick={handleSubscribe}
                   disabled={isLoading}
-                  className="w-full h-12 btn btn-primary text-primary-content font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 text-white font-semibold bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899] shadow-lg shadow-[#4C6FFF]/30 hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>
@@ -196,14 +195,12 @@ export default function SubscriptionPage({ user }: Props) {
                     "Subscribe"
                   )}
                 </Button>
-              </div>
             </div>
           </div>
 
           {/* Right Column: Benefits/Info */}
           <div className="space-y-6">
-            <div className="card bg-base-200 border border-base-300">
-              <div className="card-body">
+            <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6">
               <h3 className="text-2xl font-bold mb-4">What's Included</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -251,10 +248,9 @@ export default function SubscriptionPage({ user }: Props) {
                   </div>
                 </div>
               </div>
-              </div>
             </div>
 
-            <div className="rounded-box p-4 bg-warning/10 border border-warning/20">
+            <div className="bg-warning/10 backdrop-blur-sm rounded-2xl shadow-lg border border-warning/20 p-4">
               <p className="text-sm text-warning">
                 <strong>7-day satisfaction guarantee:</strong> Not happy with your subscription? 
                 Contact us within 7 days for a full refund.

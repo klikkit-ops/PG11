@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { Database } from "@/types/supabase";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video, Plus, Download, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
@@ -64,16 +63,25 @@ export default async function VideosPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-bold mb-2">Your Pet Videos</h1>
-          <p className="text-muted-foreground">
+          <p className="text-base-content/70">
             View and manage your pet's dancing videos
           </p>
         </div>
         <Link href="/overview/videos/generate">
-          <Button size="lg">
+          <Button
+            size="lg"
+            className="
+              inline-flex items-center justify-center
+              rounded-full px-6 py-3 text-sm font-semibold text-white
+              bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899]
+              shadow-lg shadow-[#4C6FFF]/30
+              hover:opacity-95 transition
+            "
+          >
             <Plus className="mr-2 h-4 w-4" />
             Create New Video
           </Button>
@@ -81,28 +89,36 @@ export default async function VideosPage() {
       </div>
 
       {!videos || videos.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Video className="w-16 h-16 text-muted-foreground mb-4" />
+        <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60">
+          <div className="flex flex-col items-center justify-center py-12 px-6">
+            <Video className="w-16 h-16 text-base-content/30 mb-4" />
             <h3 className="text-xl font-semibold mb-2">No videos yet</h3>
-            <p className="text-muted-foreground mb-6 text-center">
+            <p className="text-base-content/70 mb-6 text-center">
               Create your first pet dancing video to get started!
             </p>
             <Link href="/overview/videos/generate">
-              <Button>
+              <Button
+                className="
+                  inline-flex items-center justify-center
+                  rounded-full px-6 py-3 text-sm font-semibold text-white
+                  bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899]
+                  shadow-lg shadow-[#4C6FFF]/30
+                  hover:opacity-95 transition
+                "
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Create Your First Video
               </Button>
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {videos.map((video) => {
             const danceStyle = getDanceStyleById(video.dance_style);
             return (
-              <Card key={video.id} className="overflow-hidden">
-                <div className="relative w-full aspect-video bg-muted">
+              <div key={video.id} className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 overflow-hidden hover:shadow-xl transition">
+                <div className="relative w-full aspect-video bg-base-200">
                   {video.video_url && video.status === "succeeded" ? (
                     <video
                       src={video.video_url}
@@ -118,26 +134,25 @@ export default async function VideosPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Video className="w-12 h-12 text-muted-foreground" />
+                      <Video className="w-12 h-12 text-base-content/30" />
                     </div>
                   )}
                   <div className="absolute top-2 right-2">
                     {getStatusIcon(video.status)}
                   </div>
                 </div>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
                     <div>
-                      <CardTitle className="text-lg">
+                      <h3 className="text-lg font-bold">
                         {danceStyle?.emoji} {danceStyle?.name || video.dance_style}
-                      </CardTitle>
-                      <CardDescription>
+                      </h3>
+                      <p className="text-sm text-base-content/60">
                         {getStatusText(video.status)}
-                      </CardDescription>
+                      </p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
+                  <div className="space-y-2">
                   <div className="flex gap-2">
                     <Link href={`/overview/videos/${video.id}`} className="flex-1">
                       <Button variant="outline" className="w-full">
@@ -153,12 +168,13 @@ export default async function VideosPage() {
                     )}
                   </div>
                   {video.error_message && (
-                    <p className="text-sm text-red-500 mt-2">
+                    <p className="text-sm text-error mt-2">
                       {video.error_message}
                     </p>
                   )}
-                </CardContent>
-              </Card>
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>

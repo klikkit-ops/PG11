@@ -27,14 +27,14 @@ export function MagicBento({ heading, items }: MagicBentoProps) {
           {items.map((item, idx) => {
             const Icon = item.icon;
             return (
-              <div key={idx} className="card bg-base-200 shadow-md hover:shadow-lg transition">
-                <div className="card-body">
+              <div key={idx} className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6 hover:shadow-xl transition">
+                <div className="space-y-3">
                   {Icon && (
-                    <div className="h-10 w-10 rounded-btn bg-primary/15 text-primary flex items-center justify-center mb-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/15 text-primary flex items-center justify-center mb-3">
                       <Icon className="h-5 w-5" />
                     </div>
                   )}
-                  <h3 className="card-title">{item.title}</h3>
+                  <h3 className="text-xl font-bold">{item.title}</h3>
                   <p className="text-base-content/70">{item.description}</p>
                 </div>
               </div>

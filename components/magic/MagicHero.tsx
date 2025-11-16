@@ -34,11 +34,20 @@ export function MagicHero({
               <p className="text-lg md:text-xl text-base-content/70">{subtitle}</p>
             )}
             <div className="flex flex-col sm:flex-row gap-3">
-              <a href={ctaHref} className="btn btn-primary btn-lg">
+              <a
+                href={ctaHref}
+                className="
+                  inline-flex items-center justify-center
+                  rounded-full px-6 py-3 text-sm font-semibold text-white
+                  bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899]
+                  shadow-lg shadow-[#4C6FFF]/30
+                  hover:opacity-95 transition
+                "
+              >
                 {ctaLabel}
               </a>
               {secondaryCtaLabel && secondaryCtaHref && (
-                <a href={secondaryCtaHref} className="btn btn-outline btn-lg">
+                <a href={secondaryCtaHref} className="btn btn-ghost font-medium">
                   {secondaryCtaLabel}
                 </a>
               )}

@@ -27,10 +27,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    // Apply daisyUI theme at the document level
-    <html lang="en" suppressHydrationWarning data-theme="cupcake">
-      {/* Use base tokens from daisyUI to ensure consistent theming */}
-      <body className="min-h-screen flex flex-col bg-base-100 text-base-content">
+    // Apply PetGroove theme at the document level
+    <html lang="en" suppressHydrationWarning data-theme="petgroove">
+      {/* Use gradient background with daisyUI base tokens for consistent theming */}
+      <body
+        className="
+          min-h-screen
+          flex flex-col
+          bg-gradient-to-b
+          from-[#F3F1FF]
+          via-[#FDF2FF]
+          to-[#F9FAFB]
+          text-base-content
+        "
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AnnouncementBar />
           {/* Remove the section wrapper as it's interfering with sticky positioning */}

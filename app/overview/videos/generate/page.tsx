@@ -148,16 +148,16 @@ export default function GenerateVideoPage() {
   const selectedStyle = getDanceStyleById(selectedDanceStyle);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-8">
+      <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column */}
           <div className="space-y-8">
             {/* Step 1: Upload Your Pet's Photo */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-yellow-400">1. Upload Your Pet's Photo</h2>
+              <h2 className="text-2xl font-bold text-primary">1. Upload Your Pet's Photo</h2>
               <label className="block">
-                <div className="border-2 border-dashed border-gray-600 rounded-lg p-12 cursor-pointer hover:border-gray-500 transition-colors bg-gray-900/50">
+                <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-12 cursor-pointer hover:shadow-xl transition-colors">
                   {imagePreview ? (
                     <div className="space-y-4">
                       <div className="relative w-full aspect-square rounded-lg overflow-hidden">
@@ -182,10 +182,10 @@ export default function GenerateVideoPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                      <Upload className="w-16 h-16 text-gray-400" />
+                      <Upload className="w-16 h-16 text-base-content/50" />
                       <div>
-                        <p className="text-lg font-medium text-white">Click to upload an image</p>
-                        <p className="text-sm text-gray-400 mt-2">PNG, JPG, WEBP</p>
+                        <p className="text-lg font-medium text-base-content">Click to upload an image</p>
+                        <p className="text-sm text-base-content/60 mt-2">PNG, JPG, WEBP</p>
                       </div>
                     </div>
                   )}
@@ -201,9 +201,10 @@ export default function GenerateVideoPage() {
 
             {/* Step 2: Choose a Dance */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold text-yellow-400">2. Choose a Dance</h2>
-              <Select value={selectedDanceStyle} onValueChange={setSelectedDanceStyle}>
-                <SelectTrigger className="w-full h-12 border-purple-500/50 bg-gray-900/50 text-white">
+              <h2 className="text-2xl font-bold text-primary">2. Choose a Dance</h2>
+              <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6">
+                <Select value={selectedDanceStyle} onValueChange={setSelectedDanceStyle}>
+                  <SelectTrigger className="w-full h-12">
                   <SelectValue>
                     {selectedStyle ? (
                       <span className="flex items-center gap-2">
@@ -215,25 +216,24 @@ export default function GenerateVideoPage() {
                     )}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent>
                   {DANCE_STYLES.map((style) => (
                     <SelectItem
                       key={style.id}
                       value={style.id}
-                      className="text-white hover:bg-gray-800"
                     >
                       <span className="flex items-center gap-2">
                         <span>{style.emoji}</span>
                         <span>The {style.name}</span>
                       </span>
                     </SelectItem>
-                  ))}
+                    ))}
                 </SelectContent>
               </Select>
               <Button
                 onClick={handleGenerate}
                 disabled={!selectedImage || !selectedDanceStyle || isGenerating || uploadingImage}
-                className="w-full h-12 text-white font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-12 text-white font-semibold bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899] shadow-lg shadow-[#4C6FFF]/30 hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
               >
                 {isGenerating || uploadingImage ? (
                   <>
@@ -244,29 +244,30 @@ export default function GenerateVideoPage() {
                   "Generate Video (1 Credit)"
                 )}
               </Button>
+              </div>
             </div>
           </div>
 
           {/* Right Column */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-yellow-400">3. Watch The Magic!</h2>
-            <div className="bg-black rounded-lg aspect-video flex items-center justify-center border-2 border-gray-800">
+            <h2 className="text-2xl font-bold text-primary">3. Watch The Magic!</h2>
+            <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 aspect-video flex items-center justify-center">
               {imagePreview && !isGenerating ? (
                 <div className="text-center space-y-4 p-8">
-                  <Film className="w-16 h-16 text-gray-600 mx-auto" />
-                  <p className="text-gray-400 text-lg">Your generated video will appear here</p>
+                  <Film className="w-16 h-16 text-base-content/30 mx-auto" />
+                  <p className="text-base-content/60 text-lg">Your generated video will appear here</p>
                 </div>
               ) : isGenerating || uploadingImage ? (
                 <div className="text-center space-y-4 p-8">
-                  <Loader2 className="w-16 h-16 text-purple-500 mx-auto animate-spin" />
-                  <p className="text-gray-400 text-lg">
+                  <Loader2 className="w-16 h-16 text-primary mx-auto animate-spin" />
+                  <p className="text-base-content/60 text-lg">
                     {uploadingImage ? "Uploading image..." : "Generating your video..."}
                   </p>
                 </div>
               ) : (
                 <div className="text-center space-y-4 p-8">
-                  <Film className="w-16 h-16 text-gray-600 mx-auto" />
-                  <p className="text-gray-400 text-lg">Your generated video will appear here</p>
+                  <Film className="w-16 h-16 text-base-content/30 mx-auto" />
+                  <p className="text-base-content/60 text-lg">Your generated video will appear here</p>
                 </div>
               )}
             </div>

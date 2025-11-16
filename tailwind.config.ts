@@ -80,9 +80,27 @@ const config = {
     // Enable daisyUI alongside existing plugins for themed UI components
     require("daisyui"),
   ],
-  // Configure daisyUI themes; keeping it minimal and fun
+  // Configure daisyUI with custom PetGroove theme
   daisyui: {
-    themes: ["cupcake", "pastel"],
+    themes: [
+      {
+        petgroove: {
+          primary: "#4C6FFF",
+          "primary-content": "#F9FAFF",
+          secondary: "#A855F7",
+          accent: "#EC4899",
+          neutral: "#111827",
+          "base-100": "#F3F1FF", // tinted background
+          "base-200": "#E0E7FF",
+          "base-300": "#FFFFFF", // white cards
+          info: "#38BDF8",
+          success: "#22C55E",
+          warning: "#FACC15",
+          error: "#EF4444",
+        },
+      },
+      "light",
+    ],
   },
 } satisfies Config;
 
