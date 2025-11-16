@@ -75,7 +75,15 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // Enable daisyUI alongside existing plugins for themed UI components
+    require("daisyui"),
+  ],
+  // Configure daisyUI themes; keeping it minimal and fun
+  daisyui: {
+    themes: ["cupcake", "pastel"],
+  },
 } satisfies Config;
 
 export default config;

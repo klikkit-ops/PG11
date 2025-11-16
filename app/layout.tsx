@@ -27,14 +27,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col bg-background">
+    // Apply daisyUI theme at the document level
+    <html lang="en" suppressHydrationWarning data-theme="cupcake">
+      {/* Use base tokens from daisyUI to ensure consistent theming */}
+      <body className="min-h-screen flex flex-col bg-base-100 text-base-content">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AnnouncementBar />
           {/* Remove the section wrapper as it's interfering with sticky positioning */}
           <Suspense
             fallback={
-              <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="sticky top-0 z-50 w-full border-b bg-base-100/95 backdrop-blur supports-[backdrop-filter]:bg-base-100/60">
                 <div className="container h-16" />
               </div>
             }

@@ -2,6 +2,10 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import HeroSection from "@/components/homepage/HeroSection"
+import { MagicHero } from "@/components/magic/MagicHero"
+import { MagicBento } from "@/components/magic/MagicBento"
+import { MagicCTA } from "@/components/magic/MagicCTA"
+import { Rocket, Wand2, Sparkles } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -60,8 +64,56 @@ export default async function Index({
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Keep the original hero for existing content structure */}
       <div className="flex-1">
-        <HeroSection />
+        {/* New playful hero inspired by Magic UI; uses daisyUI tokens */}
+        <MagicHero
+          title={
+            <>
+              Make your pet <span className="text-primary">dance</span> with AI
+            </>
+          }
+          subtitle="Upload a photo and generate fun, shareable dance videos in minutes."
+          ctaLabel="Start now"
+          ctaHref="/login"
+          secondaryCtaLabel="See examples"
+          secondaryCtaHref="/overview"
+          imageSrc="/new-explainer.png"
+        />
+
+        {/* Feature / How it works section */}
+        <MagicBento
+          heading="How it works"
+          items={[
+            {
+              title: "1. Upload a photo",
+              description: "Use any clear photo of your pet or a headshot.",
+              icon: Wand2,
+            },
+            {
+              title: "2. Pick a dance style",
+              description: "Choose from a variety of fun, trending styles.",
+              icon: Sparkles,
+            },
+            {
+              title: "3. Generate your video",
+              description: "Our AI creates a high-quality, shareable clip.",
+              icon: Rocket,
+            },
+            {
+              title: "4. Download & share",
+              description: "Save your video and show it off anywhere.",
+            },
+          ]}
+        />
+
+        {/* CTA linking into main flow */}
+        <MagicCTA
+          title="Ready to groove?"
+          subtitle="Sign in to create your first dancing video today."
+          ctaLabel="Get started"
+          ctaHref="/login"
+        />
       </div>
     </div>
   )
