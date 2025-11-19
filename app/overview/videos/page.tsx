@@ -64,61 +64,46 @@ export default async function VideosPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Your Pet Videos</h1>
-          <p className="text-base-content/70">
+          <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Your Pet Videos</h1>
+          <p className="text-muted-foreground text-lg">
             View and manage your pet's dancing videos
           </p>
         </div>
         <Link href="/overview/videos/generate">
-          <Button
-            size="lg"
-            className="
-              inline-flex items-center justify-center
-              rounded-full px-6 py-3 text-sm font-semibold text-white
-              bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899]
-              shadow-lg shadow-[#4C6FFF]/30
-              hover:opacity-95 transition
-            "
-          >
-            <Plus className="mr-2 h-4 w-4" />
+          <Button size="lg" variant="gradient" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Plus className="mr-2 h-5 w-5" />
             Create New Video
           </Button>
         </Link>
       </div>
 
       {!videos || videos.length === 0 ? (
-        <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60">
-          <div className="flex flex-col items-center justify-center py-12 px-6">
-            <Video className="w-16 h-16 text-base-content/30 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No videos yet</h3>
-            <p className="text-base-content/70 mb-6 text-center">
-              Create your first pet dancing video to get started!
+        <div className="glass-panel p-12 text-center">
+          <div className="flex flex-col items-center justify-center">
+            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+              <Video className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">No videos yet</h3>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Transform your pet into a dancing star! Upload a photo and let our AI work its magic.
             </p>
             <Link href="/overview/videos/generate">
-              <Button
-                className="
-                  inline-flex items-center justify-center
-                  rounded-full px-6 py-3 text-sm font-semibold text-white
-                  bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899]
-                  shadow-lg shadow-[#4C6FFF]/30
-                  hover:opacity-95 transition
-                "
-              >
-                <Plus className="mr-2 h-4 w-4" />
+              <Button size="lg" variant="gradient" className="rounded-full">
+                <Plus className="mr-2 h-5 w-5" />
                 Create Your First Video
               </Button>
             </Link>
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {videos.map((video) => {
             const danceStyle = getDanceStyleById(video.dance_style);
             return (
-              <div key={video.id} className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 overflow-hidden hover:shadow-xl transition">
-                <div className="relative w-full aspect-video bg-base-200">
+              <div key={video.id} className="glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300">
+                <div className="relative w-full aspect-video bg-black/5">
                   {video.video_url && video.status === "succeeded" ? (
                     <video
                       src={video.video_url}
@@ -134,44 +119,56 @@ export default async function VideosPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Video className="w-12 h-12 text-base-content/30" />
+                      <Video className="w-12 h-12 text-muted-foreground/30" />
                     </div>
                   )}
-                  <div className="absolute top-2 right-2">
-                    {getStatusIcon(video.status)}
+
+                  {/* Status Badge */}
+                  <div className="absolute top-3 right-3">
+                    <div className="bg-black/60 backdrop-blur-md rounded-full px-3 py-1 flex items-center gap-2 border border-white/10">
+                      {getStatusIcon(video.status)}
+                      <span className="text-xs font-medium text-white capitalize">
+                        {getStatusText(video.status)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
+
+                <div className="p-5 space-y-4">
+                  <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-bold">
-                        {danceStyle?.emoji} {danceStyle?.name || video.dance_style}
+                      <h3 className="text-lg font-bold flex items-center gap-2">
+                        <span className="text-2xl">{danceStyle?.emoji}</span>
+                        {danceStyle?.name || video.dance_style}
                       </h3>
-                      <p className="text-sm text-base-content/60">
-                        {getStatusText(video.status)}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(video.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                  <div className="flex gap-2">
+
+                  {video.error_message && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-xs text-destructive">
+                      <p className="font-semibold mb-1">Generation Failed</p>
+                      <p className="line-clamp-2 opacity-80">
+                        {video.error_message.includes("{") ? "An error occurred during generation." : video.error_message}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
                     <Link href={`/overview/videos/${video.id}`} className="flex-1">
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary">
                         View Details
                       </Button>
                     </Link>
                     {video.video_url && video.status === "succeeded" && (
                       <a href={video.video_url} download>
-                        <Button variant="outline" size="icon">
+                        <Button variant="outline" size="icon" className="rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary">
                           <Download className="h-4 w-4" />
                         </Button>
                       </a>
                     )}
-                  </div>
-                  {video.error_message && (
-                    <p className="text-sm text-error mt-2">
-                      {video.error_message}
-                    </p>
-                  )}
                   </div>
                 </div>
               </div>
