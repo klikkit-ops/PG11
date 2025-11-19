@@ -82,167 +82,181 @@ export default function SubscriptionPage({ user }: Props) {
   };
 
   const currentPlan = selectedPlan === "WEEKLY" ? weeklyPlan : annualPlan;
-  const savings = annualPlan.price < weeklyPlan.price * 52 
+  const savings = annualPlan.price < weeklyPlan.price * 52
     ? Math.round(((weeklyPlan.price * 52 - annualPlan.price) / (weeklyPlan.price * 52)) * 100)
     : 0;
 
   return (
-    <div className="min-h-screen p-6 md:p-8">
-      <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
+    <div className="min-h-screen">
+      <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+            Choose Your Plan
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Select a subscription plan to start creating amazing dancing videos of your pet.
+          </p>
+        </div>
+
+        {/* Plan Toggle */}
+        <div className="flex justify-center">
+          <div className="inline-flex gap-2 p-1.5 glass-panel">
+            <button
+              onClick={() => setSelectedPlan("WEEKLY")}
+              className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 ${selectedPlan === "WEEKLY"
+                  ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
+                  : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              Weekly
+            </button>
+            <button
+              onClick={() => setSelectedPlan("ANNUAL")}
+              className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative ${selectedPlan === "ANNUAL"
+                  ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
+                  : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              Yearly
+              {savings > 0 && (
+                <span className="ml-2 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30">
+                  Save {savings}%
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Plan Selection */}
-          <div className="space-y-6">
+          {/* Left Column: Plan Details */}
+          <div className="glass-panel p-8 space-y-6">
             <div>
-              <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-              <p className="text-base-content/70 text-lg">
-                Select a subscription plan to start creating amazing dancing videos of your pet.
+              <h2 className="text-3xl font-bold mb-2">
+                PetGroove {currentPlan.label}
+              </h2>
+              <p className="text-muted-foreground">
+                {selectedPlan === "WEEKLY"
+                  ? `${currentPlan.creditsPerPeriod} credits per ${currentPlan.billingPeriod}`
+                  : `${currentPlan.creditsPerPeriod} credits per ${currentPlan.billingPeriod}`}
               </p>
             </div>
 
-            {/* Plan Toggle */}
-            <div className="flex gap-2 p-1 bg-base-200 rounded-btn border border-base-300">
-              <button
-                onClick={() => setSelectedPlan("WEEKLY")}
-                className={`flex-1 py-3 px-4 rounded-btn font-semibold transition-all ${
-                  selectedPlan === "WEEKLY"
-                    ? "bg-primary text-primary-content shadow"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-              >
-                Weekly
-              </button>
-              <button
-                onClick={() => setSelectedPlan("ANNUAL")}
-                className={`flex-1 py-3 px-4 rounded-btn font-semibold transition-all ${
-                  selectedPlan === "ANNUAL"
-                    ? "bg-primary text-primary-content shadow"
-                    : "text-base-content/60 hover:text-base-content"
-                }`}
-              >
-                Yearly
-                {savings > 0 && (
-                  <span className="ml-2 text-xs bg-success/15 text-success px-2 py-0.5 rounded-btn">
-                    Save {savings}%
-                  </span>
-                )}
-              </button>
+            <div className="flex items-baseline gap-2">
+              <span className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                ${currentPlan.price.toFixed(2)}
+              </span>
+              <span className="text-xl text-muted-foreground">
+                / {currentPlan.billingPeriod === "week" ? "week" : "year"}
+              </span>
             </div>
 
-            {/* Plan Details */}
-            <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6 space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  PetGroove {currentPlan.label} Subscription
-                </h2>
-                  <p className="text-base-content/70 text-sm">
-                  {selectedPlan === "WEEKLY"
-                    ? `${currentPlan.label.toLowerCase()} subscription - ${currentPlan.creditsPerPeriod} credits/${currentPlan.billingPeriod} (${currentPlan.creditsPerPeriod} video generations)`
-                    : `${currentPlan.label.toLowerCase()} subscription - ${currentPlan.creditsPerPeriod} credits/${currentPlan.billingPeriod} (${currentPlan.creditsPerPeriod} video generations)`}
-                </p>
-              </div>
-
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-bold">
-                  ${currentPlan.price.toFixed(2)}
-                </span>
-                  <span className="text-base-content/70 text-lg">
-                  per {currentPlan.billingPeriod === "week" ? "week" : "year"}
+            {/* Features */}
+            <div className="space-y-4 py-6">
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-green-600" />
+                </div>
+                <span className="text-base">
+                  {currentPlan.creditsPerPeriod} video generations per{" "}
+                  {currentPlan.billingPeriod === "week" ? "week" : "year"}
                 </span>
               </div>
-
-              {/* Features */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="text-sm">
-                    {currentPlan.creditsPerPeriod} video generations per{" "}
-                    {currentPlan.billingPeriod === "week" ? "week" : "year"}
-                  </span>
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-green-600" />
                 </div>
-                <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="text-sm">All dance styles included</span>
+                <span className="text-base">All dance styles included</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-green-600" />
                 </div>
-                <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="text-sm">HD video quality</span>
+                <span className="text-base">HD video quality</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-green-600" />
                 </div>
-                <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="text-sm">Download anytime</span>
-                </div>
-                {selectedPlan === "ANNUAL" && savings > 0 && (
-                  <div className="flex items-center gap-3">
-                      <Check className="h-5 w-5 text-success flex-shrink-0" />
-                      <span className="text-sm text-success">
-                      Save {savings}% compared to weekly billing
-                    </span>
+                <span className="text-base">Download anytime</span>
+              </div>
+              {selectedPlan === "ANNUAL" && savings > 0 && (
+                <div className="flex items-center gap-3 pt-2 border-t border-border/50">
+                  <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-4 w-4 text-green-600" />
                   </div>
-                )}
-              </div>
-
-                <Button
-                  onClick={handleSubscribe}
-                  disabled={isLoading}
-                  className="w-full h-12 text-white font-semibold bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899] shadow-lg shadow-[#4C6FFF]/30 hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Subscribe"
-                  )}
-                </Button>
+                  <span className="text-base font-semibold text-green-600">
+                    Save {savings}% compared to weekly billing
+                  </span>
+                </div>
+              )}
             </div>
+
+            <Button
+              onClick={handleSubscribe}
+              disabled={isLoading}
+              variant="gradient"
+              className="w-full h-14 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Subscribe Now"
+              )}
+            </Button>
           </div>
 
-          {/* Right Column: Benefits/Info */}
+          {/* Right Column: Benefits */}
           <div className="space-y-6">
-            <div className="bg-base-300/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/60 p-6">
-              <h3 className="text-2xl font-bold mb-4">What's Included</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="glass-panel p-8">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span className="text-2xl">✨</span>
+                What's Included
+              </h3>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Check className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Unlimited Video Generations</h4>
-                    <p className="text-sm text-base-content/70">
+                    <h4 className="font-semibold text-lg mb-1">Unlimited Video Generations</h4>
+                    <p className="text-sm text-muted-foreground">
                       Create as many dancing videos as your credits allow. Credits reset each billing period.
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Check className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">All Dance Styles</h4>
-                    <p className="text-sm text-base-content/70">
+                    <h4 className="font-semibold text-lg mb-1">All Dance Styles</h4>
+                    <p className="text-sm text-muted-foreground">
                       Access to all 10+ dance styles including Macarena, Hip Hop, Ballet, and more.
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Check className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">HD Quality Videos</h4>
-                    <p className="text-sm text-base-content/70">
+                    <h4 className="font-semibold text-lg mb-1">HD Quality Videos</h4>
+                    <p className="text-sm text-muted-foreground">
                       All videos are generated in high definition, perfect for sharing on social media.
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Check className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-1">Cancel Anytime</h4>
-                    <p className="text-sm text-base-content/70">
+                    <h4 className="font-semibold text-lg mb-1">Cancel Anytime</h4>
+                    <p className="text-sm text-muted-foreground">
                       No long-term commitment. Cancel your subscription at any time.
                     </p>
                   </div>
@@ -250,11 +264,18 @@ export default function SubscriptionPage({ user }: Props) {
               </div>
             </div>
 
-            <div className="bg-warning/10 backdrop-blur-sm rounded-2xl shadow-lg border border-warning/20 p-4">
-              <p className="text-sm text-warning">
-                <strong>7-day satisfaction guarantee:</strong> Not happy with your subscription? 
-                Contact us within 7 days for a full refund.
-              </p>
+            <div className="glass-panel p-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl flex-shrink-0">🎉</span>
+                <div>
+                  <p className="font-semibold text-green-700 dark:text-green-400 mb-1">
+                    7-Day Satisfaction Guarantee
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Not happy with your subscription? Contact us within 7 days for a full refund.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
