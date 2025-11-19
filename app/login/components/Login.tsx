@@ -126,71 +126,67 @@ export const Login = ({
   }
 
   return (
-    <>
-      <div className="flex items-center justify-center p-8">
-        <div className="flex flex-col gap-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 p-4 rounded-xl max-w-sm w-full">
-          <h1 className="text-xl">Welcome</h1>
-          <p className="text-xs opacity-60">
-            Sign in or create an account to get started.
-          </p>
-          <Button
-            onClick={signInWithGoogle}
-            variant={"outline"}
-            className="font-semibold w-full"
-            type="button"
-            isLoading={isGoogleLoading}
-            disabled={isGoogleLoading}
-          >
-            <AiOutlineGoogle size={20} className="mr-2" />
-            Continue with Google
-          </Button>
-          <OR />
+    <div className="glass-panel flex flex-col gap-4 p-8 max-w-sm w-full">
+      <h1 className="text-xl">Welcome</h1>
+      <p className="text-xs opacity-60">
+        Sign in or create an account to get started.
+      </p>
+      <Button
+        onClick={signInWithGoogle}
+        variant={"outline"}
+        className="font-semibold w-full"
+        type="button"
+        isLoading={isGoogleLoading}
+        disabled={isGoogleLoading}
+      >
+        <AiOutlineGoogle size={20} className="mr-2" />
+        Continue with Google
+      </Button>
+      <OR />
 
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-2"
-          >
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  {...register("email", {
-                    required: true,
-                    validate: {
-                      emailIsValid: (value: string) =>
-                        /^[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) ||
-                        "Please enter a valid email",
-                      emailDoesntHavePlus: (value: string) =>
-                        /^[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) ||
-                        "Email addresses with a '+' are not allowed",
-                      emailIsntDisposable: (value: string) =>
-                        !disposableDomains.includes(value.split("@")[1]) ||
-                        "Please use a permanent email address",
-                    },
-                  })}
-                />
-                {isSubmitted && errors.email && (
-                  <span className={"text-xs text-red-400"}>
-                    {errors.email?.message || "Email is required to sign in"}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <Button
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-              variant="outline"
-              className="w-full"
-              type="submit"
-            >
-              Continue with Email
-            </Button>
-          </form>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-2"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Input
+              type="email"
+              placeholder="Email"
+              {...register("email", {
+                required: true,
+                validate: {
+                  emailIsValid: (value: string) =>
+                    /^[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) ||
+                    "Please enter a valid email",
+                  emailDoesntHavePlus: (value: string) =>
+                    /^[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value) ||
+                    "Email addresses with a '+' are not allowed",
+                  emailIsntDisposable: (value: string) =>
+                    !disposableDomains.includes(value.split("@")[1]) ||
+                    "Please use a permanent email address",
+                },
+              })}
+            />
+            {isSubmitted && errors.email && (
+              <span className={"text-xs text-red-400"}>
+                {errors.email?.message || "Email is required to sign in"}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-    </>
+
+        <Button
+          isLoading={isSubmitting}
+          disabled={isSubmitting}
+          variant="outline"
+          className="w-full"
+          type="submit"
+        >
+          Continue with Email
+        </Button>
+      </form>
+    </div>
   );
 };
 
