@@ -126,9 +126,9 @@ export const Login = ({
   }
 
   return (
-    <div className="glass-panel flex flex-col gap-4 p-8 max-w-sm w-full">
-      <h1 className="text-xl">Welcome</h1>
-      <p className="text-xs opacity-60">
+    <div className="flex flex-col gap-4 w-full max-w-sm">
+      <h1 className="text-2xl font-bold">Welcome</h1>
+      <p className="text-sm text-muted-foreground">
         Sign in or create an account to get started.
       </p>
       <Button
