@@ -68,38 +68,47 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1", boxShadow: "0 0 20px rgba(124, 58, 237, 0.5)" },
+          "50%": { opacity: "0.8", boxShadow: "0 0 30px rgba(124, 58, 237, 0.8)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in-up": "fade-in-up 0.5s ease-out forwards",
+        "pulse-glow": "pulse-glow 2s infinite",
       },
     },
   },
   plugins: [
     require("tailwindcss-animate"),
-    // Enable daisyUI alongside existing plugins for themed UI components
     require("daisyui"),
   ],
-  // Configure daisyUI with custom PetGroove theme
   daisyui: {
     themes: [
       {
         petgroove: {
-          primary: "#4C6FFF",
-          "primary-content": "#F9FAFF",
-          secondary: "#A855F7",
-          accent: "#EC4899",
-          neutral: "#111827",
-          "base-100": "#F3F1FF", // tinted background
-          "base-200": "#E0E7FF",
-          "base-300": "#FFFFFF", // white cards
+          primary: "#7C3AED", // Violet 600
+          "primary-content": "#FFFFFF",
+          secondary: "#F472B6", // Pink 400
+          accent: "#8B5CF6", // Violet 500
+          neutral: "#1F2937",
+          "base-100": "#FFFFFF",
+          "base-200": "#F3F4F6",
+          "base-300": "#E5E7EB",
           info: "#38BDF8",
-          success: "#22C55E",
-          warning: "#FACC15",
-          error: "#EF4444",
+          success: "#34D399",
+          warning: "#FBBF24",
+          error: "#F87171",
         },
       },
       "light",
+      "dark",
     ],
   },
 } satisfies Config;

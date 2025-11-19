@@ -1,5 +1,6 @@
 import { AvatarIcon } from "@radix-ui/react-icons";
 import { Camera } from "lucide-react"
+import Image from "next/image";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import {
@@ -36,13 +37,20 @@ export default async function Navbar() {
     .single();
 
   return (
-    <header className="sticky top-0 z-[100] w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-4 z-[100] w-full px-4">
+      <div className="container flex h-16 items-center justify-between rounded-full px-6 mx-auto backdrop-blur-md border border-white/20 shadow-xl bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 hover:from-purple-500/30 hover:via-pink-500/30 hover:to-blue-500/30 transition-all duration-300">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-          <Camera className="h-5 w-5 text-primary" />
-          <span>PetGroove</span>
+          <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-primary/20">
+            <Image
+              src="/logo.png"
+              alt="PetGroove Logo"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">PetGroove</span>
         </Link>
-        
+
         {user && (
           <nav className="hidden md:flex gap-6">
             <Link href="/overview/videos" className="text-sm font-medium hover:text-primary transition-colors">
@@ -61,14 +69,14 @@ export default async function Navbar() {
 
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          
+
           {!user && (
             <>
               <Link href="/login" className="hidden sm:block text-sm font-medium hover:text-primary transition-colors">
                 Login
               </Link>
               <Link href="/login">
-                <Button>Create Videos</Button>
+                <Button variant="gradient">Create Videos</Button>
               </Link>
             </>
           )}
@@ -80,19 +88,19 @@ export default async function Navbar() {
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                    <AvatarIcon className="h-6 w-6 text-primary" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-full border border-border/50">
+                    <AvatarIcon className="h-5 w-5 text-primary" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 z-[101]">
+                <DropdownMenuContent className="w-56 z-[101] glass-panel border-0">
                   <DropdownMenuLabel className="text-primary text-center overflow-hidden text-ellipsis">
                     {user.email}
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-border/50" />
                   <form action="/auth/sign-out" method="post">
                     <Button
                       type="submit"
-                      className="w-full text-left"
+                      className="w-full text-left hover:bg-primary/10 hover:text-primary"
                       variant="ghost"
                     >
                       Log out

@@ -4,66 +4,91 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 260 100% 99%; /* Very light violet tint */
+    --foreground: 260 20% 10%;
+    
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 260 20% 10%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 260 20% 10%;
+    
+    --primary: 262 83% 58%; /* Violet 600 */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 330 81% 60%; /* Pink 500 */
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 260 20% 96%;
+    --muted-foreground: 260 10% 45%;
+    
+    --accent: 260 20% 96%;
+    --accent-foreground: 262 83% 58%;
+    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    
+    --border: 260 20% 90%;
+    --input: 260 20% 90%;
+    --ring: 262 83% 58%;
+    
+    --radius: 1rem; /* Increased radius for softer look */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 260 30% 10%;
+    --foreground: 260 20% 98%;
+    
+    --card: 260 30% 12%;
+    --card-foreground: 260 20% 98%;
+    
+    --popover: 260 30% 12%;
+    --popover-foreground: 260 20% 98%;
+    
+    --primary: 262 83% 65%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 330 81% 65%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 260 30% 15%;
+    --muted-foreground: 260 20% 65%;
+    
+    --accent: 260 30% 15%;
+    --accent-foreground: 260 20% 98%;
+    
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    
+    --border: 260 30% 20%;
+    --input: 260 30% 20%;
+    --ring: 262 83% 65%;
   }
 }
 
 @layer components {
+  .glass-panel {
+    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg border border-white/20 shadow-xl;
+  }
+  
+  .glass-button {
+    @apply bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 transition-all;
+  }
+
   .pricing-card {
-    @apply relative rounded-lg border bg-background p-6 transition-all hover:shadow-md;
+    @apply relative rounded-2xl border bg-card p-8 transition-all hover:shadow-xl hover:-translate-y-1 duration-300;
   }
 
   .pricing-card-popular {
-    @apply border-primary shadow-lg;
+    @apply border-primary/50 shadow-lg ring-1 ring-primary/20;
   }
 
   .pricing-badge {
-    @apply absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground;
+    @apply absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-secondary px-4 py-1 text-xs font-bold text-white shadow-lg;
   }
 
   .pricing-feature {
-    @apply flex items-center gap-2 text-sm;
+    @apply flex items-center gap-3 text-sm text-muted-foreground;
   }
 }
 

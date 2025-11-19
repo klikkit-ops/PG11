@@ -1,3 +1,4 @@
+import { Fredoka } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
@@ -6,6 +7,8 @@ import AnnouncementBar from "@/components/homepage/announcement-bar"
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/components/homepage/theme-provider"
 import { validateConfig } from "@/lib/config";
+
+const fredoka = Fredoka({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] });
 
 // Validate configuration at app initialization
 validateConfig();
@@ -31,15 +34,20 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-theme="petgroove">
       {/* Use gradient background with daisyUI base tokens for consistent theming */}
       <body
-        className="
+        className={`
+          ${fredoka.className}
           min-h-screen
           flex flex-col
-          bg-gradient-to-b
-          from-[#F3F1FF]
-          via-[#FDF2FF]
-          to-[#F9FAFB]
-          text-base-content
-        "
+          bg-gradient-to-br
+          from-purple-100
+          via-pink-100
+          to-blue-100
+          dark:from-purple-950
+          dark:via-pink-950
+          dark:to-blue-950
+          text-foreground
+          antialiased
+        `}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AnnouncementBar />
@@ -53,7 +61,7 @@ export default function RootLayout({
           >
             <Navbar />
           </Suspense>
-          <main className="flex-1">
+          <main className="flex-1 container mx-auto px-4 py-8">
             {children}
           </main>
           <Toaster />
