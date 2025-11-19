@@ -1,6 +1,6 @@
-import Login from "../login/page";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <Login />;
+    redirect("/login");
   }
 
   // Updated to ensure compatibility with new layout
