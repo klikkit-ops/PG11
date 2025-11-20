@@ -2,12 +2,12 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Database } from "@/types/supabase";
+import { PetAvatar } from "@/components/ui/pet-avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Video, Plus, Download, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
-import { PetAvatar } from "@/components/PetAvatar";
 
 export const dynamic = "force-dynamic";
 
@@ -64,8 +64,11 @@ export default async function VideosPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 space-y-8 relative">
-      <PetAvatar index={4} className="absolute -top-6 -right-12 hidden xl:block" size={160} animate />
+    <div className="container mx-auto px-4 py-8 relative">
+      {/* Decorative pet avatars */}
+      <PetAvatar petId={5} size="lg" position="top-right" className="hidden 2xl:block" />
+      <PetAvatar petId={3} size="md" position="bottom-left" className="hidden xl:block" />
+
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Your Pet Videos</h1>
@@ -181,3 +184,4 @@ export default async function VideosPage() {
     </div>
   );
 }
+
