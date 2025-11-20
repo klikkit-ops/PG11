@@ -89,9 +89,9 @@ export default function SubscriptionPage({ user }: Props) {
 
     return (
         <div className="min-h-screen relative">
-            {/* Decorative pet avatars */}
-            <PetAvatar petId={4} size="lg" position="top-right" className="hidden xl:block" />
-            <PetAvatar petId={2} size="md" position="bottom-left" className="hidden lg:block" />
+            {/* Decorative pet avatars in side margins */}
+            <PetAvatar petId={4} size="lg" style={{ position: 'fixed', top: '12rem', right: '1rem' }} className="hidden xl:block" />
+            <PetAvatar petId={2} size="md" style={{ position: 'fixed', bottom: '8rem', left: '1rem' }} className="hidden lg:block" />
             <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
                 {/* Header */}
                 <div className="text-center mb-16 space-y-4">
