@@ -160,14 +160,30 @@ export async function POST(request: Request) {
       } catch (processingError) {
         console.error(`[Video Generation] Failed to process image to 9:16, using original:`, processingError);
         // Continue with original image if processing fails
+        processedImageUrl = imageUrl;
       }
 
-      // Get audio URL for the selected dance style
-      const audioUrl = getAudioUrlForDanceStyle(danceStyle);
-      if (audioUrl) {
-        console.log(`[Video Generation] Using audio for dance style ${danceStyle}: ${audioUrl}`);
-      } else {
-        console.warn(`[Video Generation] No audio file found for dance style: ${danceStyle}, proceeding without audio`);
+      // Get audio URL for the selected dance style (optional - skip if URL is invalid)
+      let audioUrl: string | undefined = undefined;
+      try {
+        const audioUrlResult = getAudioUrlForDanceStyle(danceStyle);
+        if (audioUrlResult && audioUrlResult.startsWith('http')) {
+          // Only use audio URL if it's a valid HTTP(S) URL (not localhost in production)
+          if (!audioUrlResult.includes('localhost') || process.env.NODE_ENV === 'development') {
+            audioUrl = audioUrlResult;
+            console.log(`[Video Generation] Using audio for dance style ${danceStyle}: ${audioUrl}`);
+          } else {
+            console.warn(`[Video Generation] Skipping audio URL (localhost in production): ${audioUrlResult}`);
+          }
+        } else if (audioUrlResult) {
+          console.warn(`[Video Generation] Invalid audio URL format, skipping: ${audioUrlResult}`);
+        }
+      } catch (audioError) {
+        console.error(`[Video Generation] Error getting audio URL, proceeding without audio:`, audioError);
+      }
+      
+      if (!audioUrl) {
+        console.log(`[Video Generation] Proceeding without audio for dance style: ${danceStyle}`);
       }
 
       // CRITICAL: Call RunComfy API to create the task BEFORE returning

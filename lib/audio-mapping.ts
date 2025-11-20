@@ -82,11 +82,22 @@ export function getAudioUrlForDanceStyle(danceStyleId: string): string | null {
 
   // Construct absolute URL for the audio file
   // RunComfy API requires a publicly accessible HTTPS URL
+  // In production, we need a proper domain, not localhost
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-    || 'http://localhost:3000';
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
   
-  // Ensure we have a proper URL
+  // If no base URL is set, return null (audio will be skipped)
+  if (!baseUrl) {
+    console.warn(`[AudioMapping] No base URL configured for audio files. Set NEXT_PUBLIC_APP_URL or VERCEL_URL.`);
+    return null;
+  }
+  
+  // Ensure we have a proper HTTPS URL (not localhost in production)
+  if (baseUrl.includes('localhost') && process.env.NODE_ENV === 'production') {
+    console.warn(`[AudioMapping] Localhost URL detected in production, skipping audio: ${baseUrl}`);
+    return null;
+  }
+  
   const audioUrl = mapping.audioUrl.startsWith('http') 
     ? mapping.audioUrl 
     : `${baseUrl}${mapping.audioUrl}`;
