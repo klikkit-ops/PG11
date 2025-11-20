@@ -69,7 +69,7 @@ export default async function VideosPage() {
       <PetAvatar petId={5} size="lg" style={{ position: 'fixed', bottom: '6rem', right: '1rem' }} className="hidden 2xl:block" />
       <PetAvatar petId={3} size="md" style={{ position: 'fixed', top: '10rem', left: '1rem' }} className="hidden 2xl:block" />
 
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Your Pet Videos</h1>
           <p className="text-muted-foreground text-lg">
