@@ -2,8 +2,8 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
-import { generateVideo } from "@/lib/runcomfy";
-import { generateDancePrompt } from "@/lib/runway";
+import { generateVideo as generateVideoRunComfy } from "@/lib/runcomfy";
+import { generateDancePrompt, generateVideo as generateVideoRunway, checkVideoStatus as checkVideoStatusRunway } from "@/lib/runway";
 import { createClient } from "@supabase/supabase-js";
 import { processImageTo9x16, uploadProcessedImage, get9x16Dimensions } from "@/lib/imageProcessing";
 import { getAudioUrlForDanceStyle } from "@/lib/audio-mapping";
@@ -186,9 +186,9 @@ export async function POST(request: Request) {
         console.log(`[Video Generation] Proceeding without audio for dance style: ${danceStyle}`);
       }
 
-      // CRITICAL: Call RunComfy API to create the task BEFORE returning
+      // CRITICAL: Call RunComfy API first, with Runway as fallback
       // This ensures the runway_video_id is saved before Vercel kills the function
-      console.log(`[Video Generation] Calling RunComfy API to create task for video ${videoId}`);
+      console.log(`[Video Generation] Attempting RunComfy API first for video ${videoId}`);
       console.log(`[Video Generation] API call parameters:`, {
         imageUrl: processedImageUrl.substring(0, 100) + '...',
         promptLength: prompt.length,
@@ -199,8 +199,12 @@ export async function POST(request: Request) {
       });
       
       let videoResponse;
+      let provider = 'runcomfy'; // Default provider
+      let usedFallback = false;
+      
+      // Try RunComfy first
       try {
-        videoResponse = await generateVideo({
+        videoResponse = await generateVideoRunComfy({
           imageUrl: processedImageUrl, // Use processed 9:16 image
           prompt,
           duration: 10, // Wan 2.5 supports 5 or 10 seconds
@@ -209,50 +213,85 @@ export async function POST(request: Request) {
           audioUrl: audioUrl || undefined, // Include audio URL if available
         });
         console.log(`[Video Generation] RunComfy API call completed successfully`);
-      } catch (apiError) {
+      } catch (runcomfyError) {
         console.error(`[Video Generation] RunComfy API call failed:`, {
-          error: apiError instanceof Error ? apiError.message : String(apiError),
-          stack: apiError instanceof Error ? apiError.stack : undefined,
+          error: runcomfyError instanceof Error ? runcomfyError.message : String(runcomfyError),
+          stack: runcomfyError instanceof Error ? runcomfyError.stack : undefined,
         });
-        throw apiError; // Re-throw to be caught by outer catch
+        
+        // Check if Runway is available as fallback
+        const hasRunwayKey = !!process.env.RUNWAY_API_KEY || !!process.env.RUNWAYML_API_SECRET;
+        
+        if (hasRunwayKey) {
+          console.log(`[Video Generation] RunComfy failed, falling back to Runway API for video ${videoId}`);
+          usedFallback = true;
+          provider = 'runway';
+          
+          try {
+            // Truncate prompt for Runway (max 1000 chars)
+            const runwayPrompt = prompt.length > 1000 ? prompt.substring(0, 1000) : prompt;
+            
+            videoResponse = await generateVideoRunway({
+              imageUrl: processedImageUrl, // Use processed 9:16 image
+              prompt: runwayPrompt,
+              duration: 8, // Runway default duration
+            });
+            console.log(`[Video Generation] Runway API fallback call completed successfully`);
+          } catch (runwayError) {
+            console.error(`[Video Generation] Runway API fallback also failed:`, {
+              error: runwayError instanceof Error ? runwayError.message : String(runwayError),
+            });
+            // Both providers failed - throw the original RunComfy error
+            throw runcomfyError;
+          }
+        } else {
+          console.error(`[Video Generation] RunComfy failed and Runway API key not configured, cannot use fallback`);
+          throw runcomfyError;
+        }
       }
       
-      console.log(`[Video Generation] RunComfy API response for video ${videoId}:`, {
+      console.log(`[Video Generation] ${provider.toUpperCase()} API response for video ${videoId}:`, {
         id: videoResponse.id,
         status: videoResponse.status,
         hasVideoUrl: !!videoResponse.videoUrl,
         error: videoResponse.error,
+        usedFallback,
       });
 
       if (!videoResponse.id) {
-        console.error(`[Video Generation] CRITICAL: RunComfy API returned no request_id for video ${videoId}!`);
-        throw new Error('RunComfy API did not return a request_id');
+        console.error(`[Video Generation] CRITICAL: ${provider.toUpperCase()} API returned no request_id for video ${videoId}!`);
+        throw new Error(`${provider.toUpperCase()} API did not return a request_id`);
       }
 
-      // CRITICAL: Save the runway_video_id BEFORE returning the response
+      // CRITICAL: Save the runway_video_id and provider BEFORE returning the response
       // This is the key fix - we must save it synchronously, not in a background task
-      console.log(`[Video Generation] Saving runway_video_id for video ${videoId}: ${videoResponse.id}`);
+      console.log(`[Video Generation] Saving ${provider} request_id for video ${videoId}: ${videoResponse.id}`);
       const { error: updateResponseError, data: updateData } = await serviceSupabase
         .from("videos")
         .update({
           status: videoResponse.status,
           video_url: videoResponse.videoUrl || null,
           error_message: videoResponse.error || null,
-          runway_video_id: videoResponse.id, // CRITICAL: Save the RunComfy request_id (reusing field name)
+          runway_video_id: videoResponse.id, // Save the request_id (works for both providers)
+          provider: provider, // Save which provider was used
           updated_at: new Date().toISOString(),
         })
         .eq("id", videoId)
         .select();
         
       if (updateResponseError) {
-        console.error(`[Video Generation] FAILED to save runway_video_id:`, updateResponseError);
-        throw new Error(`Failed to save runway_video_id: ${updateResponseError.message}`);
+        console.error(`[Video Generation] FAILED to save ${provider} request_id:`, updateResponseError);
+        throw new Error(`Failed to save ${provider} request_id: ${updateResponseError.message}`);
       }
       
-      console.log(`[Video Generation] Successfully saved RunComfy request_id for video ${videoId}: ${videoResponse.id}`);
+      console.log(`[Video Generation] Successfully saved ${provider} request_id for video ${videoId}: ${videoResponse.id}`);
+      if (usedFallback) {
+        console.log(`[Video Generation] ⚠️ Used Runway as fallback after RunComfy failure`);
+      }
       console.log(`[Video Generation] Updated record:`, updateData?.[0] ? {
         id: updateData[0].id,
         status: updateData[0].status,
+        provider: updateData[0].provider,
         runway_video_id: updateData[0].runway_video_id,
       } : 'No data returned');
 
