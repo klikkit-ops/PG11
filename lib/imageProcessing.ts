@@ -33,39 +33,13 @@ export async function processImageTo9x16(imageUrl: string, targetHeight: number 
     const targetWidth = Math.round(targetHeight * (9 / 16)); // 9:16 ratio
 
     // Process the image
-    let processedImage = sharp(buffer);
-
-    // Calculate how to crop/resize to 9:16
-    const currentAspectRatio = width / height;
-    const targetAspectRatio = 9 / 16; // 0.5625
-
-    if (currentAspectRatio > targetAspectRatio) {
-      // Image is wider than 9:16 - crop the width (center crop)
-      const cropWidth = Math.round(height * targetAspectRatio);
-      const left = Math.round((width - cropWidth) / 2);
-      processedImage = processedImage.extract({
-        left,
-        top: 0,
-        width: cropWidth,
-        height: height,
-      });
-    } else {
-      // Image is taller than 9:16 - crop the height (center crop)
-      const cropHeight = Math.round(width / targetAspectRatio);
-      const top = Math.round((height - cropHeight) / 2);
-      processedImage = processedImage.extract({
-        left: 0,
-        top,
-        width: width,
-        height: cropHeight,
-      });
-    }
-
-    // Resize to target dimensions
-    const processedBuffer = await processedImage
+    // Use 'contain' strategy to ensure the entire pet stays in frame
+    // This will add letterboxing/pillarboxing if needed, but ensures nothing is cropped
+    const processedBuffer = await sharp(buffer)
       .resize(targetWidth, targetHeight, {
-        fit: 'cover',
+        fit: 'contain', // Use 'contain' instead of 'cover' to keep entire image visible
         position: 'center',
+        background: { r: 0, g: 0, b: 0, alpha: 0 }, // Transparent background for letterboxing
       })
       .jpeg({ quality: 90 })
       .toBuffer();

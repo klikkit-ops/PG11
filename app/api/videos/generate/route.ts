@@ -169,7 +169,7 @@ export async function POST(request: Request) {
         prompt,
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
         resolution: '480P', // 480P, 720P, or 1080P
-        negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background',
+        negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
       });
       
       console.log(`[Video Generation] RunComfy API response for video ${videoId}:`, {
@@ -297,7 +297,7 @@ async function generateVideoAsync(
         prompt,
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
         resolution: '480P', // 480P, 720P, or 1080P
-        negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background',
+        negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
       });
       console.log(`[Video Generation] RunComfy API call SUCCESS for video ${videoId}`);
     } catch (sdkError) {

@@ -293,7 +293,7 @@ export async function generateDancePrompt(
     const styleDescription = styleDescriptions[danceStyle.toLowerCase()] || `dancing in the ${danceStyle} style`;
     const backgroundDescription = backgroundDescriptions[danceStyle.toLowerCase()] || `themed background matching the ${danceStyle} dance style`;
     
-    return `A realistic, photorealistic pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription} in a ${backgroundDescription}. The pet maintains its authentic, photographic appearance exactly as in the source image - preserving the original fur texture, colors, markings, and facial features. The pet's face, features, and unique identity are clearly preserved throughout the video. The dance movements are smooth, natural, and match the ${danceStyle} style accurately. The background is rich, detailed, and thematically appropriate - never plain or empty. Vertical 9:16 aspect ratio, high-quality photography, realistic appearance, well-lit environment, stable camera, 8-10 second duration. No cartoon style, no illustration, no plain backgrounds, purely photorealistic.`;
+    return `A realistic, photorealistic pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription} in a ${backgroundDescription}. The pet maintains its authentic, photographic appearance exactly as in the source image - preserving the original fur texture, colors, markings, and facial features. The pet's face, features, and unique identity are clearly preserved throughout the video. CRITICAL: The pet MUST remain FULLY VISIBLE and COMPLETELY IN FRAME at ALL TIMES - the entire pet body, head, and all features must always be visible, never cropped or cut off. The camera maintains appropriate distance to keep the full pet in frame throughout all dance movements. The dance movements are smooth, natural, and match the ${danceStyle} style accurately while keeping the pet centered and fully visible. The background is rich, detailed, and thematically appropriate - never plain or empty. Vertical 9:16 aspect ratio, high-quality photography, realistic appearance, well-lit environment, stable camera, full body visible, pet always in frame, 8-10 second duration. No cartoon style, no illustration, no plain backgrounds, no cropping of pet, purely photorealistic.`;
   };
 
   // If OpenAI is not configured, use fallback
@@ -320,17 +320,20 @@ export async function generateDancePrompt(
             content: `You are an expert prompt engineer specializing in creating detailed, effective prompts for AI image-to-video generation models. Your prompts must:
 1. STRONGLY emphasize PHOTOGRAPHIC REALISM - the pet must look exactly like a real photograph, not a cartoon or illustration
 2. Preserve the EXACT appearance from the source image - same fur texture, colors, markings, facial features
-3. Clearly describe specific dance movements and choreography
-4. ALWAYS include a detailed, themed background that matches the dance style - NEVER plain or empty backgrounds
-5. Specify vertical 9:16 aspect ratio (portrait orientation)
-6. Include technical quality keywords (photorealistic, high quality, smooth motion, professional photography)
-7. Be concise but descriptive (150-200 words, MAX 2000 characters for RunComfy)
-8. Focus on the dance style's unique characteristics and appropriate setting
-9. Explicitly avoid cartoon, animated, illustrated, stylized appearances, and plain backgrounds
+3. MOST IMPORTANT: The pet MUST remain FULLY VISIBLE and COMPLETELY IN FRAME at ALL TIMES - never cropped, cut off, or partially out of frame
+4. Clearly describe specific dance movements and choreography that keep the pet centered and fully visible
+5. ALWAYS include a detailed, themed background that matches the dance style - NEVER plain or empty backgrounds
+6. Specify vertical 9:16 aspect ratio (portrait orientation)
+7. Include technical quality keywords (photorealistic, high quality, smooth motion, professional photography, full body visible, pet always in frame)
+8. Be concise but descriptive (150-200 words, MAX 2000 characters for RunComfy)
+9. Focus on the dance style's unique characteristics and appropriate setting
+10. Explicitly avoid cartoon, animated, illustrated, stylized appearances, plain backgrounds, and any mention of cropping or partial visibility
 
 CRITICAL: 
 - The pet must maintain its realistic, photographic appearance throughout the entire video
 - The output should look like a real pet dancing, not an animated character
+- The pet MUST stay FULLY IN FRAME at ALL TIMES - entire body, head, and all features always visible
+- Camera should maintain appropriate distance to keep the full pet in frame throughout all movements
 - The background MUST be rich, detailed, and thematically appropriate - never plain, white, or empty
 - Vertical 9:16 aspect ratio (portrait/vertical orientation)
 - Keep the prompt under 2000 characters to ensure it fits within API limits`,
@@ -343,15 +346,18 @@ CRITICAL REQUIREMENTS:
 - The pet MUST maintain its PHOTOGRAPHIC, REALISTIC appearance - it should look exactly like the original photo, just animated
 - NO cartoon style, NO illustration style, NO animated character appearance - it must look like a real pet
 - The pet's face, features, fur texture, colors, and unique characteristics must be preserved EXACTLY as in the source image
-- Describe specific ${danceStyle} dance movements and choreography
+- **MOST IMPORTANT: The pet MUST remain FULLY VISIBLE and COMPLETELY IN FRAME at ALL TIMES throughout the entire video**
+- **The pet must NEVER be cropped, cut off, or partially out of frame - the entire pet body, head, and all features must always be visible**
+- **Camera should maintain appropriate distance to keep the full pet in frame, even during dance movements**
+- Describe specific ${danceStyle} dance movements and choreography that keep the pet centered and fully visible
 - ALWAYS include a detailed, themed background that matches the ${danceStyle} dance style (e.g., Latin club for salsa, urban street for hip hop, elegant ballroom for waltz, etc.)
 - The background MUST be rich, detailed, and thematically appropriate - NEVER plain, white, empty, or solid color backgrounds
 - Specify vertical 9:16 aspect ratio (portrait orientation)
-- Include keywords: photorealistic, realistic, natural, authentic, high-quality photography, vertical 9:16 aspect ratio
-- Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look", "themed background matching ${danceStyle} style"
-- Avoid any mention of cartoon, animation, illustration, stylized art, plain backgrounds, empty backgrounds, white backgrounds
+- Include keywords: photorealistic, realistic, natural, authentic, high-quality photography, vertical 9:16 aspect ratio, full body visible, pet always in frame, complete pet visible
+- Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look", "themed background matching ${danceStyle} style", "keep pet fully in frame at all times", "entire pet always visible", "no cropping of pet"
+- Avoid any mention of cartoon, animation, illustration, stylized art, plain backgrounds, empty backgrounds, white backgrounds, cropped pet, partial pet, pet out of frame
 - Keep it detailed (150-200 words, under 2000 characters)
-- Focus on smooth, natural movements that match the ${danceStyle} style and an appropriate themed setting
+- Focus on smooth, natural movements that match the ${danceStyle} style while ensuring the pet stays fully visible and centered in frame
 
 Return ONLY the prompt text, no explanations or additional text. Keep it under 2000 characters.`,
           },
