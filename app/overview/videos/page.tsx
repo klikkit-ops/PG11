@@ -66,8 +66,8 @@ export default async function VideosPage() {
   return (
     <div className="container mx-auto px-4 py-8 relative">
       {/* Decorative pet avatars */}
-      <PetAvatar petId={5} size="lg" position="top-right" className="hidden 2xl:block" />
-      <PetAvatar petId={3} size="md" position="bottom-left" className="hidden xl:block" />
+      <PetAvatar petId={5} size="lg" position="bottom-right" className="hidden 2xl:block" />
+      <PetAvatar petId={3} size="md" position="top-left" className="hidden xl:block" />
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>

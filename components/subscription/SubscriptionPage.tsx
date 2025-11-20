@@ -90,8 +90,8 @@ export default function SubscriptionPage({ user }: Props) {
     return (
         <div className="min-h-screen relative">
             {/* Decorative pet avatars */}
-            <PetAvatar petId={4} size="md" position="top-right" className="hidden xl:block" />
-            <PetAvatar petId={2} size="sm" position="bottom-left" className="hidden lg:block" />
+            <PetAvatar petId={4} size="lg" position="top-right" className="hidden xl:block" />
+            <PetAvatar petId={2} size="md" position="bottom-left" className="hidden lg:block" />
             <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
                 {/* Header */}
                 <div className="text-center mb-16 space-y-4">

@@ -8,9 +8,9 @@ type PetAvatarProps = {
 };
 
 const sizeClasses = {
-    sm: "w-16 h-16 md:w-20 md:h-20",
-    md: "w-20 h-20 md:w-28 md:h-28",
-    lg: "w-28 h-28 md:w-36 md:h-36",
+    sm: "w-32 h-32 md:w-40 md:h-40",
+    md: "w-40 h-40 md:w-52 md:h-52",
+    lg: "w-52 h-52 md:w-64 md:h-64",
 };
 
 const positionClasses = {
@@ -32,13 +32,13 @@ export function PetAvatar({
 
     return (
         <div
-            className={`${baseClasses} ${sizeClasses[size]} ${className} opacity-80 hover:opacity-100 transition-opacity duration-300 z-0`}
+            className={`${baseClasses} ${sizeClasses[size]} ${className} opacity-90 hover:opacity-100 transition-opacity duration-300 z-10`}
         >
             <Image
                 src={`/avatars/pet-${petId}.png`}
                 alt="Dancing pet mascot"
                 fill
-                className="object-contain drop-shadow-lg"
+                className="object-contain drop-shadow-2xl"
             />
         </div>
     );

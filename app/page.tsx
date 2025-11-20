@@ -66,8 +66,8 @@ export default async function Index({
     return (
         <div className="flex min-h-screen flex-col relative">
             {/* Decorative pet avatars */}
-            <PetAvatar petId={1} size="md" position="top-right" className="hidden lg:block" />
-            <PetAvatar petId={4} size="sm" position="bottom-left" className="hidden md:block" />
+            <PetAvatar petId={1} size="lg" position="bottom-right" className="hidden lg:block" />
+            <PetAvatar petId={4} size="md" position="bottom-left" className="hidden md:block" />
 
             {/* Keep the original hero for existing content structure */}
             <div className="flex-1">
