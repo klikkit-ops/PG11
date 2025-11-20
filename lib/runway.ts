@@ -276,9 +276,24 @@ export async function generateDancePrompt(
       cha_cha: 'performing the cha-cha with quick, rhythmic steps',
     };
 
+    const backgroundDescriptions: Record<string, string> = {
+      macarena: 'vibrant beach party scene with palm trees, colorful beach umbrellas, and festive decorations in the background',
+      salsa: 'lively Latin dance club with warm lighting, tropical plants, colorful papel picado banners, and festive atmosphere',
+      'hip hop': 'urban street scene with graffiti art walls, city lights, and dynamic urban environment in the background',
+      'hip_hop': 'urban street scene with graffiti art walls, city lights, and dynamic urban environment in the background',
+      robot: 'futuristic sci-fi setting with neon lights, metallic surfaces, and high-tech industrial background',
+      ballet: 'elegant theater stage with velvet curtains, ornate decorations, soft stage lighting, and classical architecture',
+      disco: 'retro disco club with mirror balls, colorful neon lights, disco floor patterns, and 70s party atmosphere',
+      breakdance: 'urban street scene with cardboard dance floor, city backdrop, street art, and hip-hop culture elements',
+      waltz: 'grand ballroom with crystal chandeliers, elegant decor, ornate walls, and sophisticated classical setting',
+      tango: 'dramatic tango hall with dim mood lighting, vintage decor, red curtains, and passionate atmosphere',
+      cha_cha: 'vibrant Latin dance studio with colorful walls, tropical decorations, festive lights, and energetic atmosphere',
+    };
+
     const styleDescription = styleDescriptions[danceStyle.toLowerCase()] || `dancing in the ${danceStyle} style`;
+    const backgroundDescription = backgroundDescriptions[danceStyle.toLowerCase()] || `themed background matching the ${danceStyle} dance style`;
     
-    return `A realistic, photorealistic pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription}. The pet maintains its authentic, photographic appearance exactly as in the source image - preserving the original fur texture, colors, markings, and facial features. The pet's face, features, and unique identity are clearly preserved throughout the video. The dance movements are smooth, natural, and match the ${danceStyle} style accurately. High-quality photography, realistic appearance, well-lit environment, stable camera, 8-10 second duration. No cartoon style, no illustration, purely photorealistic.`;
+    return `A realistic, photorealistic pet ${petDescription ? `(${petDescription})` : ''} ${styleDescription} in a ${backgroundDescription}. The pet maintains its authentic, photographic appearance exactly as in the source image - preserving the original fur texture, colors, markings, and facial features. The pet's face, features, and unique identity are clearly preserved throughout the video. The dance movements are smooth, natural, and match the ${danceStyle} style accurately. The background is rich, detailed, and thematically appropriate - never plain or empty. Vertical 9:16 aspect ratio, high-quality photography, realistic appearance, well-lit environment, stable camera, 8-10 second duration. No cartoon style, no illustration, no plain backgrounds, purely photorealistic.`;
   };
 
   // If OpenAI is not configured, use fallback
@@ -306,35 +321,42 @@ export async function generateDancePrompt(
 1. STRONGLY emphasize PHOTOGRAPHIC REALISM - the pet must look exactly like a real photograph, not a cartoon or illustration
 2. Preserve the EXACT appearance from the source image - same fur texture, colors, markings, facial features
 3. Clearly describe specific dance movements and choreography
-4. Include technical quality keywords (photorealistic, high quality, smooth motion, professional photography)
-5. Be concise but descriptive (100-150 words, MAX 900 characters)
-6. Focus on the dance style's unique characteristics
-7. Explicitly avoid cartoon, animated, illustrated, or stylized appearances
+4. ALWAYS include a detailed, themed background that matches the dance style - NEVER plain or empty backgrounds
+5. Specify vertical 9:16 aspect ratio (portrait orientation)
+6. Include technical quality keywords (photorealistic, high quality, smooth motion, professional photography)
+7. Be concise but descriptive (150-200 words, MAX 2000 characters for RunComfy)
+8. Focus on the dance style's unique characteristics and appropriate setting
+9. Explicitly avoid cartoon, animated, illustrated, stylized appearances, and plain backgrounds
 
 CRITICAL: 
 - The pet must maintain its realistic, photographic appearance throughout the entire video
 - The output should look like a real pet dancing, not an animated character
-- Keep the prompt under 900 characters to ensure it fits within API limits`,
+- The background MUST be rich, detailed, and thematically appropriate - never plain, white, or empty
+- Vertical 9:16 aspect ratio (portrait/vertical orientation)
+- Keep the prompt under 2000 characters to ensure it fits within API limits`,
           },
           {
             role: 'user',
-            content: `Create a concise, optimized prompt (MAX 900 characters) for an AI image-to-video model that will animate a pet${petDescription ? ` (${petDescription})` : ''} performing the ${danceStyle} dance. 
+            content: `Create a detailed, optimized prompt (MAX 2000 characters) for an AI image-to-video model that will animate a pet${petDescription ? ` (${petDescription})` : ''} performing the ${danceStyle} dance in vertical 9:16 aspect ratio. 
 
 CRITICAL REQUIREMENTS:
 - The pet MUST maintain its PHOTOGRAPHIC, REALISTIC appearance - it should look exactly like the original photo, just animated
 - NO cartoon style, NO illustration style, NO animated character appearance - it must look like a real pet
 - The pet's face, features, fur texture, colors, and unique characteristics must be preserved EXACTLY as in the source image
 - Describe specific ${danceStyle} dance movements and choreography
-- Include keywords: photorealistic, realistic, natural, authentic, high-quality photography
-- Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look"
-- Avoid any mention of cartoon, animation, illustration, or stylized art
-- Keep it concise (100-150 words, under 900 characters)
-- Focus on smooth, natural movements that match the ${danceStyle} style
+- ALWAYS include a detailed, themed background that matches the ${danceStyle} dance style (e.g., Latin club for salsa, urban street for hip hop, elegant ballroom for waltz, etc.)
+- The background MUST be rich, detailed, and thematically appropriate - NEVER plain, white, empty, or solid color backgrounds
+- Specify vertical 9:16 aspect ratio (portrait orientation)
+- Include keywords: photorealistic, realistic, natural, authentic, high-quality photography, vertical 9:16 aspect ratio
+- Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look", "themed background matching ${danceStyle} style"
+- Avoid any mention of cartoon, animation, illustration, stylized art, plain backgrounds, empty backgrounds, white backgrounds
+- Keep it detailed (150-200 words, under 2000 characters)
+- Focus on smooth, natural movements that match the ${danceStyle} style and an appropriate themed setting
 
-Return ONLY the prompt text, no explanations or additional text. Keep it under 900 characters.`,
+Return ONLY the prompt text, no explanations or additional text. Keep it under 2000 characters.`,
           },
         ],
-        max_tokens: 200, // Reduced to ensure prompt stays under 1000 character limit
+        max_tokens: 300, // Increased to allow for detailed background descriptions (RunComfy supports 2000 chars)
         temperature: 0.6, // Lower temperature for more consistent, realistic results
       }),
     });
@@ -359,10 +381,9 @@ Return ONLY the prompt text, no explanations or additional text. Keep it under 9
       return getFallbackPrompt();
     }
 
-    // Note: Runway API has a maximum of 1000 characters, but RunComfy supports 2000
-    // This function is used by both, so we'll use the more restrictive limit
+    // RunComfy supports 2000 characters, so we can use longer prompts with detailed backgrounds
     // Truncate if necessary, but try to preserve the most important parts
-    const MAX_PROMPT_LENGTH = 1000;
+    const MAX_PROMPT_LENGTH = 2000;
     if (generatedPrompt.length > MAX_PROMPT_LENGTH) {
       console.warn(`[OpenAI] Generated prompt is ${generatedPrompt.length} characters, truncating to ${MAX_PROMPT_LENGTH}`);
       // Truncate to 1000 characters, but try to end at a sentence boundary if possible
