@@ -150,9 +150,9 @@ export default function GenerateVideoPage() {
 
     return (
         <div className="min-h-screen relative">
-            {/* Decorative pet avatars */}
-            <PetAvatar petId={3} size="lg" position="bottom-left" className="hidden 2xl:block" />
-            <PetAvatar petId={1} size="md" position="top-right" className="hidden xl:block" />
+            {/* Decorative pet avatars in side margins */}
+            <PetAvatar petId={3} size="lg" style={{ position: 'fixed', bottom: '8rem', left: '1rem' }} className="hidden 2xl:block" />
+            <PetAvatar petId={1} size="md" style={{ position: 'fixed', top: '12rem', right: '1rem' }} className="hidden 2xl:block" />
             <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
                 {/* Header */}
                 <div className="text-center space-y-4">

@@ -9,9 +9,9 @@ type PetAvatarProps = {
 };
 
 const sizeClasses = {
-    sm: "w-32 h-32 md:w-40 md:h-40",
-    md: "w-40 h-40 md:w-52 md:h-52",
-    lg: "w-52 h-52 md:w-64 md:h-64",
+    sm: "w-48 h-48 md:w-60 md:h-60",
+    md: "w-60 h-60 md:w-80 md:h-80",
+    lg: "w-80 h-80 md:w-96 md:h-96",
 };
 
 const positionClasses = {
