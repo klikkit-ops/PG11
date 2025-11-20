@@ -14,10 +14,10 @@ const sizeClasses = {
 };
 
 const positionClasses = {
-    "top-left": "top-4 left-4 md:top-8 md:left-8",
-    "top-right": "top-4 right-4 md:top-8 md:right-8",
-    "bottom-left": "bottom-4 left-4 md:bottom-8 md:left-8",
-    "bottom-right": "bottom-4 right-4 md:bottom-8 md:right-8",
+    "top-left": "top-16 left-8 md:top-20 md:left-16 lg:left-24",
+    "top-right": "top-16 right-8 md:top-20 md:right-16 lg:right-24",
+    "bottom-left": "bottom-16 left-8 md:bottom-20 md:left-16 lg:left-24",
+    "bottom-right": "bottom-16 right-8 md:bottom-20 md:right-16 lg:right-24",
 };
 
 export function PetAvatar({

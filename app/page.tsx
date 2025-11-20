@@ -5,7 +5,6 @@ import HeroSection from "@/components/homepage/HeroSection"
 import { MagicHero } from "@/components/magic/MagicHero"
 import { MagicBento } from "@/components/magic/MagicBento"
 import { MagicCTA } from "@/components/magic/MagicCTA"
-import { PetAvatar } from "@/components/ui/pet-avatar"
 import { Rocket, Wand2, Sparkles, Share2 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -64,11 +63,7 @@ export default async function Index({
     }
 
     return (
-        <div className="flex min-h-screen flex-col relative">
-            {/* Decorative pet avatars */}
-            <PetAvatar petId={1} size="lg" position="bottom-right" className="hidden lg:block" />
-            <PetAvatar petId={4} size="md" position="bottom-left" className="hidden md:block" />
-
+        <div className="flex min-h-screen flex-col">
             {/* Keep the original hero for existing content structure */}
             <div className="flex-1">
                 {/* New playful hero inspired by Magic UI; uses daisyUI tokens */}
