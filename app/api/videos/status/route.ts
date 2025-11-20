@@ -67,8 +67,9 @@ export async function GET(request: Request) {
           // Check status with RunComfy API
           const statusResponse = await checkVideoStatus(runcomfyRequestId);
           
-          // Update database if status changed
-          if (statusResponse.status !== video.status || statusResponse.videoUrl) {
+          // Update database if status changed OR if we have a new video URL
+          // This ensures we update even if status is already "succeeded" but video_url is missing
+          if (statusResponse.status !== video.status || statusResponse.videoUrl || (statusResponse.status === 'succeeded' && !video.video_url)) {
             const serviceSupabase = createClient<Database>(
               supabaseUrl!,
               supabaseServiceRoleKey!,
