@@ -10,6 +10,7 @@ import Link from "next/link";
 import { getDanceStyleById } from "@/lib/dance-styles";
 import VideoPlayer from "@/components/VideoPlayer";
 import { VideoStatusPolling } from "./client";
+import { AnimatedPaws } from "@/components/AnimatedPaws";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +92,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
             <CardDescription>{getStatusText(video.status)}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden">
+            <div className="relative w-full aspect-video bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 rounded-lg overflow-hidden">
               {video.video_url && video.status === "succeeded" ? (
                 <video
                   src={video.video_url}
@@ -107,13 +108,21 @@ export default async function VideoDetailPage({ params }: PageProps) {
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    {getStatusIcon(video.status)}
-                  </div>
+                  {(video.status === "processing" || video.status === "queued") && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm">
+                      <AnimatedPaws />
+                      <p className="mt-4 text-sm font-medium text-foreground/80">
+                        {video.status === "queued" ? "Queued..." : "Processing..."}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  {getStatusIcon(video.status)}
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                  <AnimatedPaws />
+                  <p className="mt-4 text-sm font-medium text-foreground/80">
+                    {video.status === "queued" ? "Queued..." : "Processing..."}
+                  </p>
                 </div>
               )}
             </div>

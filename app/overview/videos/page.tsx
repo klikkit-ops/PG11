@@ -9,6 +9,7 @@ import { Video, Plus, Download, Clock, CheckCircle, XCircle, Loader2 } from "luc
 import { DeleteVideoButton } from "@/components/DeleteVideoButton";
 import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
+import { AnimatedPaws } from "@/components/AnimatedPaws";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Ensure no caching
@@ -132,7 +133,7 @@ export default async function VideosPage() {
             const danceStyle = getDanceStyleById(video.dance_style);
             return (
               <div key={video.id} className="glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300">
-                <div className="relative w-full aspect-video bg-black/5">
+                <div className="relative w-full aspect-video bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10">
                   {video.video_url && video.status === "succeeded" ? (
                     <video
                       src={video.video_url}
@@ -140,15 +141,22 @@ export default async function VideosPage() {
                       controls
                     />
                   ) : video.input_image_url ? (
-                    <Image
-                      src={video.input_image_url}
-                      alt="Pet"
-                      fill
-                      className="object-cover"
-                    />
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={video.input_image_url}
+                        alt="Pet"
+                        fill
+                        className="object-cover"
+                      />
+                      {(video.status === "processing" || video.status === "queued") && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm">
+                          <AnimatedPaws />
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Video className="w-12 h-12 text-muted-foreground/30" />
+                      <AnimatedPaws />
                     </div>
                   )}
 
