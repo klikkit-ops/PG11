@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
 import { checkVideoStatus as checkVideoStatusRunComfy } from "@/lib/runcomfy";
-import { checkVideoStatus as checkVideoStatusRunway } from "@/lib/runway";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
@@ -58,24 +57,14 @@ export async function GET(request: Request) {
       );
     }
 
-    // If video is still processing, check with the appropriate API based on provider
+    // If video is still processing, check with RunComfy API
     if (video.status === "processing" || video.status === "queued") {
       try {
-        const requestId = video.runway_video_id; // This field stores request_id for both providers
-        const provider = video.provider || 'runcomfy'; // Default to runcomfy for backwards compatibility
+        const requestId = video.runway_video_id; // This field stores the RunComfy request_id
         
         if (requestId) {
-          let statusResponse;
-          
-          // Check status with the appropriate API based on provider
-          if (provider === 'runway') {
-            console.log(`[Video Status] Checking Runway API for video ${videoId}, request_id: ${requestId}`);
-            statusResponse = await checkVideoStatusRunway(requestId);
-          } else {
-            // Default to RunComfy
-            console.log(`[Video Status] Checking RunComfy API for video ${videoId}, request_id: ${requestId}`);
-            statusResponse = await checkVideoStatusRunComfy(requestId);
-          }
+          console.log(`[Video Status] Checking RunComfy API for video ${videoId}, request_id: ${requestId}`);
+          const statusResponse = await checkVideoStatusRunComfy(requestId);
           
           // Update database if status changed
           if (statusResponse.status !== video.status || statusResponse.videoUrl) {
@@ -113,7 +102,7 @@ export async function GET(request: Request) {
           console.warn(`Video ${videoId} is processing but no request_id found.`);
         }
       } catch (error) {
-        console.error(`Error checking video status with ${video.provider || 'RunComfy'} API:`, error);
+        console.error(`Error checking video status with RunComfy API:`, error);
         // Continue and return current database status
         // Don't fail the request if API check fails
       }
