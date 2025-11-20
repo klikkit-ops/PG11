@@ -26,9 +26,13 @@ export const metadata = {
   title: "PetGroove - Pet Dancing Videos with AI",
   description: "Turn your pet into a dancing superstar! Create amazing dancing videos of your pet using AI in minutes.",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
     shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    apple: "/favicon-32x32.png",
   },
 };
 
