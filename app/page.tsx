@@ -79,6 +79,7 @@ export default async function Index({
           secondaryCtaLabel="See examples"
           secondaryCtaHref="/overview"
           videoSrc="https://xecbk3lwjslycmxl.public.blob.vercel-storage.com/Cat_s_Photorealistic_Macarena_Dance.mov"
+          beforeImageSrc="/cat-before.png"
         />
 
         {/* Feature / How it works section */}
