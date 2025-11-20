@@ -2,6 +2,7 @@
 
 # Script to process audio files for dance styles
 # This script extracts 10 seconds from each audio file and saves them to public/audio/
+# Compatible with both bash and zsh
 
 # Requirements:
 # - ffmpeg must be installed: brew install ffmpeg (on macOS) or apt-get install ffmpeg (on Linux)
@@ -31,39 +32,69 @@ if ! command -v ffmpeg &> /dev/null; then
     exit 1
 fi
 
-# Mapping of input filenames to output filenames
-# You'll need to rename the downloaded files to match these, or update the mapping
-declare -A FILE_MAPPING=(
-    ["macarena"]="macarena-10s.mp3"
-    ["salsa"]="salsa-10s.mp3"
-    ["hip-hop"]="hip-hop-10s.mp3"
-    ["hip_hop"]="hip-hop-10s.mp3"
-    ["robot"]="robot-10s.mp3"
-    ["ballet"]="ballet-10s.mp3"
-    ["disco"]="disco-10s.mp3"
-    ["breakdance"]="breakdance-10s.mp3"
-    ["waltz"]="waltz-10s.mp3"
-    ["tango"]="tango-10s.mp3"
-)
+# Function to get output filename based on input filename
+get_output_filename() {
+    local input_name="$1"
+    local lower_name=$(echo "$input_name" | tr '[:upper:]' '[:lower:]')
+    
+    # Remove common prefixes/suffixes and normalize
+    lower_name=$(echo "$lower_name" | sed 's/^[^a-z]*//;s/[^a-z]*$//')
+    
+    # Map various filename patterns to output names
+    case "$lower_name" in
+        *macarena*)
+            echo "macarena-10s.mp3"
+            ;;
+        *salsa*)
+            echo "salsa-10s.mp3"
+            ;;
+        *hip*hop*|*hiphop*)
+            echo "hip-hop-10s.mp3"
+            ;;
+        *robot*)
+            echo "robot-10s.mp3"
+            ;;
+        *ballet*)
+            echo "ballet-10s.mp3"
+            ;;
+        *disco*)
+            echo "disco-10s.mp3"
+            ;;
+        *breakdance*|*break*dance*)
+            echo "breakdance-10s.mp3"
+            ;;
+        *waltz*)
+            echo "waltz-10s.mp3"
+            ;;
+        *tango*)
+            echo "tango-10s.mp3"
+            ;;
+        *)
+            # Default: use input name with -10s suffix
+            echo "${lower_name}-10s.mp3"
+            ;;
+    esac
+}
 
 # Process each audio file
-for input_file in "$INPUT_DIR"/*.{mp3,wav,m4a,ogg}; do
+# Handle both bash and zsh glob patterns
+shopt -s nullglob 2>/dev/null || setopt nullglob 2>/dev/null
+
+processed_count=0
+
+for input_file in "$INPUT_DIR"/*.mp3 "$INPUT_DIR"/*.wav "$INPUT_DIR"/*.m4a "$INPUT_DIR"/*.ogg; do
+    # Skip if no files match the pattern
+    [ -e "$input_file" ] || continue
+    
     if [ ! -f "$input_file" ]; then
         continue
     fi
 
     filename=$(basename "$input_file")
     name_without_ext="${filename%.*}"
-
-    # Try to find matching output name
-    output_name="${FILE_MAPPING[$name_without_ext]}"
     
-    if [ -z "$output_name" ]; then
-        # If no mapping found, try to infer from filename
-        output_name="${name_without_ext}-10s.mp3"
-        echo "Warning: No mapping found for $filename, using $output_name"
-    fi
-
+    # Get output filename based on input filename
+    output_name=$(get_output_filename "$name_without_ext")
     output_path="$OUTPUT_DIR/$output_name"
 
     echo "Processing: $filename -> $output_name"
@@ -74,16 +105,19 @@ for input_file in "$INPUT_DIR"/*.{mp3,wav,m4a,ogg}; do
     # -acodec libmp3lame: use MP3 codec
     # -ar 44100: sample rate 44100 Hz
     # -b:a 192k: bitrate 192 kbps
-    ffmpeg -i "$input_file" -t 10 -ss 0 -acodec libmp3lame -ar 44100 -b:a 192k -y "$output_path" 2>/dev/null
-
-    if [ $? -eq 0 ]; then
+    # -y: overwrite output file if it exists
+    if ffmpeg -i "$input_file" -t 10 -ss 0 -acodec libmp3lame -ar 44100 -b:a 192k -y "$output_path" 2>/dev/null; then
         echo "✓ Successfully created: $output_path"
+        processed_count=$((processed_count + 1))
     else
         echo "✗ Failed to process: $filename"
     fi
 done
 
 echo ""
-echo "Done! Audio files are in $OUTPUT_DIR/"
-echo "Make sure these files are accessible at /audio/<filename> in your Next.js app"
-
+if [ $processed_count -gt 0 ]; then
+    echo "Done! Processed $processed_count audio file(s) in $OUTPUT_DIR/"
+    echo "Files are accessible at /audio/<filename> in your Next.js app"
+else
+    echo "No audio files were processed. Check that files exist in $INPUT_DIR/"
+fi
