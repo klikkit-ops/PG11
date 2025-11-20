@@ -28,8 +28,8 @@ export default async function LoginPage({
   return (
     <div className="w-full h-full min-h-[calc(100vh-73px)] flex items-center justify-center p-8 relative">
       {/* Decorative pet avatars in side margins */}
-      <PetAvatar petId={2} size="lg" style={{ position: 'absolute', top: '8rem', left: '2rem' }} className="hidden xl:block" />
-      <PetAvatar petId={5} size="md" style={{ position: 'absolute', bottom: '4rem', right: '2rem' }} className="hidden lg:block" />
+      <PetAvatar petId={2} size="lg" style={{ position: 'absolute', top: '15%', right: '50%', marginRight: '600px' }} className="hidden 2xl:block" />
+      <PetAvatar petId={5} size="md" style={{ position: 'absolute', bottom: '10%', left: '50%', marginLeft: '600px' }} className="hidden 2xl:block" />
       <div className="glass-panel w-full max-w-6xl grid md:grid-cols-2 gap-0 overflow-hidden p-0">
         <div className="flex flex-col items-center justify-center p-12">
           <Login host={host} searchParams={searchParams} />

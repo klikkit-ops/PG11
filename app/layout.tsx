@@ -8,6 +8,9 @@ import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/components/homepage/theme-provider"
 import { validateConfig } from "@/lib/config";
 
+import { PetAvatar } from "@/components/ui/pet-avatar";
+import { MobileAvatars } from "@/components/ui/mobile-avatars";
+
 const fredoka = Fredoka({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] });
 
 // Validate configuration at app initialization
@@ -22,6 +25,11 @@ export const viewport = {
 export const metadata = {
   title: "PetGroove - Pet Dancing Videos with AI",
   description: "Turn your pet into a dancing superstar! Create amazing dancing videos of your pet using AI in minutes.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -49,6 +57,9 @@ export default function RootLayout({
           antialiased
         `}
       >
+        {/* Mobile-only decorative avatars - conditionally rendered */}
+        <MobileAvatars />
+
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AnnouncementBar />
           {/* Remove the section wrapper as it's interfering with sticky positioning */}
