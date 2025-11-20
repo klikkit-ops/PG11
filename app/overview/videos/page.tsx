@@ -11,6 +11,7 @@ import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0; // Ensure no caching
 
 export default async function VideosPage() {
   const supabase = createServerComponentClient<Database>({ cookies });
@@ -31,8 +32,21 @@ export default async function VideosPage() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching videos:", error);
+    console.error("[VideosPage] Error fetching videos:", error);
+    console.error("[VideosPage] Error details:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      userId: user.id,
+    });
   }
+
+  // Log for debugging
+  console.log(`[VideosPage] Fetched ${videos?.length || 0} videos for user ${user.id}`);
+  
+  // If there's an error, still show the page but log it
+  // Videos will be null/undefined if there's an error, which will show "No videos yet"
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -84,6 +98,15 @@ export default async function VideosPage() {
           </Button>
         </Link>
       </div>
+
+      {error && (
+        <div className="glass-panel p-6 mb-6 border-destructive/20 bg-destructive/5">
+          <p className="text-destructive font-semibold mb-2">Error loading videos</p>
+          <p className="text-sm text-muted-foreground">
+            {error.message || "An error occurred while fetching your videos. Please try refreshing the page."}
+          </p>
+        </div>
+      )}
 
       {!videos || videos.length === 0 ? (
         <div className="glass-panel p-12 text-center">
