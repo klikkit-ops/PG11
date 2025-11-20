@@ -56,7 +56,7 @@ export async function generateVideo(request: RunComfyVideoRequest): Promise<RunC
           prompt: promptText,
           img_url: request.imageUrl, // Note: API uses 'img_url' not 'image'
           duration: request.duration || 5,
-          resolution: request.resolution || '720P', // Note: uppercase values
+          resolution: request.resolution || '480P', // Note: uppercase values
           negative_prompt: request.negativePrompt || '',
           audio_url: request.audioUrl, // Optional
         }),

@@ -150,7 +150,7 @@ export async function POST(request: Request) {
         imageUrl,
         prompt,
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
-        resolution: '720P', // 480P, 720P, or 1080P
+        resolution: '480P', // 480P, 720P, or 1080P
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background',
       });
       
@@ -278,7 +278,7 @@ async function generateVideoAsync(
         imageUrl,
         prompt,
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
-        resolution: '720P', // 480P, 720P, or 1080P
+        resolution: '480P', // 480P, 720P, or 1080P
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background',
       });
       console.log(`[Video Generation] RunComfy API call SUCCESS for video ${videoId}`);
