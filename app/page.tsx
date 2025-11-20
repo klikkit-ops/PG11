@@ -83,35 +83,37 @@ export default async function Index({
                     beforeImageSrc="/cat-before.png"
                 />
 
-                {/* Feature / How it works section */}
+                {/* Decorative avatar aligned with hero subtitle */}
                 <div className="relative">
-                    <PetAvatar petId={1} size="md" style={{ bottom: '4rem', left: '50%', transform: 'translateX(-50%)' }} className="hidden 2xl:block" />
-                    <MagicBento
-                        heading="How it works"
-                        items={[
-                            {
-                                title: "1. Upload a photo",
-                                description: "Use any clear photo of your pet or a headshot.",
-                                icon: Wand2,
-                            },
-                            {
-                                title: "2. Pick a dance style",
-                                description: "Choose from a variety of fun, trending styles.",
-                                icon: Sparkles,
-                            },
-                            {
-                                title: "3. Generate your video",
-                                description: "Our AI creates a high-quality, shareable clip.",
-                                icon: Rocket,
-                            },
-                            {
-                                title: "4. Download & share",
-                                description: "Save your video and show it off anywhere.",
-                                icon: Share2,
-                            },
-                        ]}
-                    />
+                    <PetAvatar petId={1} size="md" style={{ position: 'fixed', top: '16rem', left: '1rem' }} className="hidden 2xl:block" />
                 </div>
+
+                {/* Feature / How it works section */}
+                <MagicBento
+                    heading="How it works"
+                    items={[
+                        {
+                            title: "1. Upload a photo",
+                            description: "Use any clear photo of your pet or a headshot.",
+                            icon: Wand2,
+                        },
+                        {
+                            title: "2. Pick a dance style",
+                            description: "Choose from a variety of fun, trending styles.",
+                            icon: Sparkles,
+                        },
+                        {
+                            title: "3. Generate your video",
+                            description: "Our AI creates a high-quality, shareable clip.",
+                            icon: Rocket,
+                        },
+                        {
+                            title: "4. Download & share",
+                            description: "Save your video and show it off anywhere.",
+                            icon: Share2,
+                        },
+                    ]}
+                />
 
                 {/* SEO Content Section */}
                 <section className="container mx-auto px-4 py-16 md:py-24 relative">
