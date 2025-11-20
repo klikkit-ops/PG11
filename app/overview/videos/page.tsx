@@ -6,6 +6,7 @@ import { PetAvatar } from "@/components/ui/pet-avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Video, Plus, Download, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { DeleteVideoButton } from "@/components/DeleteVideoButton";
 import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
 
@@ -174,6 +175,7 @@ export default async function VideosPage() {
                         </Button>
                       </a>
                     )}
+                    <DeleteVideoButton videoId={video.id} />
                   </div>
                 </div>
               </div>
