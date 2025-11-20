@@ -149,12 +149,15 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
       mappedStatus: status,
     });
 
-    // If completed, fetch the result to get the video URL
+    // Fetch result to get the actual status and video URL
+    // The result endpoint has the definitive status (it may differ from status endpoint)
     let videoUrl: string | undefined;
     let error: string | undefined;
+    let finalStatus = status; // Start with status from status endpoint
 
-    if (status === 'succeeded') {
-      console.log('[RunComfy] Status is succeeded, fetching result...');
+    // Always fetch result if status suggests completion (succeeded or failed)
+    if (status === 'succeeded' || status === 'failed' || runcomfyStatus === 'completed') {
+      console.log('[RunComfy] Fetching result to get final status and video URL...');
       const resultResponse = await fetch(
         `${RUNCOMFY_BASE_URL}/v1/requests/${requestId}/result`,
         {
@@ -172,39 +175,70 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
         // Log full result response for debugging
         console.log('[RunComfy] Result response:', {
           requestId,
+          resultStatus: resultData.status,
           hasOutput: !!resultData.output,
           outputKeys: resultData.output ? Object.keys(resultData.output) : [],
+          hasError: !!resultData.error,
           fullResult: JSON.stringify(resultData, null, 2),
         });
         
-        // Extract video URL from output.video or output.videos array
-        if (resultData.output?.video) {
-          videoUrl = resultData.output.video;
-          console.log('[RunComfy] Found video URL in output.video:', videoUrl?.substring(0, 100));
-        } else if (resultData.output?.videos && resultData.output.videos.length > 0) {
-          videoUrl = resultData.output.videos[0];
-          console.log('[RunComfy] Found video URL in output.videos[0]:', videoUrl?.substring(0, 100));
-        } else {
-          // Check for other possible video URL locations
-          if (resultData.video) {
-            videoUrl = resultData.video;
-            console.log('[RunComfy] Found video URL in resultData.video:', videoUrl?.substring(0, 100));
-          } else if (resultData.video_url) {
-            videoUrl = resultData.video_url;
-            console.log('[RunComfy] Found video URL in resultData.video_url:', videoUrl?.substring(0, 100));
+        // Check the result's status field - it's the definitive status
+        const resultStatus = resultData.status || resultData.state;
+        if (resultStatus) {
+          const mappedResultStatus = mapRunComfyStatus(resultStatus);
+          console.log('[RunComfy] Result status:', {
+            rawResultStatus: resultStatus,
+            mappedResultStatus: mappedResultStatus,
+          });
+          finalStatus = mappedResultStatus;
+        }
+        
+        // Extract error if present
+        if (resultData.error) {
+          error = resultData.error;
+          console.log('[RunComfy] Error from result:', error);
+        } else if (resultData.failure_reason) {
+          error = resultData.failure_reason;
+          console.log('[RunComfy] Failure reason from result:', error);
+        }
+        
+        // Only extract video URL if status is succeeded
+        if (finalStatus === 'succeeded') {
+          // Extract video URL from output.video or output.videos array
+          if (resultData.output?.video) {
+            videoUrl = resultData.output.video;
+            console.log('[RunComfy] Found video URL in output.video:', videoUrl?.substring(0, 100));
+          } else if (resultData.output?.videos && resultData.output.videos.length > 0) {
+            videoUrl = resultData.output.videos[0];
+            console.log('[RunComfy] Found video URL in output.videos[0]:', videoUrl?.substring(0, 100));
           } else {
-            console.warn('[RunComfy] No video URL found in result. Available keys:', Object.keys(resultData));
+            // Check for other possible video URL locations
+            if (resultData.video) {
+              videoUrl = resultData.video;
+              console.log('[RunComfy] Found video URL in resultData.video:', videoUrl?.substring(0, 100));
+            } else if (resultData.video_url) {
+              videoUrl = resultData.video_url;
+              console.log('[RunComfy] Found video URL in resultData.video_url:', videoUrl?.substring(0, 100));
+            } else {
+              console.warn('[RunComfy] No video URL found in result. Available keys:', Object.keys(resultData));
+            }
           }
+        } else {
+          console.log('[RunComfy] Status is not succeeded, skipping video URL extraction');
         }
         
         // Log video metadata for debugging
         console.log('[RunComfy] Video result metadata:', {
+          finalStatus,
           hasVideo: !!videoUrl,
           outputKeys: resultData.output ? Object.keys(resultData.output) : [],
           videoUrl: videoUrl?.substring(0, 100),
+          error,
         });
       } else {
-        console.error('[RunComfy] Result endpoint returned error:', resultResponse.status, await resultResponse.text());
+        const errorText = await resultResponse.text();
+        console.error('[RunComfy] Result endpoint returned error:', resultResponse.status, errorText);
+        // If result endpoint fails, keep the status from status endpoint
       }
     } else if (status === 'failed') {
       // Try to get error from result endpoint
@@ -230,7 +264,7 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
 
     return {
       id: requestId,
-      status,
+      status: finalStatus, // Use finalStatus which may have been updated from result endpoint
       videoUrl,
       error,
     };
