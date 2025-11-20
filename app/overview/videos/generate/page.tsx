@@ -278,7 +278,10 @@ export default function GenerateVideoPage() {
                                 ) : (
                                     <>
                                         <Film className="mr-2 h-5 w-5" />
-                                        Generate Video (1 Credit)
+                                        <span className="flex items-center gap-2">
+                                            <span>Generate Video</span>
+                                            <span className="text-sm opacity-90">• 1 Credit</span>
+                                        </span>
                                     </>
                                 )}
                             </Button>

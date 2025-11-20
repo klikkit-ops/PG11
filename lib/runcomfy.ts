@@ -154,43 +154,18 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
 
       if (resultResponse.ok) {
         const resultData = await resultResponse.json();
-        
-        // Log full response structure for debugging
-        console.log('[RunComfy] Full result response:', JSON.stringify(resultData, null, 2));
-        
-        // Extract video URL from various possible locations in the response
+        // Extract video URL from output.video or output.videos array
         if (resultData.output?.video) {
           videoUrl = resultData.output.video;
         } else if (resultData.output?.videos && resultData.output.videos.length > 0) {
           videoUrl = resultData.output.videos[0];
-        } else if (resultData.video) {
-          videoUrl = resultData.video;
-        } else if (resultData.video_url) {
-          videoUrl = resultData.video_url;
-        } else if (resultData.url) {
-          videoUrl = resultData.url;
-        } else if (Array.isArray(resultData.output) && resultData.output.length > 0) {
-          // If output is an array, try to find a video URL
-          const videoItem = resultData.output.find((item: any) => 
-            typeof item === 'string' && (item.includes('.mp4') || item.includes('video') || item.startsWith('http'))
-          );
-          if (videoItem) {
-            videoUrl = videoItem;
-          }
         }
-        
-        // Log video metadata for debugging
+        // Log video metadata for debugging aspect ratio
         console.log('[RunComfy] Video result metadata:', {
           hasVideo: !!videoUrl,
           outputKeys: resultData.output ? Object.keys(resultData.output) : [],
-          resultDataKeys: Object.keys(resultData),
           videoUrl: videoUrl?.substring(0, 100),
-          outputType: typeof resultData.output,
-          isOutputArray: Array.isArray(resultData.output),
         });
-      } else {
-        const errorText = await resultResponse.text();
-        console.error('[RunComfy] Result endpoint error:', resultResponse.status, errorText);
       }
     } else if (status === 'failed') {
       // Try to get error from result endpoint

@@ -203,17 +203,16 @@ export default async function VideoDetailPage({ params }: PageProps) {
         </Card>
       </div>
 
-      {/* Auto-refresh if processing or succeeded but missing video URL */}
-      {(video.status === "processing" || video.status === "queued" || (video.status === "succeeded" && !video.video_url)) ? (
+      {/* Auto-refresh if processing */}
+      {video.status === "processing" || video.status === "queued" ? (
         <>
-          <VideoStatusPolling videoId={video.id} initialStatus={video.status} initialHasVideoUrl={!!video.video_url} />
+          <VideoStatusPolling videoId={video.id} initialStatus={video.status} />
           <div className="mt-6">
             <Card>
               <CardContent className="pt-6">
                 <p className="text-sm text-muted-foreground text-center">
-                  {video.status === "succeeded" && !video.video_url
-                    ? "Retrieving video URL..."
-                    : "This page will automatically refresh when your video is ready. Video generation typically takes 2-5 minutes."}
+                  This page will automatically refresh when your video is ready.
+                  Video generation typically takes 2-5 minutes.
                 </p>
               </CardContent>
             </Card>
