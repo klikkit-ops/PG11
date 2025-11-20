@@ -11,19 +11,18 @@ type ClientSideCreditsProps = {
   creditsRow: creditsRow | null;
 };
 
+import Link from "next/link";
+import { Coins } from "lucide-react";
+
 export default function ClientSideCredits({
   creditsRow,
 }: ClientSideCreditsProps) {
-
-  if (!creditsRow) return (
-    <p>Credits: 0</p>
-  )
 
   const supabase = createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
   );
-  const [credits, setCredits] = useState<creditsRow>(creditsRow);
+  const [credits, setCredits] = useState<creditsRow | null>(creditsRow);
 
   useEffect(() => {
     const channel = supabase
@@ -40,11 +39,16 @@ export default function ClientSideCredits({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, credits, setCredits]);
+  }, [supabase, setCredits]);
 
-  if (!credits) return null;
+  const creditCount = credits?.credits ?? 0;
 
   return (
-    <p>Credits: {credits.credits}</p>
+    <Link href="/get-credits">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-sm font-medium transition-colors border border-primary/20 cursor-pointer">
+        <Coins className="w-4 h-4 text-primary" />
+        <span>Credits: {creditCount}</span>
+      </div>
+    </Link>
   );
 }

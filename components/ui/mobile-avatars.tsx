@@ -6,8 +6,8 @@ import { PetAvatar } from "@/components/ui/pet-avatar";
 export function MobileAvatars() {
     const pathname = usePathname();
 
-    // Don't show on landing page
-    if (pathname === "/") {
+    // Don't show on landing page or video pages
+    if (pathname === "/" || pathname?.startsWith("/overview/videos")) {
         return null;
     }
 
