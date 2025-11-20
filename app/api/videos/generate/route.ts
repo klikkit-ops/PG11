@@ -383,7 +383,7 @@ async function generateVideoAsync(
         console.log(`[Video Generation Async] Using audio for dance style ${danceStyle}: ${audioUrl}`);
       }
 
-      videoResponse = await generateVideo({
+      videoResponse = await generateVideoRunComfy({
         imageUrl,
         prompt,
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
