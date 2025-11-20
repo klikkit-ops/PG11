@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Video, Plus, Download, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
+import { PetAvatar } from "@/components/PetAvatar";
 
 export const dynamic = "force-dynamic";
 
@@ -63,24 +64,18 @@ export default async function VideosPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative">
-        {/* Decorative Avatar */}
-        <div className="absolute -top-16 -right-8 w-24 md:w-32 rotate-12 pointer-events-none z-10 hidden md:block opacity-90">
-          <img src="/avatars/dog-bow.png" alt="Cute Dog" className="w-full h-auto drop-shadow-xl" />
-        </div>
-
+    <div className="max-w-6xl mx-auto px-4 py-12 space-y-8 relative">
+      <PetAvatar index={4} className="absolute -top-6 -right-12 hidden xl:block" size={160} animate />
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mb-2">
-            My Videos
-          </h1>
-          <p className="text-muted-foreground">
-            Manage and download your generated dance videos
+          <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Your Pet Videos</h1>
+          <p className="text-muted-foreground text-lg">
+            View and manage your pet's dancing videos
           </p>
         </div>
         <Link href="/overview/videos/generate">
-          <Button variant="gradient" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <Plus className="w-4 h-4 mr-2" />
+          <Button size="lg" variant="gradient" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Plus className="mr-2 h-5 w-5" />
             Create New Video
           </Button>
         </Link>
@@ -186,4 +181,3 @@ export default async function VideosPage() {
     </div>
   );
 }
-

@@ -6,6 +6,7 @@ import { MagicHero } from "@/components/magic/MagicHero"
 import { MagicBento } from "@/components/magic/MagicBento"
 import { MagicCTA } from "@/components/magic/MagicCTA"
 import { Rocket, Wand2, Sparkles, Share2 } from "lucide-react"
+import { PetAvatar } from "@/components/PetAvatar"
 
 export const dynamic = "force-dynamic"
 
@@ -63,7 +64,11 @@ export default async function Index({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col relative overflow-x-hidden">
+      {/* Avatars */}
+      <PetAvatar index={1} className="top-32 left-10 hidden xl:block" size={180} animate />
+      <PetAvatar index={2} className="bottom-20 right-10 hidden xl:block" size={200} flip animate />
+
       {/* Keep the original hero for existing content structure */}
       <div className="flex-1">
         {/* New playful hero inspired by Magic UI; uses daisyUI tokens */}
@@ -83,45 +88,34 @@ export default async function Index({
         />
 
         {/* Feature / How it works section */}
-        <div className="relative">
-          <MagicBento
-            heading="How it works"
-            items={[
-              {
-                title: "1. Upload a photo",
-                description: "Use any clear photo of your pet or a headshot.",
-                icon: Wand2,
-              },
-              {
-                title: "2. Pick a dance style",
-                description: "Choose from a variety of fun, trending styles.",
-                icon: Sparkles,
-              },
-              {
-                title: "3. Generate your video",
-                description: "Our AI creates a high-quality, shareable clip.",
-                icon: Rocket,
-              },
-              {
-                title: "4. Download & share",
-                description: "Save your video and show it off anywhere.",
-                icon: Share2,
-              },
-            ]}
-          />
-          {/* Decorative Avatar 1 */}
-          <div className="absolute -bottom-12 -left-4 md:-left-12 w-32 md:w-48 rotate-12 pointer-events-none z-10 hidden md:block">
-            <img src="/avatars/dog-red-jacket.png" alt="Dancing Dog" className="w-full h-auto drop-shadow-2xl" />
-          </div>
-        </div>
+        <MagicBento
+          heading="How it works"
+          items={[
+            {
+              title: "1. Upload a photo",
+              description: "Use any clear photo of your pet or a headshot.",
+              icon: Wand2,
+            },
+            {
+              title: "2. Pick a dance style",
+              description: "Choose from a variety of fun, trending styles.",
+              icon: Sparkles,
+            },
+            {
+              title: "3. Generate your video",
+              description: "Our AI creates a high-quality, shareable clip.",
+              icon: Rocket,
+            },
+            {
+              title: "4. Download & share",
+              description: "Save your video and show it off anywhere.",
+              icon: Share2,
+            },
+          ]}
+        />
 
         {/* SEO Content Section */}
-        <section className="container mx-auto px-4 py-16 md:py-24 relative">
-          {/* Decorative Avatar 2 */}
-          <div className="absolute top-0 right-0 md:-right-8 w-24 md:w-40 -rotate-12 pointer-events-none z-10 opacity-90">
-            <img src="/avatars/cat-hat.png" alt="Party Cat" className="w-full h-auto drop-shadow-xl" />
-          </div>
-
+        <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-500">

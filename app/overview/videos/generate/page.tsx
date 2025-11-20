@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PetAvatar } from "@/components/PetAvatar";
 
 export default function GenerateVideoPage() {
   const router = useRouter();
@@ -322,43 +323,37 @@ export default function GenerateVideoPage() {
         </div>
 
         {/* Tips Section */}
-        <div className="glass-panel p-8 relative overflow-hidden">
-          {/* Decorative Avatar */}
-          <div className="absolute -bottom-4 -right-4 w-24 md:w-32 -rotate-12 pointer-events-none opacity-80 hidden md:block">
-            <img src="/avatars/dog-tutu.png" alt="Ballerina Dog" className="w-full h-auto drop-shadow-lg" />
-          </div>
-
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <span className="text-3xl">💡</span> Tips for Best Results
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6 relative z-10">
-            {[
-              {
-                title: "Clear Full Body",
-                desc: "Ensure your pet's full body is visible and not cut off.",
-                emoji: "📸"
-              },
-              {
-                title: "Good Lighting",
-                desc: "Bright, natural lighting works best. Avoid dark shadows.",
-                emoji: "☀️"
-              },
-              {
-                title: "Simple Background",
-                desc: "A plain or uncluttered background helps the AI focus.",
-                emoji: "🎨"
-              }
-            ].map((tip, i) => (
-              <div key={i} className="bg-white/40 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
-                <div className="text-3xl mb-2">{tip.emoji}</div>
-                <h3 className="font-bold mb-1">{tip.title}</h3>
-                <p className="text-sm text-muted-foreground">{tip.desc}</p>
+        <div className="glass-panel p-8 relative">
+          <PetAvatar index={5} className="absolute -top-20 -right-10 hidden lg:block" size={150} animate />
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <span className="text-2xl">💡</span>
+            Tips for Best Results
+          </h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="flex gap-3">
+              <span className="text-2xl flex-shrink-0">📸</span>
+              <div>
+                <p className="font-semibold mb-1">Clear Photo</p>
+                <p className="text-sm text-muted-foreground">Use a well-lit, high-quality image of your pet</p>
               </div>
-            ))}
+            </div>
+            <div className="flex gap-3">
+              <span className="text-2xl flex-shrink-0">🎯</span>
+              <div>
+                <p className="font-semibold mb-1">Center Subject</p>
+                <p className="text-sm text-muted-foreground">Make sure your pet is centered in the frame</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <span className="text-2xl flex-shrink-0">✨</span>
+              <div>
+                <p className="font-semibold mb-1">Full Body</p>
+                <p className="text-sm text-muted-foreground">Include your pet's full body for best dance moves</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

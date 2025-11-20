@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PLANS } from "@/lib/billing";
 import { Check, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { PetAvatar } from "@/components/PetAvatar";
 
 type Props = {
   user: User;
@@ -88,13 +89,8 @@ export default function SubscriptionPage({ user }: Props) {
 
   return (
     <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Decorative Avatars */}
-      <div className="absolute top-20 right-4 md:right-10 w-24 md:w-32 rotate-12 pointer-events-none z-0 hidden lg:block opacity-80">
-        <img src="/avatars/cat-hat.png" alt="Party Cat" className="w-full h-auto drop-shadow-xl" />
-      </div>
-      <div className="absolute bottom-20 left-4 md:left-10 w-28 md:w-40 -rotate-12 pointer-events-none z-0 hidden lg:block opacity-80">
-        <img src="/avatars/dog-red-jacket.png" alt="Cool Dog" className="w-full h-auto drop-shadow-xl" />
-      </div>
+      <PetAvatar index={1} className="absolute top-20 right-10 hidden lg:block" size={180} animate />
+      <PetAvatar index={2} className="absolute bottom-20 left-10 hidden lg:block" size={200} flip animate />
 
       <div className="max-w-5xl mx-auto relative z-10">
         {/* Header */}
