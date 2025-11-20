@@ -180,18 +180,18 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
         // Extract video URL from output.video or output.videos array
         if (resultData.output?.video) {
           videoUrl = resultData.output.video;
-          console.log('[RunComfy] Found video URL in output.video:', videoUrl.substring(0, 100));
+          console.log('[RunComfy] Found video URL in output.video:', videoUrl?.substring(0, 100));
         } else if (resultData.output?.videos && resultData.output.videos.length > 0) {
           videoUrl = resultData.output.videos[0];
-          console.log('[RunComfy] Found video URL in output.videos[0]:', videoUrl.substring(0, 100));
+          console.log('[RunComfy] Found video URL in output.videos[0]:', videoUrl?.substring(0, 100));
         } else {
           // Check for other possible video URL locations
           if (resultData.video) {
             videoUrl = resultData.video;
-            console.log('[RunComfy] Found video URL in resultData.video:', videoUrl.substring(0, 100));
+            console.log('[RunComfy] Found video URL in resultData.video:', videoUrl?.substring(0, 100));
           } else if (resultData.video_url) {
             videoUrl = resultData.video_url;
-            console.log('[RunComfy] Found video URL in resultData.video_url:', videoUrl.substring(0, 100));
+            console.log('[RunComfy] Found video URL in resultData.video_url:', videoUrl?.substring(0, 100));
           } else {
             console.warn('[RunComfy] No video URL found in result. Available keys:', Object.keys(resultData));
           }
