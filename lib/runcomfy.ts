@@ -240,26 +240,6 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
         console.error('[RunComfy] Result endpoint returned error:', resultResponse.status, errorText);
         // If result endpoint fails, keep the status from status endpoint
       }
-    } else if (status === 'failed') {
-      // Try to get error from result endpoint
-      try {
-        const resultResponse = await fetch(
-          `${RUNCOMFY_BASE_URL}/v1/requests/${requestId}/result`,
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${RUNCOMFY_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        if (resultResponse.ok) {
-          const resultData = await resultResponse.json();
-          error = resultData.error || resultData.failure_reason || 'Generation failed';
-        }
-      } catch (e) {
-        error = 'Generation failed';
-      }
     }
 
     return {
