@@ -87,10 +87,18 @@ export default function SubscriptionPage({ user }: Props) {
     : 0;
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
+    <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Decorative Avatars */}
+      <div className="absolute top-20 right-4 md:right-10 w-24 md:w-32 rotate-12 pointer-events-none z-0 hidden lg:block opacity-80">
+        <img src="/avatars/cat-hat.png" alt="Party Cat" className="w-full h-auto drop-shadow-xl" />
+      </div>
+      <div className="absolute bottom-20 left-4 md:left-10 w-28 md:w-40 -rotate-12 pointer-events-none z-0 hidden lg:block opacity-80">
+        <img src="/avatars/dog-red-jacket.png" alt="Cool Dog" className="w-full h-auto drop-shadow-xl" />
+      </div>
+
+      <div className="max-w-5xl mx-auto relative z-10">
         {/* Header */}
-        <div className="text-center space-y-4">
+        <div className="text-center mb-16 space-y-4">
           <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
             Choose Your Plan
           </h1>
@@ -105,8 +113,8 @@ export default function SubscriptionPage({ user }: Props) {
             <button
               onClick={() => setSelectedPlan("WEEKLY")}
               className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 ${selectedPlan === "WEEKLY"
-                  ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               Weekly
@@ -114,8 +122,8 @@ export default function SubscriptionPage({ user }: Props) {
             <button
               onClick={() => setSelectedPlan("ANNUAL")}
               className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative ${selectedPlan === "ANNUAL"
-                  ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               Yearly

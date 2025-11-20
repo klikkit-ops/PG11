@@ -83,34 +83,45 @@ export default async function Index({
         />
 
         {/* Feature / How it works section */}
-        <MagicBento
-          heading="How it works"
-          items={[
-            {
-              title: "1. Upload a photo",
-              description: "Use any clear photo of your pet or a headshot.",
-              icon: Wand2,
-            },
-            {
-              title: "2. Pick a dance style",
-              description: "Choose from a variety of fun, trending styles.",
-              icon: Sparkles,
-            },
-            {
-              title: "3. Generate your video",
-              description: "Our AI creates a high-quality, shareable clip.",
-              icon: Rocket,
-            },
-            {
-              title: "4. Download & share",
-              description: "Save your video and show it off anywhere.",
-              icon: Share2,
-            },
-          ]}
-        />
+        <div className="relative">
+          <MagicBento
+            heading="How it works"
+            items={[
+              {
+                title: "1. Upload a photo",
+                description: "Use any clear photo of your pet or a headshot.",
+                icon: Wand2,
+              },
+              {
+                title: "2. Pick a dance style",
+                description: "Choose from a variety of fun, trending styles.",
+                icon: Sparkles,
+              },
+              {
+                title: "3. Generate your video",
+                description: "Our AI creates a high-quality, shareable clip.",
+                icon: Rocket,
+              },
+              {
+                title: "4. Download & share",
+                description: "Save your video and show it off anywhere.",
+                icon: Share2,
+              },
+            ]}
+          />
+          {/* Decorative Avatar 1 */}
+          <div className="absolute -bottom-12 -left-4 md:-left-12 w-32 md:w-48 rotate-12 pointer-events-none z-10 hidden md:block">
+            <img src="/avatars/dog-red-jacket.png" alt="Dancing Dog" className="w-full h-auto drop-shadow-2xl" />
+          </div>
+        </div>
 
         {/* SEO Content Section */}
-        <section className="container mx-auto px-4 py-16 md:py-24">
+        <section className="container mx-auto px-4 py-16 md:py-24 relative">
+          {/* Decorative Avatar 2 */}
+          <div className="absolute top-0 right-0 md:-right-8 w-24 md:w-40 -rotate-12 pointer-events-none z-10 opacity-90">
+            <img src="/avatars/cat-hat.png" alt="Party Cat" className="w-full h-auto drop-shadow-xl" />
+          </div>
+
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-500">
