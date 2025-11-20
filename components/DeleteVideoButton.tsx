@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 interface DeleteVideoButtonProps {
   videoId: string;
@@ -24,6 +24,7 @@ export function DeleteVideoButton({ videoId }: DeleteVideoButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleDelete = async () => {
     setIsDeleting(true);
