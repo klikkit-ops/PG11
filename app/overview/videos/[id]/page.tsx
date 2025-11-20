@@ -93,11 +93,11 @@ export default async function VideoDetailPage({ params }: PageProps) {
             <CardDescription>{getStatusText(video.status)}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative w-full aspect-video bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 rounded-lg overflow-hidden">
+            <div className="relative w-full aspect-[9/16] bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 rounded-lg overflow-hidden">
               {video.video_url && video.status === "succeeded" ? (
                 <video
                   src={video.video_url}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   controls
                   autoPlay
                 />

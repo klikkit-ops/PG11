@@ -134,11 +134,11 @@ export default async function VideosPage() {
             const danceStyle = getDanceStyleById(video.dance_style);
             return (
               <div key={video.id} className="glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300">
-                <div className="relative w-full aspect-video bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10">
+                <div className="relative w-full aspect-[9/16] bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10">
                   {video.video_url && video.status === "succeeded" ? (
                     <video
                       src={video.video_url}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       controls
                     />
                   ) : video.input_image_url ? (
