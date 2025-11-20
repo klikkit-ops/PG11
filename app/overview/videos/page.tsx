@@ -76,7 +76,7 @@ export default async function VideosPage() {
             View and manage your pet's dancing videos
           </p>
         </div>
-        <Link href="/overview/videos/generate">
+        <Link href="/overview/videos/generate" className="mt-4 md:mt-0">
           <Button size="lg" variant="gradient" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
             <Plus className="mr-2 h-5 w-5" />
             Create New Video
