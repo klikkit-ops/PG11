@@ -54,9 +54,6 @@ export default function RootLayout({
           from-purple-100
           via-pink-100
           to-blue-100
-          dark:from-purple-950
-          dark:via-pink-950
-          dark:to-blue-950
           text-foreground
           antialiased
         `}
@@ -64,7 +61,7 @@ export default function RootLayout({
         {/* Mobile-only decorative avatars - conditionally rendered */}
         <MobileAvatars />
 
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light">
           <AnnouncementBar />
           {/* Remove the section wrapper as it's interfering with sticky positioning */}
           <Suspense
