@@ -63,7 +63,7 @@ export function DeleteVideoButton({ videoId }: DeleteVideoButtonProps) {
       <Button
         variant="outline"
         size="icon"
-        className="rounded-full border-destructive/20 hover:bg-destructive/5 hover:text-destructive hover:border-destructive/40"
+        className="rounded-full border-destructive/20 hover:bg-destructive/5 hover:text-destructive hover:border-destructive/40 text-destructive"
         onClick={() => setShowConfirmDialog(true)}
         disabled={isDeleting}
       >
