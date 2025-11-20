@@ -5,6 +5,7 @@ import HeroSection from "@/components/homepage/HeroSection"
 import { MagicHero } from "@/components/magic/MagicHero"
 import { MagicBento } from "@/components/magic/MagicBento"
 import { MagicCTA } from "@/components/magic/MagicCTA"
+import { PetAvatar } from "@/components/ui/pet-avatar"
 import { Rocket, Wand2, Sparkles, Share2 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -83,34 +84,38 @@ export default async function Index({
                 />
 
                 {/* Feature / How it works section */}
-                <MagicBento
-                    heading="How it works"
-                    items={[
-                        {
-                            title: "1. Upload a photo",
-                            description: "Use any clear photo of your pet or a headshot.",
-                            icon: Wand2,
-                        },
-                        {
-                            title: "2. Pick a dance style",
-                            description: "Choose from a variety of fun, trending styles.",
-                            icon: Sparkles,
-                        },
-                        {
-                            title: "3. Generate your video",
-                            description: "Our AI creates a high-quality, shareable clip.",
-                            icon: Rocket,
-                        },
-                        {
-                            title: "4. Download & share",
-                            description: "Save your video and show it off anywhere.",
-                            icon: Share2,
-                        },
-                    ]}
-                />
+                <div className="relative">
+                    <PetAvatar petId={1} size="md" position="top-right" className="hidden 2xl:block" />
+                    <MagicBento
+                        heading="How it works"
+                        items={[
+                            {
+                                title: "1. Upload a photo",
+                                description: "Use any clear photo of your pet or a headshot.",
+                                icon: Wand2,
+                            },
+                            {
+                                title: "2. Pick a dance style",
+                                description: "Choose from a variety of fun, trending styles.",
+                                icon: Sparkles,
+                            },
+                            {
+                                title: "3. Generate your video",
+                                description: "Our AI creates a high-quality, shareable clip.",
+                                icon: Rocket,
+                            },
+                            {
+                                title: "4. Download & share",
+                                description: "Save your video and show it off anywhere.",
+                                icon: Share2,
+                            },
+                        ]}
+                    />
+                </div>
 
                 {/* SEO Content Section */}
-                <section className="container mx-auto px-4 py-16 md:py-24">
+                <section className="container mx-auto px-4 py-16 md:py-24 relative">
+                    <PetAvatar petId={4} size="lg" position="bottom-left" className="hidden 2xl:block" />
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div className="order-2 md:order-1">
                             <div className="relative rounded-3xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-500">
