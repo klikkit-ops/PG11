@@ -133,14 +133,28 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
     const statusData = await statusResponse.json();
     const runcomfyStatus = statusData.status || statusData.state;
     
+    // Log the raw status response for debugging
+    console.log('[RunComfy] Status response:', {
+      requestId,
+      rawStatus: runcomfyStatus,
+      fullResponse: JSON.stringify(statusData, null, 2),
+    });
+    
     // Map RunComfy status to our internal format
     const status = mapRunComfyStatus(runcomfyStatus);
+    
+    console.log('[RunComfy] Mapped status:', {
+      requestId,
+      rawStatus: runcomfyStatus,
+      mappedStatus: status,
+    });
 
     // If completed, fetch the result to get the video URL
     let videoUrl: string | undefined;
     let error: string | undefined;
 
     if (status === 'succeeded') {
+      console.log('[RunComfy] Status is succeeded, fetching result...');
       const resultResponse = await fetch(
         `${RUNCOMFY_BASE_URL}/v1/requests/${requestId}/result`,
         {
@@ -154,18 +168,43 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
 
       if (resultResponse.ok) {
         const resultData = await resultResponse.json();
+        
+        // Log full result response for debugging
+        console.log('[RunComfy] Result response:', {
+          requestId,
+          hasOutput: !!resultData.output,
+          outputKeys: resultData.output ? Object.keys(resultData.output) : [],
+          fullResult: JSON.stringify(resultData, null, 2),
+        });
+        
         // Extract video URL from output.video or output.videos array
         if (resultData.output?.video) {
           videoUrl = resultData.output.video;
+          console.log('[RunComfy] Found video URL in output.video:', videoUrl.substring(0, 100));
         } else if (resultData.output?.videos && resultData.output.videos.length > 0) {
           videoUrl = resultData.output.videos[0];
+          console.log('[RunComfy] Found video URL in output.videos[0]:', videoUrl.substring(0, 100));
+        } else {
+          // Check for other possible video URL locations
+          if (resultData.video) {
+            videoUrl = resultData.video;
+            console.log('[RunComfy] Found video URL in resultData.video:', videoUrl.substring(0, 100));
+          } else if (resultData.video_url) {
+            videoUrl = resultData.video_url;
+            console.log('[RunComfy] Found video URL in resultData.video_url:', videoUrl.substring(0, 100));
+          } else {
+            console.warn('[RunComfy] No video URL found in result. Available keys:', Object.keys(resultData));
+          }
         }
-        // Log video metadata for debugging aspect ratio
+        
+        // Log video metadata for debugging
         console.log('[RunComfy] Video result metadata:', {
           hasVideo: !!videoUrl,
           outputKeys: resultData.output ? Object.keys(resultData.output) : [],
           videoUrl: videoUrl?.substring(0, 100),
         });
+      } else {
+        console.error('[RunComfy] Result endpoint returned error:', resultResponse.status, await resultResponse.text());
       }
     } else if (status === 'failed') {
       // Try to get error from result endpoint
