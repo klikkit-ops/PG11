@@ -160,6 +160,12 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
         } else if (resultData.output?.videos && resultData.output.videos.length > 0) {
           videoUrl = resultData.output.videos[0];
         }
+        // Log video metadata for debugging aspect ratio
+        console.log('[RunComfy] Video result metadata:', {
+          hasVideo: !!videoUrl,
+          outputKeys: resultData.output ? Object.keys(resultData.output) : [],
+          videoUrl: videoUrl?.substring(0, 100),
+        });
       }
     } else if (status === 'failed') {
       // Try to get error from result endpoint
