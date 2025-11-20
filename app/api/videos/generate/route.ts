@@ -270,6 +270,7 @@ async function generateVideoAsync(
   videoId: string,
   imageUrl: string,
   prompt: string,
+  danceStyle: string,
   supabase: ReturnType<typeof createClient<Database, "public">>
 ) {
   console.log(`[Video Generation] Starting generateVideoAsync for video ${videoId}`);
