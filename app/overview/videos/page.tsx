@@ -148,9 +148,12 @@ export default async function VideosPage() {
                       className="relative w-full h-full"
                     >
                       {(video.status === "processing" || video.status === "queued") && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm z-10">
-                          <AnimatedPaws />
-                        </div>
+                        <>
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm z-10" />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                            <AnimatedPaws />
+                          </div>
+                        </>
                       )}
                     </PetImage>
                   ) : (

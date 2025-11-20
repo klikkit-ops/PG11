@@ -108,12 +108,15 @@ export default async function VideoDetailPage({ params }: PageProps) {
                   className="relative w-full h-full"
                 >
                   {(video.status === "processing" || video.status === "queued") && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm z-10">
-                      <AnimatedPaws />
-                      <p className="mt-4 text-sm font-medium text-foreground/80">
-                        {video.status === "queued" ? "Queued..." : "Processing..."}
-                      </p>
-                    </div>
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm z-10" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                        <AnimatedPaws />
+                        <p className="mt-4 text-sm font-medium text-foreground/80">
+                          {video.status === "queued" ? "Queued..." : "Processing..."}
+                        </p>
+                      </div>
+                    </>
                   )}
                 </PetImage>
               ) : (
