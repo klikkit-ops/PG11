@@ -83,15 +83,25 @@ export async function GET(request: Request) {
             
             let finalVideoUrl = statusResponse.videoUrl || video.video_url || null;
             
-            // If video just completed and we have a video URL, add watermark
+            // If video just completed and we have a video URL, try to add watermark
+            // Note: Watermarking requires ffmpeg which may not be available in all environments
+            // If watermarking fails, we'll use the original video
             if (statusResponse.status === 'succeeded' && statusResponse.videoUrl && !video.video_url) {
-              try {
-                console.log(`[Status] Video ${videoId} completed, adding watermark...`);
-                finalVideoUrl = await addWatermarkToVideo(statusResponse.videoUrl, user.id, videoId);
-                console.log(`[Status] Watermark added, new URL: ${finalVideoUrl}`);
-              } catch (watermarkError) {
-                console.error(`[Status] Failed to add watermark, using original video:`, watermarkError);
-                // Continue with original video URL if watermarking fails
+              const watermarkEnabled = process.env.ENABLE_VIDEO_WATERMARK === 'true';
+              
+              if (watermarkEnabled) {
+                try {
+                  console.log(`[Status] Video ${videoId} completed, adding watermark...`);
+                  finalVideoUrl = await addWatermarkToVideo(statusResponse.videoUrl, user.id, videoId);
+                  console.log(`[Status] Watermark added, new URL: ${finalVideoUrl}`);
+                } catch (watermarkError) {
+                  console.error(`[Status] Failed to add watermark, using original video:`, watermarkError);
+                  console.error(`[Status] Watermark error details:`, watermarkError instanceof Error ? watermarkError.message : String(watermarkError));
+                  // Continue with original video URL if watermarking fails
+                  finalVideoUrl = statusResponse.videoUrl;
+                }
+              } else {
+                console.log(`[Status] Video watermarking is disabled (ENABLE_VIDEO_WATERMARK not set to 'true')`);
                 finalVideoUrl = statusResponse.videoUrl;
               }
             }
