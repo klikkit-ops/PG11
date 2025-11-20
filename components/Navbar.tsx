@@ -67,7 +67,7 @@ export default async function Navbar() {
           </nav>
         )}
 
-        <div className="flex items-center gap-6 ml-auto">
+        <div className="flex items-center gap-6">
           <ThemeToggle />
 
           {!user && (
