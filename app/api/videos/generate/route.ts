@@ -189,14 +189,33 @@ export async function POST(request: Request) {
       // CRITICAL: Call RunComfy API to create the task BEFORE returning
       // This ensures the runway_video_id is saved before Vercel kills the function
       console.log(`[Video Generation] Calling RunComfy API to create task for video ${videoId}`);
-      const videoResponse = await generateVideo({
-        imageUrl: processedImageUrl, // Use processed 9:16 image
-        prompt,
-        duration: 10, // Wan 2.5 supports 5 or 10 seconds
-        resolution: '480P', // 480P, 720P, or 1080P
-        negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
-        audioUrl: audioUrl || undefined, // Include audio URL if available
+      console.log(`[Video Generation] API call parameters:`, {
+        imageUrl: processedImageUrl.substring(0, 100) + '...',
+        promptLength: prompt.length,
+        duration: 10,
+        resolution: '480P',
+        hasAudioUrl: !!audioUrl,
+        audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
+      
+      let videoResponse;
+      try {
+        videoResponse = await generateVideo({
+          imageUrl: processedImageUrl, // Use processed 9:16 image
+          prompt,
+          duration: 10, // Wan 2.5 supports 5 or 10 seconds
+          resolution: '480P', // 480P, 720P, or 1080P
+          negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
+          audioUrl: audioUrl || undefined, // Include audio URL if available
+        });
+        console.log(`[Video Generation] RunComfy API call completed successfully`);
+      } catch (apiError) {
+        console.error(`[Video Generation] RunComfy API call failed:`, {
+          error: apiError instanceof Error ? apiError.message : String(apiError),
+          stack: apiError instanceof Error ? apiError.stack : undefined,
+        });
+        throw apiError; // Re-throw to be caught by outer catch
+      }
       
       console.log(`[Video Generation] RunComfy API response for video ${videoId}:`, {
         id: videoResponse.id,
