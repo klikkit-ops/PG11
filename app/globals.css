@@ -1,4 +1,5 @@
 @tailwind base;
+/* Force rebuild */
 @tailwind components;
 @tailwind utilities;
 
