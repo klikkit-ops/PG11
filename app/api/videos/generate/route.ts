@@ -5,6 +5,7 @@ import { Database } from "@/types/supabase";
 import { generateVideo } from "@/lib/runcomfy";
 import { generateDancePrompt } from "@/lib/runway";
 import { createClient } from "@supabase/supabase-js";
+import { processImageTo9x16, uploadProcessedImage, get9x16Dimensions } from "@/lib/imageProcessing";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Allow up to 60 seconds for video generation
@@ -143,11 +144,28 @@ export async function POST(request: Request) {
         throw new Error(`Failed to update video status: ${updateError.message}`);
       }
 
-      // CRITICAL: Call Runway API to create the task BEFORE returning
+      // Process image to 9:16 aspect ratio before sending to API
+      console.log(`[Video Generation] Processing image to 9:16 aspect ratio for video ${videoId}`);
+      const targetDimensions = get9x16Dimensions('480P');
+      let processedImageUrl = imageUrl;
+      
+      try {
+        const processedBuffer = await processImageTo9x16(imageUrl, targetDimensions.height);
+        // Extract filename from original URL
+        const urlParts = imageUrl.split('/');
+        const originalFilename = urlParts[urlParts.length - 1] || 'image.jpg';
+        processedImageUrl = await uploadProcessedImage(processedBuffer, user.id, originalFilename);
+        console.log(`[Video Generation] Image processed to 9:16, new URL: ${processedImageUrl.substring(0, 100)}...`);
+      } catch (processingError) {
+        console.error(`[Video Generation] Failed to process image to 9:16, using original:`, processingError);
+        // Continue with original image if processing fails
+      }
+
+      // CRITICAL: Call RunComfy API to create the task BEFORE returning
       // This ensures the runway_video_id is saved before Vercel kills the function
       console.log(`[Video Generation] Calling RunComfy API to create task for video ${videoId}`);
       const videoResponse = await generateVideo({
-        imageUrl,
+        imageUrl: processedImageUrl, // Use processed 9:16 image
         prompt,
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
         resolution: '480P', // 480P, 720P, or 1080P
