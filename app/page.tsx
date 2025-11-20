@@ -83,9 +83,9 @@ export default async function Index({
                     beforeImageSrc="/cat-before.png"
                 />
 
-                {/* Decorative avatar aligned with hero subtitle */}
+                {/* Decorative avatar in empty space between sections */}
                 <div className="relative">
-                    <PetAvatar petId={1} size="md" style={{ position: 'absolute', top: '-28rem', left: '-12rem' }} className="hidden 2xl:block" />
+                    <PetAvatar petId={1} size="md" style={{ position: 'absolute', top: '-8rem', left: '50%', transform: 'translateX(-50%)' }} className="hidden 2xl:block" />
                 </div>
 
                 {/* Feature / How it works section */}
