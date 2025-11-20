@@ -262,7 +262,7 @@ export async function checkVideoStatus(requestId: string): Promise<RunComfyVideo
 /**
  * Map RunComfy API status to our internal status format
  * 
- * RunComfy statuses: "in_queue", "in_progress", "completed", "cancelled"
+ * RunComfy statuses: "in_queue", "in_progress", "completed", "cancelled", "failed"
  * Our internal statuses: "queued", "processing", "succeeded", "failed"
  */
 function mapRunComfyStatus(runcomfyStatus: string): 'queued' | 'processing' | 'succeeded' | 'failed' {
@@ -270,6 +270,9 @@ function mapRunComfyStatus(runcomfyStatus: string): 'queued' | 'processing' | 's
   
   if (statusLower === 'completed') {
     return 'succeeded';
+  }
+  if (statusLower === 'failed') {
+    return 'failed';
   }
   if (statusLower === 'cancelled') {
     return 'failed'; // Treat cancelled as failed
