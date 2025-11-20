@@ -57,8 +57,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // If video is still processing, check with RunComfy API
-    if (video.status === "processing" || video.status === "queued") {
+    // If video is still processing, or if it's succeeded but missing video_url, check with RunComfy API
+    if (video.status === "processing" || video.status === "queued" || (video.status === "succeeded" && !video.video_url)) {
       try {
         // Get the RunComfy request_id from the database (stored in runway_video_id field)
         const runcomfyRequestId = video.runway_video_id;
