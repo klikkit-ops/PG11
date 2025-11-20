@@ -85,7 +85,7 @@ export default async function Index({
 
                 {/* Feature / How it works section */}
                 <div className="relative">
-                    <PetAvatar petId={1} size="md" position="bottom-left" className="hidden 2xl:block" />
+                    <PetAvatar petId={1} size="md" style={{ bottom: '4rem', left: '50%', transform: 'translateX(-50%)' }} className="hidden 2xl:block" />
                     <MagicBento
                         heading="How it works"
                         items={[
@@ -115,7 +115,7 @@ export default async function Index({
 
                 {/* SEO Content Section */}
                 <section className="container mx-auto px-4 py-16 md:py-24 relative">
-                    <PetAvatar petId={4} size="lg" position="bottom-right" className="hidden 2xl:block" />
+                    <PetAvatar petId={4} size="lg" style={{ bottom: '6rem', right: '2rem' }} className="hidden 2xl:block" />
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div className="order-2 md:order-1">
                             <div className="relative rounded-3xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-500">

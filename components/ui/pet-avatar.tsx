@@ -5,6 +5,7 @@ type PetAvatarProps = {
     size?: "sm" | "md" | "lg";
     position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
     className?: string;
+    style?: React.CSSProperties;
 };
 
 const sizeClasses = {
@@ -25,14 +26,16 @@ export function PetAvatar({
     size = "md",
     position,
     className = "",
+    style,
 }: PetAvatarProps) {
     const baseClasses = position
         ? `absolute ${positionClasses[position]} pointer-events-none select-none`
-        : "pointer-events-none select-none";
+        : "absolute pointer-events-none select-none";
 
     return (
         <div
             className={`${baseClasses} ${sizeClasses[size]} ${className} opacity-90 hover:opacity-100 transition-opacity duration-300 z-10`}
+            style={style}
         >
             <Image
                 src={`/avatars/pet-${petId}.png`}
