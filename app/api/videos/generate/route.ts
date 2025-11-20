@@ -6,6 +6,7 @@ import { generateVideo } from "@/lib/runcomfy";
 import { generateDancePrompt } from "@/lib/runway";
 import { createClient } from "@supabase/supabase-js";
 import { processImageTo9x16, uploadProcessedImage, get9x16Dimensions } from "@/lib/imageProcessing";
+import { getAudioUrlForDanceStyle } from "@/lib/audio-mapping";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Allow up to 60 seconds for video generation
@@ -161,6 +162,14 @@ export async function POST(request: Request) {
         // Continue with original image if processing fails
       }
 
+      // Get audio URL for the selected dance style
+      const audioUrl = getAudioUrlForDanceStyle(danceStyle);
+      if (audioUrl) {
+        console.log(`[Video Generation] Using audio for dance style ${danceStyle}: ${audioUrl}`);
+      } else {
+        console.warn(`[Video Generation] No audio file found for dance style: ${danceStyle}, proceeding without audio`);
+      }
+
       // CRITICAL: Call RunComfy API to create the task BEFORE returning
       // This ensures the runway_video_id is saved before Vercel kills the function
       console.log(`[Video Generation] Calling RunComfy API to create task for video ${videoId}`);
@@ -170,6 +179,7 @@ export async function POST(request: Request) {
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
         resolution: '480P', // 480P, 720P, or 1080P
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
+        audioUrl: audioUrl || undefined, // Include audio URL if available
       });
       
       console.log(`[Video Generation] RunComfy API response for video ${videoId}:`, {
@@ -292,12 +302,19 @@ async function generateVideoAsync(
     
     let videoResponse;
     try {
+      // Get audio URL for the selected dance style
+      const audioUrl = getAudioUrlForDanceStyle(danceStyle);
+      if (audioUrl) {
+        console.log(`[Video Generation Async] Using audio for dance style ${danceStyle}: ${audioUrl}`);
+      }
+
       videoResponse = await generateVideo({
         imageUrl,
         prompt,
         duration: 10, // Wan 2.5 supports 5 or 10 seconds
         resolution: '480P', // 480P, 720P, or 1080P
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
+        audioUrl: audioUrl || undefined, // Include audio URL if available
       });
       console.log(`[Video Generation] RunComfy API call SUCCESS for video ${videoId}`);
     } catch (sdkError) {
