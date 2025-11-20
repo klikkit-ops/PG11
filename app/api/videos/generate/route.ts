@@ -2,7 +2,8 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
-import { generateVideo, generateDancePrompt } from "@/lib/runway";
+import { generateVideo } from "@/lib/runcomfy";
+import { generateDancePrompt } from "@/lib/runway";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
         dance_style: danceStyle,
         prompt: prompt,
         status: "queued",
-        provider: "runway",
+        provider: "runcomfy",
       })
       .select()
       .single();
@@ -123,8 +124,7 @@ export async function POST(request: Request) {
     const videoId = videoRecord.id;
     console.log(`[Video Generation] Starting video generation for video ${videoId}`);
     console.log(`[Video Generation] Environment check:`, {
-      hasRunwayApiKey: !!process.env.RUNWAY_API_KEY,
-      runwayModelId: process.env.RUNWAY_MODEL_ID || 'not set',
+      hasRunComfyApiKey: !!process.env.RUNCOMFY_API_KEY,
     });
     
     try {
@@ -145,14 +145,15 @@ export async function POST(request: Request) {
 
       // CRITICAL: Call Runway API to create the task BEFORE returning
       // This ensures the runway_video_id is saved before Vercel kills the function
-      console.log(`[Video Generation] Calling Runway API to create task for video ${videoId}`);
+      console.log(`[Video Generation] Calling RunComfy API to create task for video ${videoId}`);
       const videoResponse = await generateVideo({
         imageUrl,
         prompt,
-        duration: 8,
+        duration: 10, // Wan 2.5 supports 5 or 10 seconds
+        resolution: '720P', // 480P, 720P, or 1080P
       });
       
-      console.log(`[Video Generation] Runway API response for video ${videoId}:`, {
+      console.log(`[Video Generation] RunComfy API response for video ${videoId}:`, {
         id: videoResponse.id,
         status: videoResponse.status,
         hasVideoUrl: !!videoResponse.videoUrl,
@@ -160,8 +161,8 @@ export async function POST(request: Request) {
       });
 
       if (!videoResponse.id) {
-        console.error(`[Video Generation] CRITICAL: Runway API returned no ID for video ${videoId}!`);
-        throw new Error('Runway API did not return a video ID');
+        console.error(`[Video Generation] CRITICAL: RunComfy API returned no request_id for video ${videoId}!`);
+        throw new Error('RunComfy API did not return a request_id');
       }
 
       // CRITICAL: Save the runway_video_id BEFORE returning the response
@@ -173,7 +174,7 @@ export async function POST(request: Request) {
           status: videoResponse.status,
           video_url: videoResponse.videoUrl || null,
           error_message: videoResponse.error || null,
-          runway_video_id: videoResponse.id, // CRITICAL: Save the Runway video ID
+          runway_video_id: videoResponse.id, // CRITICAL: Save the RunComfy request_id (reusing field name)
           updated_at: new Date().toISOString(),
         })
         .eq("id", videoId)
@@ -184,7 +185,7 @@ export async function POST(request: Request) {
         throw new Error(`Failed to save runway_video_id: ${updateResponseError.message}`);
       }
       
-      console.log(`[Video Generation] Successfully saved runway_video_id for video ${videoId}: ${videoResponse.id}`);
+      console.log(`[Video Generation] Successfully saved RunComfy request_id for video ${videoId}: ${videoResponse.id}`);
       console.log(`[Video Generation] Updated record:`, updateData?.[0] ? {
         id: updateData[0].id,
         status: updateData[0].status,
@@ -199,8 +200,8 @@ export async function POST(request: Request) {
         message: "Video generation started",
       });
     } catch (error) {
-      // If Runway API call fails, update video status to failed
-      console.error(`[Video Generation] Error creating Runway task for video ${videoId}:`, error);
+      // If RunComfy API call fails, update video status to failed
+      console.error(`[Video Generation] Error creating RunComfy task for video ${videoId}:`, error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
       try {
@@ -262,9 +263,9 @@ async function generateVideoAsync(
       throw new Error(`Failed to update video status: ${updateError.message}`);
     }
 
-    // Call Runway API to generate video
-    console.log(`[Video Generation] Calling Runway API for video ${videoId}`);
-    console.log(`[Video Generation] Runway API call parameters:`, {
+    // Call RunComfy API to generate video
+    console.log(`[Video Generation] Calling RunComfy API for video ${videoId}`);
+    console.log(`[Video Generation] RunComfy API call parameters:`, {
       imageUrl: imageUrl.substring(0, 100) + '...',
       promptLength: prompt.length,
       duration: 8,
@@ -275,11 +276,12 @@ async function generateVideoAsync(
       videoResponse = await generateVideo({
         imageUrl,
         prompt,
-        duration: 8, // 8 seconds default
+        duration: 10, // Wan 2.5 supports 5 or 10 seconds
+        resolution: '720P',
       });
-      console.log(`[Video Generation] Runway API call SUCCESS for video ${videoId}`);
+      console.log(`[Video Generation] RunComfy API call SUCCESS for video ${videoId}`);
     } catch (sdkError) {
-      console.error(`[Video Generation] Runway API call FAILED for video ${videoId}:`, {
+      console.error(`[Video Generation] RunComfy API call FAILED for video ${videoId}:`, {
         error: sdkError instanceof Error ? sdkError.message : String(sdkError),
         stack: sdkError instanceof Error ? sdkError.stack : undefined,
         errorType: sdkError?.constructor?.name,
@@ -288,7 +290,7 @@ async function generateVideoAsync(
       throw sdkError; // Re-throw to be caught by outer catch
     }
     
-    console.log(`[Video Generation] Runway API response for video ${videoId}:`, {
+    console.log(`[Video Generation] RunComfy API response for video ${videoId}:`, {
       id: videoResponse.id,
       status: videoResponse.status,
       hasVideoUrl: !!videoResponse.videoUrl,
@@ -296,13 +298,13 @@ async function generateVideoAsync(
     });
     
     if (!videoResponse.id) {
-      console.error(`[Video Generation] CRITICAL: Runway API returned no ID for video ${videoId}!`);
+      console.error(`[Video Generation] CRITICAL: RunComfy API returned no request_id for video ${videoId}!`);
       console.error(`[Video Generation] Full response:`, JSON.stringify(videoResponse, null, 2));
-      throw new Error('Runway API did not return a video ID');
+      throw new Error('RunComfy API did not return a request_id');
     }
 
-    // Update video record with result, including Runway video ID
-    console.log(`[Video Generation] Updating video ${videoId} with Runway response`);
+    // Update video record with result, including RunComfy request_id
+    console.log(`[Video Generation] Updating video ${videoId} with RunComfy response`);
     console.log(`[Video Generation] Update payload:`, {
       status: videoResponse.status,
       hasVideoUrl: !!videoResponse.videoUrl,
@@ -316,7 +318,7 @@ async function generateVideoAsync(
         status: videoResponse.status,
         video_url: videoResponse.videoUrl || null,
         error_message: videoResponse.error || null,
-        runway_video_id: videoResponse.id || null, // CRITICAL: This must be saved!
+        runway_video_id: videoResponse.id || null, // CRITICAL: Save RunComfy request_id (reusing field name)
         updated_at: new Date().toISOString(),
       })
       .eq("id", videoId)
@@ -333,7 +335,7 @@ async function generateVideoAsync(
       throw new Error(`Failed to update video record: ${updateResponseError.message}`);
     }
     
-    console.log(`[Video Generation] Successfully updated video ${videoId} with runway_video_id: ${videoResponse.id}`);
+    console.log(`[Video Generation] Successfully updated video ${videoId} with RunComfy request_id: ${videoResponse.id}`);
     console.log(`[Video Generation] Updated record:`, updateData?.[0] ? {
       id: updateData[0].id,
       status: updateData[0].status,
@@ -344,7 +346,7 @@ async function generateVideoAsync(
     if (videoResponse.status === "processing" || videoResponse.status === "queued") {
       console.log(
         `[Video Generation] Video ${videoId} is ${videoResponse.status}. ` +
-        `Runway video ID: ${videoResponse.id}. ` +
+        `RunComfy request_id: ${videoResponse.id}. ` +
         `Status will be checked via polling.`
       );
     } else if (videoResponse.status === "succeeded") {

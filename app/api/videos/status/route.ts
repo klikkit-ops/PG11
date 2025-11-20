@@ -2,7 +2,7 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
-import { checkVideoStatus } from "@/lib/runway";
+import { checkVideoStatus } from "@/lib/runcomfy";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
@@ -57,15 +57,15 @@ export async function GET(request: Request) {
       );
     }
 
-    // If video is still processing, check with Runway API
+    // If video is still processing, check with RunComfy API
     if (video.status === "processing" || video.status === "queued") {
       try {
-        // Get the Runway video ID from the database
-        const runwayVideoId = video.runway_video_id;
+        // Get the RunComfy request_id from the database (stored in runway_video_id field)
+        const runcomfyRequestId = video.runway_video_id;
         
-        if (runwayVideoId) {
-          // Check status with Runway API
-          const statusResponse = await checkVideoStatus(runwayVideoId);
+        if (runcomfyRequestId) {
+          // Check status with RunComfy API
+          const statusResponse = await checkVideoStatus(runcomfyRequestId);
           
           // Update database if status changed
           if (statusResponse.status !== video.status || statusResponse.videoUrl) {
@@ -100,12 +100,12 @@ export async function GET(request: Request) {
             }
           }
         } else {
-          console.warn(`Video ${videoId} is processing but no runway_video_id found.`);
+          console.warn(`Video ${videoId} is processing but no runcomfy_request_id found.`);
         }
       } catch (error) {
-        console.error("Error checking video status with Runway API:", error);
+        console.error("Error checking video status with RunComfy API:", error);
         // Continue and return current database status
-        // Don't fail the request if Runway API check fails
+        // Don't fail the request if RunComfy API check fails
       }
     }
 

@@ -359,7 +359,8 @@ Return ONLY the prompt text, no explanations or additional text. Keep it under 9
       return getFallbackPrompt();
     }
 
-    // Runway API has a maximum of 1000 characters for promptText
+    // Note: Runway API has a maximum of 1000 characters, but RunComfy supports 2000
+    // This function is used by both, so we'll use the more restrictive limit
     // Truncate if necessary, but try to preserve the most important parts
     const MAX_PROMPT_LENGTH = 1000;
     if (generatedPrompt.length > MAX_PROMPT_LENGTH) {
