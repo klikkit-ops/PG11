@@ -85,7 +85,7 @@ export default async function Index({
 
                 {/* Decorative avatar aligned with hero subtitle */}
                 <div className="relative">
-                    <PetAvatar petId={1} size="md" style={{ position: 'fixed', top: '16rem', left: '1rem' }} className="hidden 2xl:block" />
+                    <PetAvatar petId={1} size="md" style={{ position: 'absolute', top: '-28rem', left: '-12rem' }} className="hidden 2xl:block" />
                 </div>
 
                 {/* Feature / How it works section */}
