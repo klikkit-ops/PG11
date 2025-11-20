@@ -117,7 +117,7 @@ export default async function Index({
 
                 {/* SEO Content Section */}
                 <section className="container mx-auto px-4 py-16 md:py-24 relative">
-                    <PetAvatar petId={4} size="lg" style={{ position: 'fixed', top: '50%', right: '1rem', transform: 'translateY(-50%)' }} className="hidden 2xl:block" />
+                    <PetAvatar petId={4} size="lg" style={{ position: 'absolute', top: '50%', right: '-8rem', transform: 'translateY(-50%)' }} className="hidden 2xl:block" />
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div className="order-2 md:order-1">
                             <div className="relative rounded-3xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-500">
