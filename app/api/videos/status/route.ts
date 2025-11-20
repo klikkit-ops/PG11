@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
 import { checkVideoStatus } from "@/lib/runcomfy";
 import { createClient } from "@supabase/supabase-js";
+import { addWatermarkToVideo } from "@/lib/videoWatermark";
 
 export const dynamic = "force-dynamic";
 
@@ -80,11 +81,26 @@ export async function GET(request: Request) {
               }
             );
             
+            let finalVideoUrl = statusResponse.videoUrl || video.video_url || null;
+            
+            // If video just completed and we have a video URL, add watermark
+            if (statusResponse.status === 'succeeded' && statusResponse.videoUrl && !video.video_url) {
+              try {
+                console.log(`[Status] Video ${videoId} completed, adding watermark...`);
+                finalVideoUrl = await addWatermarkToVideo(statusResponse.videoUrl, user.id, videoId);
+                console.log(`[Status] Watermark added, new URL: ${finalVideoUrl}`);
+              } catch (watermarkError) {
+                console.error(`[Status] Failed to add watermark, using original video:`, watermarkError);
+                // Continue with original video URL if watermarking fails
+                finalVideoUrl = statusResponse.videoUrl;
+              }
+            }
+            
             await serviceSupabase
               .from("videos")
               .update({
                 status: statusResponse.status,
-                video_url: statusResponse.videoUrl || video.video_url || null,
+                video_url: finalVideoUrl,
                 error_message: statusResponse.error || video.error_message || null,
                 updated_at: new Date().toISOString(),
               })
@@ -92,9 +108,7 @@ export async function GET(request: Request) {
             
             // Update local video object for response
             video.status = statusResponse.status;
-            if (statusResponse.videoUrl) {
-              video.video_url = statusResponse.videoUrl;
-            }
+            video.video_url = finalVideoUrl;
             if (statusResponse.error) {
               video.error_message = statusResponse.error;
             }
