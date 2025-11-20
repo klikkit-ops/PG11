@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     }
 
     // CRITICAL FIX: Vercel serverless functions terminate when the response is sent
-    // We MUST create the Runway task and save the runway_video_id BEFORE returning
+    // We MUST create the RunComfy task and save the request_id BEFORE returning
     // Otherwise, the background async operation will be killed and never complete
     
     const videoId = videoRecord.id;
@@ -186,8 +186,8 @@ export async function POST(request: Request) {
         console.log(`[Video Generation] Proceeding without audio for dance style: ${danceStyle}`);
       }
 
-      // CRITICAL: Call RunComfy API first, with Runway as fallback
-      // This ensures the runway_video_id is saved before Vercel kills the function
+      // CRITICAL: Call RunComfy API
+      // This ensures the request_id is saved before Vercel kills the function
       console.log(`[Video Generation] ===== STARTING VIDEO GENERATION FOR ${videoId} =====`);
       console.log(`[Video Generation] Attempting RunComfy API first for video ${videoId}`);
       console.log(`[Video Generation] Environment check:`, {
@@ -310,7 +310,7 @@ export async function POST(request: Request) {
 
 /**
  * Generate video asynchronously
- * This function handles the actual video generation with Runway API
+ * This function handles the actual video generation with RunComfy API
  */
 async function generateVideoAsync(
   videoId: string,
@@ -409,7 +409,7 @@ async function generateVideoAsync(
       .select();
       
     if (updateResponseError) {
-      console.error(`[Video Generation] FAILED to update video with Runway response:`, updateResponseError);
+      console.error(`[Video Generation] FAILED to update video with RunComfy response:`, updateResponseError);
       console.error(`[Video Generation] Update error details:`, {
         code: updateResponseError.code,
         message: updateResponseError.message,
