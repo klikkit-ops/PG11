@@ -78,7 +78,7 @@ export default async function Index({
           ctaHref="/login"
           secondaryCtaLabel="See examples"
           secondaryCtaHref="/overview"
-          imageSrc="/cartoon-dancing-animals.png"
+          videoSrc="https://xecbk3lwjslycmxl.public.blob.vercel-storage.com/Cat_s_Photorealistic_Macarena_Dance.mov"
         />
 
         {/* Feature / How it works section */}
