@@ -206,7 +206,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
       {/* Auto-refresh if processing or succeeded but missing video URL */}
       {(video.status === "processing" || video.status === "queued" || (video.status === "succeeded" && !video.video_url)) ? (
         <>
-          <VideoStatusPolling videoId={video.id} initialStatus={video.status} />
+          <VideoStatusPolling videoId={video.id} initialStatus={video.status} initialHasVideoUrl={!!video.video_url} />
           <div className="mt-6">
             <Card>
               <CardContent className="pt-6">

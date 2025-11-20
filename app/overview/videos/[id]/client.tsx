@@ -13,12 +13,13 @@ interface VideoStatus {
 interface VideoStatusPollingProps {
   videoId: string;
   initialStatus: string;
+  initialHasVideoUrl?: boolean;
 }
 
-export function VideoStatusPolling({ videoId, initialStatus }: VideoStatusPollingProps) {
+export function VideoStatusPolling({ videoId, initialStatus, initialHasVideoUrl = false }: VideoStatusPollingProps) {
   const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
-  const [hasVideoUrl, setHasVideoUrl] = useState(false);
+  const [hasVideoUrl, setHasVideoUrl] = useState(initialHasVideoUrl);
 
   useEffect(() => {
     // Poll if video is still processing, queued, or succeeded but missing video URL
