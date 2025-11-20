@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
 import { checkVideoStatus } from "@/lib/runcomfy";
 import { createClient } from "@supabase/supabase-js";
-import { addWatermarkToVideo } from "@/lib/videoWatermark";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +90,8 @@ export async function GET(request: Request) {
               
               if (watermarkEnabled) {
                 try {
+                  // Dynamic import to avoid loading watermark module if not needed
+                  const { addWatermarkToVideo } = await import('@/lib/videoWatermark');
                   console.log(`[Status] Video ${videoId} completed, adding watermark...`);
                   finalVideoUrl = await addWatermarkToVideo(statusResponse.videoUrl, user.id, videoId);
                   console.log(`[Status] Watermark added, new URL: ${finalVideoUrl}`);
