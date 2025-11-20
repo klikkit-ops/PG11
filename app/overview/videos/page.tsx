@@ -10,6 +10,7 @@ import { DeleteVideoButton } from "@/components/DeleteVideoButton";
 import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
 import { AnimatedPaws } from "@/components/AnimatedPaws";
+import { PetImage } from "@/components/PetImage";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Ensure no caching
@@ -141,19 +142,17 @@ export default async function VideosPage() {
                       controls
                     />
                   ) : video.input_image_url ? (
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={video.input_image_url}
-                        alt="Pet"
-                        fill
-                        className="object-cover"
-                      />
+                    <PetImage
+                      src={video.input_image_url}
+                      alt="Pet"
+                      className="relative w-full h-full"
+                    >
                       {(video.status === "processing" || video.status === "queued") && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm z-10">
                           <AnimatedPaws />
                         </div>
                       )}
-                    </div>
+                    </PetImage>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <AnimatedPaws />

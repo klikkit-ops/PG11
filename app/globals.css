@@ -99,3 +99,20 @@
 .sentence-case:first-letter {
   text-transform: uppercase;
 }
+
+/* Hide broken image icons */
+img {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+img[src=""],
+img:not([src]) {
+  opacity: 0;
+}
+
+/* Hide broken image placeholder in Next.js Image component */
+img[alt]:not([src]),
+img[src=""],
+img[src*="data:image"]:not([src*="data:image/svg"]):not([src*="data:image/png"]):not([src*="data:image/jpeg"]):not([src*="data:image/jpg"]):not([src*="data:image/gif"]):not([src*="data:image/webp"]) {
+  opacity: 0;
+}

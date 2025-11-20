@@ -11,6 +11,7 @@ import { getDanceStyleById } from "@/lib/dance-styles";
 import VideoPlayer from "@/components/VideoPlayer";
 import { VideoStatusPolling } from "./client";
 import { AnimatedPaws } from "@/components/AnimatedPaws";
+import { PetImage } from "@/components/PetImage";
 
 export const dynamic = "force-dynamic";
 
@@ -101,22 +102,20 @@ export default async function VideoDetailPage({ params }: PageProps) {
                   autoPlay
                 />
               ) : video.input_image_url ? (
-                <div className="relative w-full h-full">
-                  <Image
-                    src={video.input_image_url}
-                    alt="Pet"
-                    fill
-                    className="object-cover"
-                  />
+                <PetImage
+                  src={video.input_image_url}
+                  alt="Pet"
+                  className="relative w-full h-full"
+                >
                   {(video.status === "processing" || video.status === "queued") && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-sm z-10">
                       <AnimatedPaws />
                       <p className="mt-4 text-sm font-medium text-foreground/80">
                         {video.status === "queued" ? "Queued..." : "Processing..."}
                       </p>
                     </div>
                   )}
-                </div>
+                </PetImage>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center">
                   <AnimatedPaws />
