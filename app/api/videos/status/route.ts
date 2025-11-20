@@ -63,13 +63,35 @@ export async function GET(request: Request) {
         // Get the RunComfy request_id from the database (stored in runway_video_id field)
         const runcomfyRequestId = video.runway_video_id;
         
+        console.log(`[Status] Checking RunComfy for video ${videoId}:`, {
+          currentStatus: video.status,
+          hasVideoUrl: !!video.video_url,
+          runcomfyRequestId: runcomfyRequestId,
+        });
+        
         if (runcomfyRequestId) {
           // Check status with RunComfy API
           const statusResponse = await checkVideoStatus(runcomfyRequestId);
           
+          console.log(`[Status] RunComfy status response for video ${videoId}:`, {
+            status: statusResponse.status,
+            hasVideoUrl: !!statusResponse.videoUrl,
+            videoUrl: statusResponse.videoUrl?.substring(0, 100),
+            error: statusResponse.error,
+          });
+          
           // Update database if status changed OR if we have a new video URL
           // This ensures we update even if status is already "succeeded" but video_url is missing
-          if (statusResponse.status !== video.status || statusResponse.videoUrl || (statusResponse.status === 'succeeded' && !video.video_url)) {
+          const shouldUpdate = statusResponse.status !== video.status || statusResponse.videoUrl || (statusResponse.status === 'succeeded' && !video.video_url);
+          
+          console.log(`[Status] Should update video ${videoId}?`, {
+            shouldUpdate,
+            statusChanged: statusResponse.status !== video.status,
+            hasNewVideoUrl: !!statusResponse.videoUrl,
+            isSucceededWithoutUrl: statusResponse.status === 'succeeded' && !video.video_url,
+          });
+          
+          if (shouldUpdate) {
             const serviceSupabase = createClient<Database>(
               supabaseUrl!,
               supabaseServiceRoleKey!,
