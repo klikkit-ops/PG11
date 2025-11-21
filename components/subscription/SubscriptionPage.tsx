@@ -216,52 +216,101 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                 What's Included
                             </h3>
                             <div className="space-y-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <Check className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-lg mb-1">Unlimited Video Generations</h4>
-                                        <p className="text-sm text-foreground">
-                                            {selectedPlan === "TRIAL" 
-                                                ? "Try PetGroove risk-free! Get 100 coins for $0.49."
-                                                : `Create as many dancing videos as your coins allow. ${selectedPlan === "WEEKLY" ? "Coins renew weekly." : "All coins provided upfront."}`}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <Check className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-lg mb-1">All Dance Styles</h4>
-                                        <p className="text-sm text-foreground/80">
-                                            Access to all 10+ dance styles including Macarena, Hip Hop, Ballet, and more.
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <Check className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-lg mb-1">HD Quality Videos</h4>
-                                        <p className="text-sm text-foreground/80">
-                                            All videos are generated in high definition, perfect for sharing on social media.
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <Check className="h-5 w-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-lg mb-1">Cancel Anytime</h4>
-                                        <p className="text-sm text-foreground/80">
-                                            No long-term commitment. Cancel your subscription at any time.
-                                        </p>
-                                    </div>
-                                </div>
+                                {selectedPlan === "TRIAL" ? (
+                                    <>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">Try PetGroove Risk-Free</h4>
+                                                <p className="text-sm text-foreground">
+                                                    Get 100 coins to create your first dancing video. No commitment required.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">All Dance Styles</h4>
+                                                <p className="text-sm text-foreground/80">
+                                                    Access to all 10+ dance styles including Macarena, Hip Hop, Ballet, and more.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">Instant Access</h4>
+                                                <p className="text-sm text-foreground/80">
+                                                    Start creating videos immediately after subscribing. No waiting period.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">Download Anytime</h4>
+                                                <p className="text-sm text-foreground/80">
+                                                    Download and share your videos whenever you want, forever.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">Unlimited Video Generations</h4>
+                                                <p className="text-sm text-foreground">
+                                                    Create as many dancing videos as your coins allow. {selectedPlan === "WEEKLY" ? "Coins renew weekly." : "All coins provided upfront."}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">All Dance Styles</h4>
+                                                <p className="text-sm text-foreground/80">
+                                                    Access to all 10+ dance styles including Macarena, Hip Hop, Ballet, and more.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">HD Quality Videos</h4>
+                                                <p className="text-sm text-foreground/80">
+                                                    All videos are generated in high definition, perfect for sharing on social media.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <Check className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-lg mb-1">Cancel Anytime</h4>
+                                                <p className="text-sm text-foreground/80">
+                                                    No long-term commitment. Cancel your subscription at any time.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
