@@ -193,7 +193,11 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
         setIsLoading(false);
       }
     });
-  });
+
+    return () => {
+      // Cleanup if needed
+    };
+  }, [stripe, selectedCountry, planType, isTrial, plan, toast, router]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
