@@ -1,6 +1,7 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { Database } from "@/types/supabase";
 import CustomCheckout from "@/components/subscription/CustomCheckout";
 import { PLANS } from "@/lib/billing";
 
@@ -11,7 +12,7 @@ export default async function CheckoutPage({
 }: {
   searchParams: { plan?: string };
 }) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = createServerComponentClient<Database>({ cookies });
   const {
     data: { user },
   } = await supabase.auth.getUser();
