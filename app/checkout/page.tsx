@@ -153,7 +153,7 @@ export default async function CheckoutPage({
 
           {/* Right Column - Payment Form */}
           <div className="space-y-6">
-            <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-sm border border-white/60 shadow-xl">
+            <div>
               <h2 className="text-2xl font-semibold mb-6 text-foreground">Pay with card</h2>
               <CustomCheckout planType={planType} userEmail={user.email || undefined} />
             </div>
