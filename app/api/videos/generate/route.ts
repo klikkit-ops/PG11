@@ -218,7 +218,7 @@ export async function POST(request: Request) {
         imageUrl: processedImageUrl, // Use processed 9:16 image
         prompt,
         resolution: '480p', // 480p, 720p, or 1080p
-        numFrames: 24, // Default number of frames for ~10 seconds at ~2.4 fps
+        numFrames: 12, // ~5 seconds at ~2.4 fps
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
         audioUrl: audioUrl || undefined, // Include audio URL if available
       });
@@ -353,17 +353,17 @@ async function generateVideoAsync(
         console.log(`[Video Generation Async] Using audio for dance style ${danceStyle}: ${audioUrl}`);
       }
 
-      videoResponse = await generateVideoRunComfy({
+      videoResponse = await generateVideoReplicate({
         imageUrl,
         prompt,
-        duration: 10, // Wan 2.5 supports 5 or 10 seconds
-        resolution: '480P', // 480P, 720P, or 1080P
+        resolution: '480p', // 480p, 720p, or 1080p
+        numFrames: 12, // ~5 seconds at ~2.4 fps
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
         audioUrl: audioUrl || undefined, // Include audio URL if available
       });
-      console.log(`[Video Generation] RunComfy API call SUCCESS for video ${videoId}`);
+      console.log(`[Video Generation] Replicate API call SUCCESS for video ${videoId}`);
     } catch (sdkError) {
-      console.error(`[Video Generation] RunComfy API call FAILED for video ${videoId}:`, {
+      console.error(`[Video Generation] Replicate API call FAILED for video ${videoId}:`, {
         error: sdkError instanceof Error ? sdkError.message : String(sdkError),
         stack: sdkError instanceof Error ? sdkError.stack : undefined,
         errorType: sdkError?.constructor?.name,
@@ -372,7 +372,7 @@ async function generateVideoAsync(
       throw sdkError; // Re-throw to be caught by outer catch
     }
     
-    console.log(`[Video Generation] RunComfy API response for video ${videoId}:`, {
+    console.log(`[Video Generation] Replicate API response for video ${videoId}:`, {
       id: videoResponse.id,
       status: videoResponse.status,
       hasVideoUrl: !!videoResponse.videoUrl,
