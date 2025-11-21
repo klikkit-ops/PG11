@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
 import {
   Elements,
   CardElement,
+  PaymentRequestButtonElement,
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
@@ -34,6 +35,8 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<CountryInfo>(getDefaultCountry());
+  const [paymentRequest, setPaymentRequest] = useState<any>(null);
+  const [canUseApplePay, setCanUseApplePay] = useState(false);
 
   const plan = PLANS[planType];
   const isTrial = planType === "TRIAL";
@@ -44,8 +47,153 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
     if (country) {
       setSelectedCountry(country);
       onCountryChange?.(country);
+      // Update payment request when country changes
+      if (paymentRequest) {
+        const pricing = getPricingForCurrency(country.currency);
+        if (pricing) {
+          const amount = isTrial ? pricing.trial : (planType === "WEEKLY" ? pricing.weekly : pricing.annual);
+          paymentRequest.update({
+            total: {
+              label: plan.label,
+              amount: Math.round(amount * 100), // Convert to cents
+            },
+            currency: country.currency.toLowerCase(),
+          });
+        }
+      }
     }
   };
+
+  // Initialize Payment Request (Apple Pay / Google Pay)
+  useEffect(() => {
+    if (!stripe) return;
+
+    const pricing = getPricingForCurrency(selectedCountry.currency);
+    if (!pricing) return;
+
+    const amount = isTrial ? pricing.trial : (planType === "WEEKLY" ? pricing.weekly : pricing.annual);
+
+    const pr = stripe.paymentRequest({
+      country: selectedCountry.code,
+      currency: selectedCountry.currency.toLowerCase(),
+      total: {
+        label: plan.label,
+        amount: Math.round(amount * 100), // Convert to cents
+      },
+      requestPayerName: true,
+      requestPayerEmail: true,
+    });
+
+    // Check if payment method is available
+    pr.canMakePayment().then((result) => {
+      if (result) {
+        setCanUseApplePay(true);
+        setPaymentRequest(pr);
+      }
+    });
+
+    // Handle payment method
+    pr.on("paymentmethod", async (ev) => {
+      setIsLoading(true);
+
+      try {
+        const currencyCode = selectedCountry.currency;
+        const stripePriceId = getStripePriceId(planType);
+
+        if (!stripePriceId) {
+          ev.complete("fail");
+          toast({
+            title: "Error",
+            description: "Pricing not configured. Please contact support.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // For trial, create payment intent first
+        if (isTrial) {
+          const paymentIntentResponse = await fetch("/api/checkout/create-payment-intent", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ planType, currency: currencyCode }),
+          });
+
+          const paymentIntentData = await paymentIntentResponse.json();
+
+          if (!paymentIntentResponse.ok) {
+            ev.complete("fail");
+            throw new Error(paymentIntentData.error || "Failed to create payment intent");
+          }
+
+          // Confirm payment
+          const { error: confirmError } = await stripe.confirmCardPayment(
+            paymentIntentData.clientSecret,
+            {
+              payment_method: ev.paymentMethod.id,
+            },
+            { handleActions: false }
+          );
+
+          if (confirmError) {
+            ev.complete("fail");
+            toast({
+              title: "Payment Failed",
+              description: confirmError.message,
+              variant: "destructive",
+            });
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Create subscription
+        const subscriptionResponse = await fetch("/api/checkout/create-subscription", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            planType,
+            paymentMethodId: ev.paymentMethod.id,
+            currency: currencyCode,
+            stripePriceId: stripePriceId,
+          }),
+        });
+
+        const subscriptionData = await subscriptionResponse.json();
+
+        if (!subscriptionResponse.ok) {
+          ev.complete("fail");
+          throw new Error(subscriptionData.error || "Failed to create subscription");
+        }
+
+        ev.complete("success");
+
+        toast({
+          title: "Success!",
+          description: "Your subscription has been activated.",
+        });
+
+        router.push("/overview/videos?success=true");
+      } catch (error) {
+        console.error("Error processing payment:", error);
+        ev.complete("fail");
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Failed to process payment. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    });
+  });
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -213,6 +361,31 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
           className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50/50 text-gray-600 cursor-not-allowed transition-all"
         />
       </div>
+
+      {/* Apple Pay / Google Pay Button */}
+      {canUseApplePay && paymentRequest && (
+        <div className="pb-2">
+          <PaymentRequestButtonElement
+            options={{
+              paymentRequest,
+              style: {
+                paymentRequestButton: {
+                  theme: "dark",
+                  height: "48px",
+                },
+              },
+            }}
+          />
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-muted-foreground">Or</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Card Information */}
       <div>
