@@ -348,7 +348,7 @@ export default function GenerateVideoPage() {
                             ) : (
                                 <div className="text-center space-y-4 p-8">
                                     <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                                        <Film className="w-10 h-10 text-primary" />
+                                        <Upload className="w-10 h-10 text-primary" />
                                     </div>
                                     <div>
                                         <p className="font-semibold text-lg">Your video will appear here</p>
