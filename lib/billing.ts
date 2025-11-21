@@ -5,10 +5,10 @@
 
 export const PLANS = {
   TRIAL: {
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL || '', // Trial price ($0.49/week) - must be created in Stripe
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL || '', // Trial price - must be created in Stripe with multi-currency support
     creditsPerPeriod: 100, // 100 coins for 1 generation during trial
     label: "3-Day Trial",
-    price: 0.49,
+    price: 0.59, // USD price - actual price varies by currency (USD: $0.59, GBP: £0.49, EUR: €0.49, CAD: $0.75, AUD: $0.75)
     billingPeriod: "trial" as const,
     trialDays: 3,
     renewsTo: "WEEKLY" as const,
@@ -18,14 +18,14 @@ export const PLANS = {
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '',
     creditsPerPeriod: 1000, // 1,000 coins per week (10 videos at 100 coins each)
     label: "Weekly",
-    price: 7.99,
+    price: 7.99, // USD price - actual price varies by currency (USD: $7.99, GBP: £5.99, EUR: €7.49, CAD: $10.99, AUD: $12.99)
     billingPeriod: "week" as const,
   },
   ANNUAL: {
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL || '',
     creditsPerPeriod: 7000, // 7,000 coins per year (provided upfront)
     label: "Annual",
-    price: 69.99,
+    price: 69.99, // USD price - actual price varies by currency (USD: $69.99, GBP: £59.99, EUR: €64.99, CAD: $94.99, AUD: $109.99)
     billingPeriod: "year" as const,
   },
 } as const;

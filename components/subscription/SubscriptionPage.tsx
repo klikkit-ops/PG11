@@ -92,7 +92,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                             >
                                 Trial
                                 <span className="ml-2 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30">
-                                    $0.49
+                                    $0.59
                                 </span>
                             </button>
                         )}
