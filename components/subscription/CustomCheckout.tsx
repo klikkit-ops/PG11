@@ -158,10 +158,10 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* Email Field */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-2">
+        <label htmlFor="email" className="block text-sm font-medium mb-2 text-foreground/90">
           Email
         </label>
         <input
@@ -169,42 +169,42 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
           id="email"
           value={userEmail || ""}
           disabled
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+          className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50/50 text-gray-600 cursor-not-allowed transition-all"
         />
       </div>
 
       {/* Card Information */}
       <div>
-        <label className="block text-sm font-medium mb-2">
+        <label className="block text-sm font-medium mb-2 text-foreground/90">
           Card information
         </label>
-        <div className="p-4 border border-gray-300 rounded-lg bg-white">
+        <div className="p-4 border border-gray-200 rounded-lg bg-white/50 backdrop-blur-sm transition-all hover:border-primary/30 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
           <CardElement options={cardElementOptions} />
         </div>
       </div>
 
       {/* Name on Card */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium mb-2">
+        <label htmlFor="name" className="block text-sm font-medium mb-2 text-foreground/90">
           Name on card
         </label>
         <input
           type="text"
           id="name"
           placeholder="Full name"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
         />
       </div>
 
       {/* Country and ZIP */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="country" className="block text-sm font-medium mb-2">
+          <label htmlFor="country" className="block text-sm font-medium mb-2 text-foreground/90">
             Country or region
           </label>
           <select
             id="country"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           >
             <option value="US">United States</option>
             <option value="GB">United Kingdom</option>
@@ -214,14 +214,14 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
           </select>
         </div>
         <div>
-          <label htmlFor="zip" className="block text-sm font-medium mb-2">
+          <label htmlFor="zip" className="block text-sm font-medium mb-2 text-foreground/90">
             ZIP
           </label>
           <input
             type="text"
             id="zip"
             placeholder="12345"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
           />
         </div>
       </div>
@@ -230,7 +230,7 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
       <Button
         type="submit"
         disabled={!stripe || isLoading}
-        className="w-full h-12 text-base font-medium"
+        className="w-full h-12 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
         variant="gradient"
       >
         {isLoading ? (

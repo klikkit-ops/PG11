@@ -47,12 +47,12 @@ export default async function CheckoutPage({
   const weeklyPlan = PLANS.WEEKLY;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       {/* Header */}
-      <div className="border-b bg-white">
+      <div className="border-b border-white/20 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <a href="/get-credits" className="text-muted-foreground hover:text-foreground">
+            <a href="/get-credits" className="text-muted-foreground hover:text-foreground transition-colors">
               ← Back
             </a>
           </div>
@@ -64,37 +64,37 @@ export default async function CheckoutPage({
 
       {/* Main Content - Two Column Layout */}
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Left Column - Subscription Details */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-2xl font-semibold mb-2">
+              <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                 Subscribe to {plan.label}
               </h1>
             </div>
 
-            <div className="space-y-4">
-              <div>
+            <div className="space-y-6">
+              <div className="p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/40 shadow-lg">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-semibold">
+                  <span className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                     {isTrial ? "$0.49" : `$${plan.price.toFixed(2)}`}
                   </span>
                   {isTrial ? (
-                    <span className="text-muted-foreground">today</span>
+                    <span className="text-muted-foreground text-lg">today</span>
                   ) : (
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground text-lg">
                       {plan.billingPeriod === "week" ? "per week" : "per year"}
                     </span>
                   )}
                 </div>
                 {isTrial && (
-                  <div className="mt-2 text-muted-foreground">
+                  <div className="mt-3 text-muted-foreground text-base">
                     Then ${weeklyPlan.price.toFixed(2)} per week starting in 3 days
                   </div>
                 )}
               </div>
 
-              <div className="pt-4 border-t space-y-3">
+              <div className="pt-6 space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="h-3 w-3 text-primary" fill="currentColor" viewBox="0 0 20 20">
@@ -153,23 +153,23 @@ export default async function CheckoutPage({
 
           {/* Right Column - Payment Form */}
           <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-semibold mb-6">Pay with card</h2>
+            <div className="p-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/60 shadow-xl">
+              <h2 className="text-2xl font-semibold mb-6 text-foreground">Pay with card</h2>
               <CustomCheckout planType={planType} userEmail={user.email || undefined} />
             </div>
 
-            <div className="text-xs text-muted-foreground space-y-2">
-              <p>
+            <div className="text-xs text-muted-foreground space-y-3">
+              <p className="leading-relaxed">
                 By confirming your subscription, you allow PetGroove to charge your card for this payment and future payments in accordance with our terms.
               </p>
-              <div className="flex items-center gap-4 pt-4 border-t">
-                <span>Powered by</span>
-                <svg className="h-4" viewBox="0 0 113 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div className="flex items-center gap-4 pt-4 border-t border-white/20">
+                <span className="text-muted-foreground">Powered by</span>
+                <svg className="h-4 text-muted-foreground" viewBox="0 0 113 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M30.5 15C30.5 23.0081 24.0081 29.5 16 29.5C7.99187 29.5 1.5 23.0081 1.5 15C1.5 6.99187 7.99187 0.5 16 0.5C24.0081 0.5 30.5 6.99187 30.5 15Z" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M16 8.5V15L20.5 19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
-                <span className="ml-auto">Terms</span>
-                <span>Privacy</span>
+                <span className="ml-auto hover:text-foreground transition-colors cursor-pointer">Terms</span>
+                <span className="hover:text-foreground transition-colors cursor-pointer">Privacy</span>
               </div>
             </div>
           </div>
