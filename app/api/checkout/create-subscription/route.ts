@@ -176,8 +176,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error creating subscription:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to create subscription";
+    const stripeError = error as any;
+    if (stripeError?.type && stripeError?.message) {
+      console.error("Stripe error details:", {
+        type: stripeError.type,
+        message: stripeError.message,
+        code: stripeError.code,
+        param: stripeError.param,
+      });
+    }
     return NextResponse.json(
-      { error: "Failed to create subscription" },
+      { error: errorMessage, details: stripeError?.message || errorMessage },
       { status: 500 }
     );
   }

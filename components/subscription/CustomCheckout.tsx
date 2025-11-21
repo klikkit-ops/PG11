@@ -242,7 +242,10 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
         return;
       }
 
-      // For trial, charge the trial price immediately
+      // For trial, create subscription first, then charge
+      // This prevents charging without creating subscription
+      let paymentIntentId: string | null = null;
+      
       if (isTrial) {
         const currencyCode = selectedCountry.currency;
         const paymentIntentResponse = await fetch("/api/checkout/create-payment-intent", {
@@ -258,6 +261,8 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
         if (!paymentIntentResponse.ok) {
           throw new Error(paymentIntentData.error || "Failed to create payment intent");
         }
+
+        paymentIntentId = paymentIntentData.paymentIntentId || null;
 
         // Confirm payment for $0.49
         const { error: confirmError } = await stripe.confirmCardPayment(
@@ -310,7 +315,32 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
       const subscriptionData = await subscriptionResponse.json();
 
       if (!subscriptionResponse.ok) {
-        throw new Error(subscriptionData.error || "Failed to create subscription");
+        const errorMessage = subscriptionData.details || subscriptionData.error || "Failed to create subscription";
+        console.error("Subscription creation failed:", subscriptionData);
+        
+        // If payment was made but subscription failed, attempt to refund
+        if (isTrial && paymentIntentId) {
+          try {
+            console.log("Attempting to refund payment intent:", paymentIntentId);
+            const refundResponse = await fetch("/api/checkout/refund-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ paymentIntentId }),
+            });
+            
+            if (refundResponse.ok) {
+              console.log("Refund successful");
+            } else {
+              console.error("Refund failed:", await refundResponse.json());
+            }
+          } catch (refundError) {
+            console.error("Error attempting refund:", refundError);
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       toast({
