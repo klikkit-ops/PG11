@@ -108,7 +108,7 @@ export default function SubscriptionPage({ user }: Props) {
                     <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                         Choose Your Plan
                     </h1>
-                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    <p className="text-lg text-foreground/90 max-w-2xl mx-auto font-medium">
                         Select a subscription plan to start creating amazing dancing videos of your pet.
                     </p>
                 </div>
@@ -161,9 +161,9 @@ export default function SubscriptionPage({ user }: Props) {
                             <h2 className="text-3xl font-bold mb-2">
                                 PetGroove {currentPlan.label}
                             </h2>
-                            <p className="text-muted-foreground">
+                            <p className="text-foreground font-medium">
                                 {selectedPlan === "TRIAL"
-                                    ? `${currentPlan.creditsPerPeriod} Coins (1 generation) • Auto-renews to Weekly after 3 days`
+                                    ? `${currentPlan.creditsPerPeriod} Coins (1 generation)`
                                     : selectedPlan === "WEEKLY"
                                     ? `${currentPlan.creditsPerPeriod.toLocaleString()} Coins per ${currentPlan.billingPeriod} (renews weekly)`
                                     : `${currentPlan.creditsPerPeriod.toLocaleString()} Coins (provided upfront)`}
@@ -174,7 +174,7 @@ export default function SubscriptionPage({ user }: Props) {
                             <span className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                                 ${currentPlan.price.toFixed(2)}
                             </span>
-                            <span className="text-xl text-muted-foreground">
+                            <span className="text-xl text-foreground/70 font-medium">
                                 {selectedPlan === "TRIAL" ? " for 3-day trial" : ` / ${currentPlan.billingPeriod === "week" ? "week" : "year"}`}
                             </span>
                         </div>
@@ -185,7 +185,7 @@ export default function SubscriptionPage({ user }: Props) {
                                 <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                                     <Check className="h-4 w-4 text-green-600" />
                                 </div>
-                                <span className="text-base">
+                                <span className="text-base text-foreground font-medium">
                                     {selectedPlan === "TRIAL"
                                         ? "1 video generation (100 coins)"
                                         : selectedPlan === "WEEKLY" 
@@ -197,19 +197,19 @@ export default function SubscriptionPage({ user }: Props) {
                                 <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                                     <Check className="h-4 w-4 text-green-600" />
                                 </div>
-                                <span className="text-base">All dance styles included</span>
+                                <span className="text-base text-foreground font-medium">All dance styles included</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                                     <Check className="h-4 w-4 text-green-600" />
                                 </div>
-                                <span className="text-base">HD video quality</span>
+                                <span className="text-base text-foreground font-medium">HD video quality</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                                     <Check className="h-4 w-4 text-green-600" />
                                 </div>
-                                <span className="text-base">Download anytime</span>
+                                <span className="text-base text-foreground font-medium">Download anytime</span>
                             </div>
                             {selectedPlan === "ANNUAL" && savings > 0 && (
                                 <div className="flex items-center gap-3 pt-2 border-t border-border/50">
@@ -254,9 +254,9 @@ export default function SubscriptionPage({ user }: Props) {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1">Unlimited Video Generations</h4>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-sm text-foreground">
                                             {selectedPlan === "TRIAL" 
-                                                ? "Try PetGroove risk-free! Get 1 video generation for $0.49. After 3 days, your subscription automatically converts to our Weekly plan ($7.99/week)."
+                                                ? "Try PetGroove risk-free! Get 1 video generation for $0.49."
                                                 : `Create as many dancing videos as your coins allow. ${selectedPlan === "WEEKLY" ? "Coins renew weekly." : "All coins provided upfront."}`}
                                         </p>
                                     </div>
@@ -267,7 +267,7 @@ export default function SubscriptionPage({ user }: Props) {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1">All Dance Styles</h4>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-sm text-foreground/80">
                                             Access to all 10+ dance styles including Macarena, Hip Hop, Ballet, and more.
                                         </p>
                                     </div>
@@ -278,7 +278,7 @@ export default function SubscriptionPage({ user }: Props) {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1">HD Quality Videos</h4>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-sm text-foreground/80">
                                             All videos are generated in high definition, perfect for sharing on social media.
                                         </p>
                                     </div>
@@ -289,7 +289,7 @@ export default function SubscriptionPage({ user }: Props) {
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1">Cancel Anytime</h4>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-sm text-foreground/80">
                                             No long-term commitment. Cancel your subscription at any time.
                                         </p>
                                     </div>
@@ -304,7 +304,7 @@ export default function SubscriptionPage({ user }: Props) {
                                     <p className="font-semibold text-green-700 dark:text-green-400 mb-1">
                                         7-Day Satisfaction Guarantee
                                     </p>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-sm text-foreground/80">
                                         Not happy with your subscription? Contact us within 7 days for a full refund.
                                     </p>
                                 </div>
