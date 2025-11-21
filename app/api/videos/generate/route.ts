@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { imageUrl, danceStyle, petDescription, duration = 5 } = body;
+    const { imageUrl, danceStyle, petDescription } = body;
 
     if (!imageUrl || !danceStyle) {
       return NextResponse.json(
@@ -46,17 +46,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate duration (must be 5 or 10)
-    const validDuration = duration === 5 || duration === 10;
-    if (!validDuration) {
-      return NextResponse.json(
-        { error: "Invalid duration. Duration must be 5 or 10 seconds." },
-        { status: 400 }
-      );
-    }
-
-    // Calculate required credits (1 for 5s, 2 for 10s)
-    const requiredCredits = duration === 5 ? 1 : 2;
+    // Videos are always 5 seconds (1 credit)
+    const duration = 5;
+    const requiredCredits = 1;
 
     // Check user has sufficient credits
     const { data: creditsData, error: creditsError } = await supabase
@@ -67,7 +59,7 @@ export async function POST(request: Request) {
 
     if (creditsError || !creditsData || creditsData.credits < requiredCredits) {
       return NextResponse.json(
-        { error: `Insufficient credits. This video requires ${requiredCredits} credit${requiredCredits > 1 ? 's' : ''}. Please subscribe to generate videos.` },
+        { error: "Insufficient credits. Please subscribe to generate videos." },
         { status: 403 }
       );
     }
@@ -175,10 +167,10 @@ export async function POST(request: Request) {
         processedImageUrl = imageUrl;
       }
 
-      // Get audio URL for the selected dance style and duration (optional - skip if URL is invalid)
+      // Get audio URL for the selected dance style (5 seconds, optional - skip if URL is invalid)
       let audioUrl: string | undefined = undefined;
       try {
-        const audioUrlResult = getAudioUrlForDanceStyle(danceStyle, duration);
+        const audioUrlResult = getAudioUrlForDanceStyle(danceStyle, 5); // Always 5 seconds
         if (audioUrlResult && audioUrlResult.startsWith('http')) {
           // Only use audio URL if it's a valid HTTP(S) URL (not localhost in production)
           if (!audioUrlResult.includes('localhost') || process.env.NODE_ENV === 'development') {
@@ -209,9 +201,9 @@ export async function POST(request: Request) {
       console.log(`[Video Generation] API call parameters:`, {
         imageUrl: processedImageUrl.substring(0, 100) + '...',
         promptLength: prompt.length,
-        duration: `${duration}s`,
+        duration: '5s',
         resolution: '480p',
-        numFrames: duration === 5 ? 12 : 24,
+        numFrames: 12,
         hasAudioUrl: !!audioUrl,
         audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
@@ -222,24 +214,20 @@ export async function POST(request: Request) {
         imageUrl: processedImageUrl.substring(0, 150),
         prompt: prompt.substring(0, 200) + '...',
         promptLength: prompt.length,
-        duration: `${duration}s`,
-        numFrames: duration === 5 ? 12 : 24,
+        duration: '5s',
+        numFrames: 12,
         resolution: '480p',
         hasNegativePrompt: true,
         hasAudioUrl: !!audioUrl,
         audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
-      
-      // Calculate numFrames based on duration
-      // ~2.4 fps: 5 seconds = 12 frames, 10 seconds = 24 frames
-      const numFrames = duration === 5 ? 12 : 24;
 
       const videoResponse = await generateVideoReplicate({
         imageUrl: processedImageUrl, // Use processed 9:16 image
         prompt,
         resolution: '480p', // 480p, 720p, or 1080p
         aspectRatio: '9:16', // Explicitly set 9:16 aspect ratio
-        numFrames: numFrames, // Based on duration: 12 for 5s, 24 for 10s
+        numFrames: 12, // 5 seconds at ~2.4 fps
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
         audioUrl: audioUrl || undefined, // Include audio URL if available (matches duration)
       });
