@@ -47,7 +47,7 @@ export default async function CheckoutPage({
   const weeklyPlan = PLANS.WEEKLY;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 rounded-[40px]">
       {/* Header */}
       <div className="border-b border-white/20 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -74,7 +74,7 @@ export default async function CheckoutPage({
             </div>
 
             <div className="space-y-6">
-              <div>
+              <div className="p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/40 shadow-lg">
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                     {isTrial ? "$0.49" : `$${plan.price.toFixed(2)}`}
