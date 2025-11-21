@@ -301,6 +301,7 @@ async function handleSubscriptionUpdate(
   const priceId = subscription.items.data[0].price.id;
   const isTrial = subscription.metadata?.is_trial === "true";
   const creditsPerPeriod = getCreditsPerPeriod(priceId);
+  const isCustomCheckout = subscription.metadata?.checkout_type === "custom";
 
   // Update user's Stripe info
   await updateUserStripeInfo(
@@ -310,6 +311,18 @@ async function handleSubscriptionUpdate(
     subscription.status,
     supabase
   );
+
+  // Handle trial subscription creation (when subscription is first created with trialing status)
+  if (isTrial && subscription.status === "trialing" && isCustomCheckout) {
+    // Grant 100 coins for trial (1 generation)
+    await addCreditsToUser(userId, 100, supabase);
+    
+    // Mark user as having used the trial
+    await markTrialAsUsed(userId, supabase);
+    
+    console.log(`[Webhook] Granted 100 trial coins to user ${userId} for subscription ${subscription.id}`);
+    return; // Don't process further for trialing subscriptions
+  }
 
   // Handle trial-to-active conversion (when trial ends and converts to weekly)
   if (isTrial && subscription.status === "active" && subscription.trial_end && subscription.trial_end < Math.floor(Date.now() / 1000)) {
