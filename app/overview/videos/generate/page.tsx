@@ -65,7 +65,7 @@ export default function GenerateVideoPage() {
                 if (step2Ref.current && window.innerWidth < 1024) {
                     step2Ref.current.scrollIntoView({ 
                         behavior: 'smooth', 
-                        block: 'start',
+                        block: 'center',
                         inline: 'nearest'
                     });
                 }
@@ -171,7 +171,7 @@ export default function GenerateVideoPage() {
             const timer = setTimeout(() => {
                 step3Ref.current?.scrollIntoView({ 
                     behavior: 'smooth', 
-                    block: 'start',
+                    block: 'center',
                     inline: 'nearest'
                 });
             }, 300);
