@@ -154,9 +154,13 @@ async function handleCheckoutSessionCompleted(
       
       if (trialPriceId && weeklyPriceId && subscription.items.data.length > 0 && trialEndTimestamp > 0) {
         try {
+          // Calculate when the first billing cycle ends
+          // billing_cycle_anchor is set to 3 days from now, and since it's weekly, the first cycle ends 7 days after that
+          const firstBillingCycleEnd = trialEndTimestamp + (7 * 24 * 60 * 60); // 3 days + 1 week = 10 days from now
+          
           // Create subscription schedule with two phases
-          // Phase 1: $0.49/week for first billing cycle (until trial end)
-          // Phase 2: $7.99/week after trial ends
+          // Phase 1: $0.49/week for first billing cycle (3 days from now until 10 days from now)
+          // Phase 2: $7.99/week after first billing cycle ends
           await stripe.subscriptionSchedules.create({
             from_subscription: subscription.id,
             phases: [
@@ -167,8 +171,8 @@ async function handleCheckoutSessionCompleted(
                     quantity: 1,
                   },
                 ],
-                start_date: subscription.current_period_start,
-                end_date: trialEndTimestamp,
+                start_date: subscription.current_period_start, // 3 days from now (billing_cycle_anchor)
+                end_date: firstBillingCycleEnd, // 10 days from now (end of first billing cycle)
               },
               {
                 items: [
@@ -177,12 +181,12 @@ async function handleCheckoutSessionCompleted(
                     quantity: 1,
                   },
                 ],
-                start_date: trialEndTimestamp,
+                start_date: firstBillingCycleEnd, // Starts after first billing cycle
               },
             ],
           });
           
-          console.log(`[Webhook] Created subscription schedule for trial subscription ${subscription.id}: $0.49/week until ${new Date(trialEndTimestamp * 1000).toISOString()}, then $7.99/week`);
+          console.log(`[Webhook] Created subscription schedule for trial subscription ${subscription.id}: $0.49/week for first cycle (until ${new Date(firstBillingCycleEnd * 1000).toISOString()}), then $7.99/week`);
         } catch (error) {
           console.error("Error creating subscription schedule:", error);
           // Fallback: Update subscription item to weekly price after first billing cycle
