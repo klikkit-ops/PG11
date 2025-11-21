@@ -80,25 +80,25 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                 </div>
 
                 {/* Plan Toggle */}
-                <div className="flex justify-center">
-                    <div className="inline-flex gap-2 p-1.5 glass-panel">
+                <div className="flex justify-center px-4">
+                    <div className="inline-flex gap-1.5 sm:gap-2 p-1 sm:p-1.5 glass-panel max-w-full overflow-x-auto">
                         {!hasUsedTrial && (
                             <button
                                 onClick={() => setSelectedPlan("TRIAL")}
-                                className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative ${selectedPlan === "TRIAL"
+                                className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 relative whitespace-nowrap flex-shrink-0 ${selectedPlan === "TRIAL"
                                     ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                                     : "text-muted-foreground hover:text-foreground"
                                     }`}
                             >
                                 Trial
-                                <span className="ml-2 text-xs bg-white/90 text-purple-700 px-2 py-0.5 rounded-full border border-white/50 shadow-sm font-semibold">
+                                <span className="ml-1.5 sm:ml-2 text-xs bg-white/90 text-purple-700 px-1.5 sm:px-2 py-0.5 rounded-full border border-white/50 shadow-sm font-semibold">
                                     $0.59
                                 </span>
                             </button>
                         )}
                         <button
                             onClick={() => setSelectedPlan("WEEKLY")}
-                            className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 ${selectedPlan === "WEEKLY"
+                            className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${selectedPlan === "WEEKLY"
                                 ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                                 : "text-muted-foreground hover:text-foreground"
                                 }`}
@@ -107,14 +107,14 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                         </button>
                         <button
                             onClick={() => setSelectedPlan("ANNUAL")}
-                            className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative ${selectedPlan === "ANNUAL"
+                            className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 relative whitespace-nowrap flex-shrink-0 ${selectedPlan === "ANNUAL"
                                 ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                                 : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             Yearly
                             {savings > 0 && (
-                                <span className="ml-2 text-xs bg-white/90 text-purple-700 px-2 py-0.5 rounded-full border border-white/50 shadow-sm font-semibold">
+                                <span className="ml-1.5 sm:ml-2 text-xs bg-white/90 text-purple-700 px-1.5 sm:px-2 py-0.5 rounded-full border border-white/50 shadow-sm font-semibold">
                                     Save {savings}%
                                 </span>
                             )}
