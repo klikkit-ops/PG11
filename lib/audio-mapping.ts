@@ -81,20 +81,27 @@ export function getAudioUrlForDanceStyle(danceStyleId: string): string | null {
   }
 
   // Construct absolute URL for the audio file
-  // RunComfy API requires a publicly accessible HTTPS URL
-  // In production, we need a proper domain, not localhost
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+  // Replicate API requires a publicly accessible HTTPS URL
+  // We should use the production domain, not preview deployments which may require auth
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
   
-  // If no base URL is set, return null (audio will be skipped)
+  // If no production base URL is set, return null (audio will be skipped)
+  // We don't use VERCEL_URL because it points to preview deployments that may require authentication
   if (!baseUrl) {
-    console.warn(`[AudioMapping] No base URL configured for audio files. Set NEXT_PUBLIC_APP_URL or VERCEL_URL.`);
+    console.warn(`[AudioMapping] No NEXT_PUBLIC_APP_URL configured for audio files. Audio will be skipped.`);
     return null;
   }
   
   // Ensure we have a proper HTTPS URL (not localhost in production)
   if (baseUrl.includes('localhost') && process.env.NODE_ENV === 'production') {
     console.warn(`[AudioMapping] Localhost URL detected in production, skipping audio: ${baseUrl}`);
+    return null;
+  }
+  
+  // Skip if this is a preview deployment (contains vercel.app but not the production domain)
+  // Preview deployments may require authentication and won't be accessible to Replicate
+  if (baseUrl.includes('vercel.app') && !baseUrl.includes('petgroove.app')) {
+    console.warn(`[AudioMapping] Preview deployment detected, skipping audio to avoid 401 errors: ${baseUrl}`);
     return null;
   }
   
