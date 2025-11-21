@@ -22,6 +22,7 @@ export default function GenerateVideoPage() {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [selectedDanceStyle, setSelectedDanceStyle] = useState<string>("robot");
+    const [duration, setDuration] = useState<5 | 10>(5); // Default to 5 seconds
     const [isGenerating, setIsGenerating] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -118,6 +119,7 @@ export default function GenerateVideoPage() {
                 body: JSON.stringify({
                     imageUrl,
                     danceStyle: selectedDanceStyle,
+                    duration,
                 }),
             });
 
@@ -264,6 +266,40 @@ export default function GenerateVideoPage() {
                                 </div>
                             )}
 
+                            {/* Duration Selector */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground">Duration</label>
+                                <Select 
+                                    value={duration.toString()} 
+                                    onValueChange={(value) => setDuration(parseInt(value) as 5 | 10)}
+                                >
+                                    <SelectTrigger className="w-full h-12 rounded-full border-primary/20 hover:border-primary/40 transition-colors">
+                                        <SelectValue>
+                                            <span className="flex items-center gap-2">
+                                                <span className="font-medium">{duration} seconds</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    ({duration === 5 ? '1' : '2'} credit{duration === 10 ? 's' : ''})
+                                                </span>
+                                            </span>
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5" className="cursor-pointer">
+                                            <span className="flex items-center justify-between w-full">
+                                                <span>5 seconds</span>
+                                                <span className="text-xs text-muted-foreground ml-4">1 credit</span>
+                                            </span>
+                                        </SelectItem>
+                                        <SelectItem value="10" className="cursor-pointer">
+                                            <span className="flex items-center justify-between w-full">
+                                                <span>10 seconds</span>
+                                                <span className="text-xs text-muted-foreground ml-4">2 credits</span>
+                                            </span>
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <Button
                                 onClick={handleGenerate}
                                 disabled={!selectedImage || !selectedDanceStyle || isGenerating || uploadingImage}
@@ -280,7 +316,7 @@ export default function GenerateVideoPage() {
                                         <Film className="mr-2 h-5 w-5" />
                                         <span className="flex items-center gap-2">
                                             <span>Generate Video</span>
-                                            <span className="text-sm opacity-90">• 1 Credit</span>
+                                            <span className="text-sm opacity-90">• {duration === 5 ? '1' : '2'} Credit{duration === 10 ? 's' : ''}</span>
                                         </span>
                                     </>
                                 )}

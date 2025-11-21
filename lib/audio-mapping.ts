@@ -69,16 +69,28 @@ export const DANCE_AUDIO_MAPPING: Record<string, DanceAudioMapping> = {
 };
 
 /**
- * Get the audio URL for a given dance style
+ * Get the audio URL for a given dance style and duration
  * Returns the full URL (including domain) for the audio file
  * This is required because Replicate API needs a publicly accessible HTTPS URL
- * Audio files are 5 seconds long to match the video duration
+ * @param danceStyleId - The dance style ID (e.g., 'macarena', 'hip_hop')
+ * @param duration - Video duration in seconds (5 or 10). Defaults to 5.
  */
-export function getAudioUrlForDanceStyle(danceStyleId: string): string | null {
+export function getAudioUrlForDanceStyle(danceStyleId: string, duration: number = 5): string | null {
   const mapping = DANCE_AUDIO_MAPPING[danceStyleId];
   if (!mapping) {
     console.warn(`[AudioMapping] No audio file found for dance style: ${danceStyleId}`);
     return null;
+  }
+
+  // Get the base audio URL and replace the duration suffix
+  // e.g., '/audio/macarena-5s.mp3' -> '/audio/macarena-10s.mp3' for 10 seconds
+  let audioPath = mapping.audioUrl;
+  if (duration === 10) {
+    // Replace -5s with -10s
+    audioPath = audioPath.replace('-5s.mp3', '-10s.mp3');
+  } else {
+    // Ensure we use -5s (default)
+    audioPath = audioPath.replace('-10s.mp3', '-5s.mp3');
   }
 
   // Construct absolute URL for the audio file
@@ -114,9 +126,9 @@ export function getAudioUrlForDanceStyle(danceStyleId: string): string | null {
     return null;
   }
   
-  const audioUrl = mapping.audioUrl.startsWith('http') 
-    ? mapping.audioUrl 
-    : `${baseUrl}${mapping.audioUrl}`;
+  const audioUrl = audioPath.startsWith('http') 
+    ? audioPath 
+    : `${baseUrl}${audioPath}`;
   
   return audioUrl;
 }
