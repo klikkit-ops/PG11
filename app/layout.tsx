@@ -20,6 +20,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: 'cover', // Allows content to extend into safe areas on iOS
 };
 
 export const metadata = {
@@ -56,7 +57,11 @@ export default function RootLayout({
           to-blue-100
           text-foreground
           antialiased
+          safe-area-inset-top
         `}
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
       >
         {/* Mobile-only decorative avatars - conditionally rendered */}
         <MobileAvatars />
