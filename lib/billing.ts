@@ -5,7 +5,7 @@
 
 export const PLANS = {
   TRIAL: {
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL || process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '', // Trial price ($0.49) or fallback to weekly
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL || '', // Trial price ($0.49/week) - must be created in Stripe
     creditsPerPeriod: 100, // 100 coins for 1 generation during trial
     label: "3-Day Trial",
     price: 0.49,
