@@ -153,11 +153,6 @@ export async function POST(request: NextRequest) {
           url: session.url,
         });
       }
-
-      return NextResponse.json({
-        sessionId: session.id,
-        url: session.url,
-      });
     }
 
     // Create Stripe Checkout Session for regular plans
