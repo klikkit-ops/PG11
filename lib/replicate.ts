@@ -47,6 +47,36 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
   }
 
   try {
+    // First, get the latest version hash for the model
+    // Replicate API requires a version hash, not a model identifier
+    console.log('[Replicate] Fetching latest version for model...');
+    const modelResponse = await fetch(
+      `${REPLICATE_BASE_URL}/models/${MODEL_OWNER}/${MODEL_NAME}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${REPLICATE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!modelResponse.ok) {
+      const errorText = await modelResponse.text();
+      console.error('[Replicate] Error fetching model:', modelResponse.status, errorText);
+      throw new Error(`Replicate API error fetching model: ${modelResponse.status} - ${errorText}`);
+    }
+
+    const modelData = await modelResponse.json();
+    const versionHash = modelData.latest_version?.id;
+    
+    if (!versionHash) {
+      console.error('[Replicate] No version hash found in model response:', JSON.stringify(modelData, null, 2));
+      throw new Error('Replicate API did not return a version hash');
+    }
+
+    console.log('[Replicate] Using version hash:', versionHash);
+
     // Build input object for Replicate API
     const input: Record<string, any> = {
       image: request.imageUrl,
@@ -77,8 +107,7 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
     });
 
     // Replicate API: POST /v1/predictions
-    // We can use model identifier directly, or get version hash first
-    // For now, we'll use the model identifier format that Replicate accepts
+    // Must use 'version' field with version hash (not 'model' field)
     const createResponse = await fetch(
       `${REPLICATE_BASE_URL}/predictions`,
       {
@@ -88,7 +117,7 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: MODEL_IDENTIFIER, // Use 'model' field with model identifier
+          version: versionHash, // Use 'version' field with version hash (required)
           input: input,
         }),
       }
