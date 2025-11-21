@@ -103,33 +103,27 @@ export async function POST(request: NextRequest) {
       }
       
       try {
-        // Calculate when the subscription should start charging (3 days from now)
-        const subscriptionStartDate = Math.floor(Date.now() / 1000) + (plan.trialDays * 24 * 60 * 60);
-        
-        // Use the weekly price ($7.99/week) with billing_cycle_anchor set to 3 days from now
-        // This means: $0.49 charged immediately in webhook, then $7.99/week starting in 3 days
-        // Checkout will show "$7.99 per week" starting in 3 days
+        // Use trial_period_days to avoid proration issues
+        // This will show "free" during trial, but $0.49 is charged immediately via invoice in webhook
+        // After 3 days, subscription charges $7.99/week
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
           payment_method_types: ["card"],
           line_items: [
             {
-              price: weeklyPriceId, // $7.99/week price - will show on checkout
+              price: weeklyPriceId, // $7.99/week price
               quantity: 1,
             },
           ],
           subscription_data: {
+            trial_period_days: plan.trialDays, // 3-day trial period
             metadata: {
               user_id: user.id,
               plan_type: planType,
               is_trial: "true",
               renews_to: "WEEKLY",
               trial_days: plan.trialDays.toString(),
-              subscription_start_timestamp: subscriptionStartDate.toString(),
             },
-            // Set billing cycle anchor to 3 days from now
-            // This means the first $7.99 charge happens in 3 days
-            billing_cycle_anchor: subscriptionStartDate,
           },
           payment_method_collection: "always", // Require payment method upfront
           client_reference_id: user.id,
