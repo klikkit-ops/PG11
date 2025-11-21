@@ -84,74 +84,99 @@ export async function POST(request: NextRequest) {
       // Check if there's a dedicated trial price ($0.49 one-time)
       const trialPriceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL;
       // TypeScript knows this is TRIAL plan, so we can safely access weeklyPriceId if it exists
-      const weeklyPriceId = (plan as typeof PLANS.TRIAL).weeklyPriceId || plan.stripePriceId;
+      const weeklyPriceId = (plan as typeof PLANS.TRIAL).weeklyPriceId || PLANS.WEEKLY.stripePriceId;
+      
+      // Validate that we have at least one valid price ID
+      if (!weeklyPriceId) {
+        console.error("Missing weekly price ID for trial subscription");
+        return NextResponse.json(
+          { error: "Trial subscription configuration error: Weekly price ID is required" },
+          { status: 500 }
+        );
+      }
       
       if (trialPriceId) {
         // Use the trial price for checkout - this will show $0.49 on the checkout page
         // In the webhook, we'll create the subscription with trial period
-        const session = await stripe.checkout.sessions.create({
-          mode: "payment", // One-time payment for trial
-          payment_method_types: ["card"],
-          line_items: [
-            {
-              price: trialPriceId, // $0.49 one-time price
-              quantity: 1,
-            },
-          ],
-          client_reference_id: user.id,
-          customer_email: user.email || undefined,
-          success_url: `${deploymentUrl}/overview/videos?success=true&trial=true`,
-          cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
-          metadata: {
-            user_id: user.id,
-            plan_type: planType,
-            is_trial: "true",
-            weekly_price_id: weeklyPriceId, // Store weekly price ID for webhook
-            trial_days: plan.trialDays.toString(),
-          },
-        });
-
-        return NextResponse.json({
-          sessionId: session.id,
-          url: session.url,
-        });
-      } else {
-        // Fallback: Create subscription with trial period (will show as "free")
-        // The $0.49 will be charged via invoice item in webhook
-        const session = await stripe.checkout.sessions.create({
-          mode: "subscription",
-          payment_method_types: ["card"],
-          line_items: [
-            {
-              price: weeklyPriceId, // Weekly price - will start after trial
-              quantity: 1,
-            },
-          ],
-          subscription_data: {
-            trial_period_days: plan.trialDays,
+        try {
+          const session = await stripe.checkout.sessions.create({
+            mode: "payment", // One-time payment for trial
+            payment_method_types: ["card"],
+            line_items: [
+              {
+                price: trialPriceId, // $0.49 one-time price
+                quantity: 1,
+              },
+            ],
+            client_reference_id: user.id,
+            customer_email: user.email || undefined,
+            success_url: `${deploymentUrl}/overview/videos?success=true&trial=true`,
+            cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
             metadata: {
               user_id: user.id,
               plan_type: planType,
               is_trial: "true",
-              renews_to: plan.renewsTo || "WEEKLY",
+              weekly_price_id: weeklyPriceId, // Store weekly price ID for webhook
+              trial_days: plan.trialDays.toString(),
             },
-          },
-          payment_method_collection: "always",
-          client_reference_id: user.id,
-          customer_email: user.email || undefined,
-          success_url: `${deploymentUrl}/overview/videos?success=true`,
-          cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
-          metadata: {
-            user_id: user.id,
-            plan_type: planType,
-            is_trial: "true",
-          },
-        });
+          });
 
-        return NextResponse.json({
-          sessionId: session.id,
-          url: session.url,
-        });
+          return NextResponse.json({
+            sessionId: session.id,
+            url: session.url,
+          });
+        } catch (stripeError: any) {
+          console.error("Stripe API error creating trial checkout session:", stripeError);
+          return NextResponse.json(
+            { error: `Stripe error: ${stripeError.message || "Failed to create checkout session"}` },
+            { status: 500 }
+          );
+        }
+      } else {
+        // Fallback: Create subscription with trial period (will show as "free")
+        // The $0.49 will be charged via invoice item in webhook
+        try {
+          const session = await stripe.checkout.sessions.create({
+            mode: "subscription",
+            payment_method_types: ["card"],
+            line_items: [
+              {
+                price: weeklyPriceId, // Weekly price - will start after trial
+                quantity: 1,
+              },
+            ],
+            subscription_data: {
+              trial_period_days: plan.trialDays,
+              metadata: {
+                user_id: user.id,
+                plan_type: planType,
+                is_trial: "true",
+                renews_to: plan.renewsTo || "WEEKLY",
+              },
+            },
+            payment_method_collection: "always",
+            client_reference_id: user.id,
+            customer_email: user.email || undefined,
+            success_url: `${deploymentUrl}/overview/videos?success=true`,
+            cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
+            metadata: {
+              user_id: user.id,
+              plan_type: planType,
+              is_trial: "true",
+            },
+          });
+
+          return NextResponse.json({
+            sessionId: session.id,
+            url: session.url,
+          });
+        } catch (stripeError: any) {
+          console.error("Stripe API error creating trial subscription checkout:", stripeError);
+          return NextResponse.json(
+            { error: `Stripe error: ${stripeError.message || "Failed to create checkout session"}` },
+            { status: 500 }
+          );
+        }
       }
     }
 
@@ -181,8 +206,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error creating checkout session:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { error: `Failed to create checkout session: ${errorMessage}` },
       { status: 500 }
     );
   }
