@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // For trial, we'll create a subscription with trial period
-      // The $0.49 will be charged via invoice item in the webhook after checkout
-      // This approach works with Stripe's native trial period support
+      // For trial, we'll create a subscription that charges $0.49 upfront
+      // Then after 3 days, it will convert to the weekly subscription
+      // We'll use a custom price_data to charge $0.49 for the first billing period
       
       // TypeScript knows this is TRIAL plan, so we can safely access weeklyPriceId if it exists
       const weeklyPriceId = (plan as typeof PLANS.TRIAL).weeklyPriceId || PLANS.WEEKLY.stripePriceId;
@@ -93,26 +93,54 @@ export async function POST(request: NextRequest) {
         );
       }
       
+      // Get the weekly price details to use for the recurring amount
+      let weeklyPrice;
       try {
-        // Create subscription with trial period
-        // Note: Stripe will show this as "free" during checkout, but we'll charge $0.49 in the webhook
+        weeklyPrice = await stripe.prices.retrieve(weeklyPriceId);
+      } catch (error) {
+        console.error("Error retrieving weekly price:", error);
+        return NextResponse.json(
+          { error: "Failed to retrieve subscription price details" },
+          { status: 500 }
+        );
+      }
+      
+      try {
+        // Create subscription with $0.49 upfront charge
+        // We'll use price_data to create a custom price that charges $0.49 for the first billing period
+        // In the webhook, we'll update the subscription to use the weekly price after the first billing cycle
+        const trialEndDate = Math.floor(Date.now() / 1000) + (plan.trialDays * 24 * 60 * 60); // 3 days from now
+        
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
           payment_method_types: ["card"],
           line_items: [
             {
-              price: weeklyPriceId, // Weekly price - will start after trial
+              price_data: {
+                currency: "usd",
+                product: weeklyPrice.product as string,
+                recurring: {
+                  interval: "week",
+                  interval_count: 1,
+                },
+                unit_amount: 49, // $0.49 in cents - this will show on checkout!
+              },
               quantity: 1,
             },
           ],
           subscription_data: {
-            trial_period_days: plan.trialDays,
             metadata: {
               user_id: user.id,
               plan_type: planType,
               is_trial: "true",
-              renews_to: plan.renewsTo || "WEEKLY",
+              renews_to: "WEEKLY",
+              weekly_price_id: weeklyPriceId, // Store weekly price ID to switch to after trial
+              trial_days: plan.trialDays.toString(),
+              trial_end_timestamp: trialEndDate.toString(),
             },
+            // Set billing cycle anchor to 3 days from now
+            // This ensures the subscription renews at the weekly price after the trial
+            billing_cycle_anchor: trialEndDate,
           },
           payment_method_collection: "always", // Require payment method upfront
           client_reference_id: user.id,
