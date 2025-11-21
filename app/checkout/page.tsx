@@ -47,7 +47,7 @@ export default async function CheckoutPage({
   const weeklyPlan = PLANS.WEEKLY;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 sm:rounded-[40px] overflow-hidden w-full" style={{ maxWidth: '100vw', width: '100vw' }}>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 sm:rounded-[40px] overflow-hidden" style={{ width: '100vw', maxWidth: '100vw', marginLeft: 'calc(-1 * (100vw - 100%))', marginRight: 'calc(-1 * (100vw - 100%))' }}>
       {/* Header */}
       <div className="border-b border-white/20 bg-white/80 backdrop-blur-sm sticky top-0 z-10 w-full">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between w-full">
