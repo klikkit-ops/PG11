@@ -126,14 +126,14 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
         }
       }
 
-      // Get the correct Stripe Price ID for the selected currency
+      // Get the Stripe Price ID (same for all currencies since Stripe handles multi-currency)
       const currencyCode = selectedCountry.currency;
-      const stripePriceId = getStripePriceId(planType, currencyCode);
+      const stripePriceId = getStripePriceId(planType);
       
       if (!stripePriceId) {
         toast({
           title: "Error",
-          description: `Pricing not available for ${currencyCode}. Please select a different country.`,
+          description: "Pricing not configured. Please contact support.",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -141,6 +141,7 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
       }
 
       // Create subscription
+      // Stripe will automatically use the correct currency price based on the currency parameter
       const subscriptionResponse = await fetch("/api/checkout/create-subscription", {
         method: "POST",
         headers: {

@@ -106,22 +106,20 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Get the weekly price ID for the selected currency
-      // If stripePriceId was provided, we need to get the weekly price for that currency
-      // For now, we'll use the weekly price from the plan, but ideally we'd look it up by currency
-      const weeklyPriceIdForCurrency = currency 
-        ? (await import("@/lib/currency-pricing")).getStripePriceId("WEEKLY", currency) || weeklyPriceId
-        : weeklyPriceId;
+      // Use the weekly price ID (Stripe handles multi-currency automatically)
+      const weeklyPriceIdForCurrency = weeklyPriceId;
 
       // Create subscription with trial period
+      // Stripe will automatically use the correct currency price from the multi-currency Price object
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [
           {
-            price: weeklyPriceIdForCurrency || weeklyPriceId,
+            price: weeklyPriceId,
           },
         ],
         trial_period_days: plan.trialDays, // 3 days
+        default_payment_method: paymentMethodId,
         metadata: {
           user_id: user.id,
           plan_type: planType,
@@ -130,6 +128,8 @@ export async function POST(request: NextRequest) {
           checkout_type: "custom", // Mark as custom checkout to avoid double-charging in webhook
           currency: currency || "USD",
         },
+        // Set the currency for the subscription
+        currency: currency?.toLowerCase() || "usd",
       });
 
       // Charge $0.49 immediately (already done via payment intent)
@@ -156,6 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create subscription
+    // Stripe will automatically use the correct currency price from the multi-currency Price object
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [
@@ -163,11 +164,14 @@ export async function POST(request: NextRequest) {
           price: priceIdToUse,
         },
       ],
+      default_payment_method: paymentMethodId,
       metadata: {
         user_id: user.id,
         plan_type: planType,
         currency: currency || "USD",
       },
+      // Set the currency for the subscription
+      currency: currency?.toLowerCase() || "usd",
     });
 
     return NextResponse.json({

@@ -15,15 +15,11 @@ export interface CurrencyPricing {
   trial: number;
   weekly: number;
   annual: number;
-  // Stripe Price IDs - these should be set via environment variables
-  stripePriceIds?: {
-    trial?: string;
-    weekly?: string;
-    annual?: string;
-  };
 }
 
 // Pricing for supported currencies
+// Note: Stripe handles multi-currency pricing within a single Price object
+// We only need one Price ID per plan type, and Stripe will use the correct currency
 export const CURRENCY_PRICING: Record<string, CurrencyPricing> = {
   USD: {
     currency: "USD",
@@ -31,11 +27,6 @@ export const CURRENCY_PRICING: Record<string, CurrencyPricing> = {
     trial: 0.59,
     weekly: 7.99,
     annual: 69.99,
-    stripePriceIds: {
-      trial: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL_USD || process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL || '',
-      weekly: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY_USD || process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '',
-      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_USD || process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL || '',
-    },
   },
   GBP: {
     currency: "GBP",
@@ -43,11 +34,6 @@ export const CURRENCY_PRICING: Record<string, CurrencyPricing> = {
     trial: 0.49,
     weekly: 5.99,
     annual: 59.99,
-    stripePriceIds: {
-      trial: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL_GBP || '',
-      weekly: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY_GBP || '',
-      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_GBP || '',
-    },
   },
   EUR: {
     currency: "EUR",
@@ -55,11 +41,6 @@ export const CURRENCY_PRICING: Record<string, CurrencyPricing> = {
     trial: 0.49,
     weekly: 7.49,
     annual: 64.99,
-    stripePriceIds: {
-      trial: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL_EUR || '',
-      weekly: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY_EUR || '',
-      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_EUR || '',
-    },
   },
   CAD: {
     currency: "CAD",
@@ -67,11 +48,6 @@ export const CURRENCY_PRICING: Record<string, CurrencyPricing> = {
     trial: 0.75,
     weekly: 10.99,
     annual: 94.99,
-    stripePriceIds: {
-      trial: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL_CAD || '',
-      weekly: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY_CAD || '',
-      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_CAD || '',
-    },
   },
   AUD: {
     currency: "AUD",
@@ -79,11 +55,6 @@ export const CURRENCY_PRICING: Record<string, CurrencyPricing> = {
     trial: 0.75,
     weekly: 12.99,
     annual: 109.99,
-    stripePriceIds: {
-      trial: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL_AUD || '',
-      weekly: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY_AUD || '',
-      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_AUD || '',
-    },
   },
 };
 
@@ -95,24 +66,21 @@ export function getPricingForCurrency(currencyCode: string): CurrencyPricing | n
 }
 
 /**
- * Get Stripe Price ID for a plan type and currency
+ * Get Stripe Price ID for a plan type
+ * Since Stripe supports multi-currency pricing in a single Price object,
+ * we only need one Price ID per plan type (not per currency)
  */
-export function getStripePriceId(
-  planType: "TRIAL" | "WEEKLY" | "ANNUAL",
-  currencyCode: string
-): string | null {
-  const pricing = getPricingForCurrency(currencyCode);
-  if (!pricing?.stripePriceIds) {
-    return null;
-  }
-
+export function getStripePriceId(planType: "TRIAL" | "WEEKLY" | "ANNUAL"): string | null {
+  // Import PLANS here to avoid circular dependency
+  const { PLANS } = require("@/lib/billing");
+  
   switch (planType) {
     case "TRIAL":
-      return pricing.stripePriceIds.trial || null;
+      return PLANS.TRIAL.stripePriceId || null;
     case "WEEKLY":
-      return pricing.stripePriceIds.weekly || null;
+      return PLANS.WEEKLY.stripePriceId || null;
     case "ANNUAL":
-      return pricing.stripePriceIds.annual || null;
+      return PLANS.ANNUAL.stripePriceId || null;
     default:
       return null;
   }
