@@ -5,7 +5,7 @@ import { Database } from "@/types/supabase";
 import { PetAvatar } from "@/components/ui/pet-avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Video, Plus, Download, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Video, Plus, Download, Clock, CheckCircle, XCircle, Loader2, Play } from "lucide-react";
 import { DeleteVideoButton } from "@/components/DeleteVideoButton";
 import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
@@ -130,22 +130,37 @@ export default async function VideosPage() {
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {videos.map((video) => {
+          {videos.map((video, index) => {
             const danceStyle = getDanceStyleById(video.dance_style);
             return (
-              <div key={video.id} className="glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300">
-                <div className="relative w-full aspect-[9/16] bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10">
+              <div 
+                key={video.id} 
+                className="video-card glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="relative w-full aspect-[9/16] bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 overflow-hidden rounded-t-3xl">
                   {video.video_url && video.status === "succeeded" ? (
-                    <video
-                      src={video.video_url}
-                      className="w-full h-full object-contain"
-                      controls
-                    />
+                    <>
+                      <video
+                        src={video.video_url}
+                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        controls
+                        preload="metadata"
+                      />
+                      {/* Play button overlay on hover */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center z-20 pointer-events-none">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="h-16 w-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
+                            <Play className="h-8 w-8 text-primary ml-1" fill="currentColor" />
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   ) : video.input_image_url ? (
                     <PetImage
                       src={video.input_image_url}
                       alt="Pet"
-                      className="relative w-full h-full"
+                      className="relative w-full h-full transition-transform duration-300 group-hover:scale-105"
                     >
                       {(video.status === "processing" || video.status === "queued") && (
                         <>
@@ -161,6 +176,11 @@ export default async function VideosPage() {
                       <AnimatedPaws />
                     </div>
                   )}
+
+                  {/* Gradient border glow on hover */}
+                  <div className="absolute inset-0 rounded-t-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 via-secondary/50 to-primary/50 rounded-t-3xl blur-sm -z-10" />
+                  </div>
 
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3 z-30">
@@ -178,11 +198,11 @@ export default async function VideosPage() {
                   </div>
                 </div>
 
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-4 bg-gradient-to-b from-transparent to-primary/5 group-hover:to-primary/10 transition-all duration-300">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-bold flex items-center gap-2">
-                        <span className="text-2xl">{danceStyle?.emoji}</span>
+                      <h3 className="text-lg font-bold flex items-center gap-2 group-hover:text-primary transition-colors duration-300">
+                        <span className="text-2xl transition-transform duration-300 group-hover:scale-110">{danceStyle?.emoji}</span>
                         {danceStyle?.name || video.dance_style}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-1">
