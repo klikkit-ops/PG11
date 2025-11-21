@@ -42,16 +42,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Retrieve the payment intent to get the charge ID
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    // Expand charges to access the charge data
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+      expand: ['charges'],
+    });
 
-    if (!paymentIntent.charges?.data?.[0]?.id) {
+    // Access charges from the expanded data
+    const charges = (paymentIntent as any).charges?.data;
+    
+    if (!charges || charges.length === 0 || !charges[0]?.id) {
       return NextResponse.json(
         { error: "No charge found for this payment intent" },
         { status: 400 }
       );
     }
 
-    const chargeId = paymentIntent.charges.data[0].id;
+    const chargeId = charges[0].id;
 
     // Create a refund
     const refund = await stripe.refunds.create({
