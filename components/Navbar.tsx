@@ -37,7 +37,7 @@ export default async function Navbar() {
 
   return (
     <header className="sticky top-4 z-[100] w-full px-4">
-      <div className="container flex h-16 items-center justify-between rounded-full px-6 mx-auto backdrop-blur-md border border-white/20 shadow-xl bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 hover:from-purple-500/30 hover:via-pink-500/30 hover:to-blue-500/30 transition-all duration-300">
+      <div className="container flex h-16 items-center justify-between rounded-full px-6 mx-auto backdrop-blur-lg border border-white/30 shadow-xl bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-blue-500/30 hover:from-purple-500/40 hover:via-pink-500/40 hover:to-blue-500/40 transition-all duration-300">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
           <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-primary/20">
             <Image
@@ -52,14 +52,14 @@ export default async function Navbar() {
 
         {user && (
           <nav className="hidden md:flex gap-6">
-            <Link href="/overview/videos" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/overview/videos" className="text-base font-semibold text-foreground/90 hover:text-primary transition-colors drop-shadow-sm">
               Videos
             </Link>
-            <Link href="/overview/videos/generate" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/overview/videos/generate" className="text-base font-semibold text-foreground/90 hover:text-primary transition-colors drop-shadow-sm">
               Create Video
             </Link>
             {stripeIsConfigured && (
-              <Link href="/get-credits" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link href="/get-credits" className="text-base font-semibold text-foreground/90 hover:text-primary transition-colors drop-shadow-sm">
                 Get Credits
               </Link>
             )}
@@ -69,7 +69,7 @@ export default async function Navbar() {
         <div className="flex items-center gap-3 md:gap-4">
           {!user && (
             <>
-              <Link href="/login" className="hidden sm:block text-sm font-medium hover:text-primary transition-colors">
+              <Link href="/login" className="hidden sm:block text-base font-semibold text-foreground/90 hover:text-primary transition-colors drop-shadow-sm">
                 Login
               </Link>
               <Link href="/login">
