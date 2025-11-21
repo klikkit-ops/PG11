@@ -23,7 +23,7 @@ export const PLANS = {
   },
   ANNUAL: {
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL || '',
-    creditsPerPeriod: 7000, // 7,000 coins per year (provided upfront)
+    creditsPerPeriod: 9000, // 9,000 coins per year (provided upfront)
     label: "Annual",
     price: 69.99, // USD price - actual price varies by currency (USD: $69.99, GBP: £59.99, EUR: €64.99, CAD: $94.99, AUD: $109.99)
     billingPeriod: "year" as const,
