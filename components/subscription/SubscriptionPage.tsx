@@ -163,7 +163,7 @@ export default function SubscriptionPage({ user }: Props) {
                             </h2>
                             <p className="text-foreground font-medium">
                                 {selectedPlan === "TRIAL"
-                                    ? `${currentPlan.creditsPerPeriod} Coins (1 generation)`
+                                    ? `${currentPlan.creditsPerPeriod} Coins`
                                     : selectedPlan === "WEEKLY"
                                     ? `${currentPlan.creditsPerPeriod.toLocaleString()} Coins per ${currentPlan.billingPeriod} (renews weekly)`
                                     : `${currentPlan.creditsPerPeriod.toLocaleString()} Coins (provided upfront)`}
@@ -187,7 +187,7 @@ export default function SubscriptionPage({ user }: Props) {
                                 </div>
                                 <span className="text-base text-foreground font-medium">
                                     {selectedPlan === "TRIAL"
-                                        ? "1 video generation (100 coins)"
+                                        ? "100 Coins"
                                         : selectedPlan === "WEEKLY" 
                                         ? "10 video generations per week"
                                         : "70 video generations (provided upfront)"}
