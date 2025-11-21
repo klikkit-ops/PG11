@@ -106,31 +106,30 @@ export async function POST(request: NextRequest) {
         // Calculate when the trial period ends (3 days from now)
         const trialEndDate = Math.floor(Date.now() / 1000) + (plan.trialDays * 24 * 60 * 60);
         
-        // Create subscription with the $0.49/week trial price
-        // Set billing_cycle_anchor to 3 days from now so the first charge happens then
-        // This will show "$0.49 per week" on checkout, with the first charge in 3 days
+        // Use the weekly price with trial_period_days
+        // This will show "$7.99 per week" on checkout, but we'll charge $0.49 immediately via invoice
+        // Then create a subscription schedule in the webhook to show the correct pricing
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
           payment_method_types: ["card"],
           line_items: [
             {
-              price: trialPriceId, // $0.49/week price - will show on checkout!
+              price: weeklyPriceId, // Weekly price - will show on checkout
               quantity: 1,
             },
           ],
           subscription_data: {
+            trial_period_days: plan.trialDays,
             metadata: {
               user_id: user.id,
               plan_type: planType,
               is_trial: "true",
               renews_to: "WEEKLY",
-              weekly_price_id: weeklyPriceId, // Store weekly price ID to switch to after first billing cycle
+              trial_price_id: trialPriceId, // Store trial price ID for schedule
+              weekly_price_id: weeklyPriceId,
               trial_days: plan.trialDays.toString(),
               trial_end_timestamp: trialEndDate.toString(),
             },
-            // Set billing cycle anchor to 3 days from now
-            // This means the first $0.49 charge happens in 3 days
-            billing_cycle_anchor: trialEndDate,
           },
           payment_method_collection: "always", // Require payment method upfront
           client_reference_id: user.id,
