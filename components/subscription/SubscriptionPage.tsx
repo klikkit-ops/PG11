@@ -80,8 +80,9 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                 </div>
 
                 {/* Plan Toggle */}
-                <div className="flex justify-center px-4">
-                    <div className="inline-flex gap-1.5 sm:gap-2 p-1 sm:p-1.5 glass-panel max-w-full overflow-x-auto">
+                <div className="flex justify-center">
+                    <div className="w-full max-w-2xl mx-auto px-4">
+                        <div className="inline-flex gap-1.5 sm:gap-2 p-1 sm:p-1.5 glass-panel w-full justify-center overflow-x-auto">
                         {!hasUsedTrial && (
                             <button
                                 onClick={() => setSelectedPlan("TRIAL")}
@@ -119,6 +120,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                 </span>
                             )}
                         </button>
+                        </div>
                     </div>
                 </div>
 
