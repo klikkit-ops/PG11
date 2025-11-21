@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Database } from "@/types/supabase";
 import { PLANS } from "@/lib/billing";
+import { getPricingForCurrency } from "@/lib/currency-pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planType } = body;
+    const { planType, currency = "USD" } = body;
 
     if (!planType || !(planType in PLANS)) {
       return NextResponse.json(
@@ -43,8 +44,16 @@ export async function POST(request: NextRequest) {
     }
 
     const plan = PLANS[planType as keyof typeof PLANS];
+    const pricing = getPricingForCurrency(currency) || getPricingForCurrency("USD");
 
-    // For trial, create a payment intent for $0.49
+    if (!pricing) {
+      return NextResponse.json(
+        { error: "Invalid currency" },
+        { status: 400 }
+      );
+    }
+
+    // For trial, create a payment intent for the trial price
     if (planType === "TRIAL" && 'trialDays' in plan) {
       // Check if user has already used a trial
       const { data: creditsData, error: creditsError } = await supabase
@@ -68,14 +77,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Create payment intent for $0.49
+      // Create payment intent for trial price in selected currency
+      const amount = Math.round(pricing.trial * 100); // Convert to cents (or smallest currency unit)
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 49, // $0.49 in cents
-        currency: "usd",
+        amount,
+        currency: currency.toLowerCase(),
         metadata: {
           user_id: user.id,
           plan_type: planType,
           is_trial: "true",
+          currency: currency,
         },
       });
 
@@ -85,14 +96,17 @@ export async function POST(request: NextRequest) {
     }
 
     // For regular plans, create payment intent for the plan price
-    const amount = Math.round(plan.price * 100); // Convert to cents
+    const amount = Math.round(
+      (planType === "WEEKLY" ? pricing.weekly : pricing.annual) * 100
+    ); // Convert to cents
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      currency: "usd",
+      currency: currency.toLowerCase(),
       metadata: {
         user_id: user.id,
         plan_type: planType,
+        currency: currency,
       },
     });
 

@@ -13,7 +13,8 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { PLANS } from "@/lib/billing";
-import { STRIPE_COUNTRIES, getCountryByCode, getDefaultCountry, type CountryInfo } from "@/lib/countries";
+import { getSupportedCountries, getCountryByCode, getDefaultCountry, type CountryInfo } from "@/lib/countries";
+import { getPricingForCurrency, formatPrice, getStripePriceId } from "@/lib/currency-pricing";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
@@ -23,9 +24,10 @@ type Props = {
   planType: "TRIAL" | "WEEKLY" | "ANNUAL";
   userEmail?: string;
   onSuccess?: () => void;
+  onCountryChange?: (country: CountryInfo) => void;
 };
 
-function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
+function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props) {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -41,6 +43,7 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
     const country = getCountryByCode(countryCode);
     if (country) {
       setSelectedCountry(country);
+      onCountryChange?.(country);
     }
   };
 
@@ -87,14 +90,15 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
         return;
       }
 
-      // For trial, charge $0.49 immediately
+      // For trial, charge the trial price immediately
       if (isTrial) {
+        const currencyCode = selectedCountry.currency;
         const paymentIntentResponse = await fetch("/api/checkout/create-payment-intent", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ planType }),
+          body: JSON.stringify({ planType, currency: currencyCode }),
         });
 
         const paymentIntentData = await paymentIntentResponse.json();
@@ -122,6 +126,20 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
         }
       }
 
+      // Get the correct Stripe Price ID for the selected currency
+      const currencyCode = selectedCountry.currency;
+      const stripePriceId = getStripePriceId(planType, currencyCode);
+      
+      if (!stripePriceId) {
+        toast({
+          title: "Error",
+          description: `Pricing not available for ${currencyCode}. Please select a different country.`,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Create subscription
       const subscriptionResponse = await fetch("/api/checkout/create-subscription", {
         method: "POST",
@@ -131,6 +149,8 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
         body: JSON.stringify({ 
           planType,
           paymentMethodId: paymentMethod.id,
+          currency: currencyCode,
+          stripePriceId: stripePriceId,
         }),
       });
 
@@ -228,7 +248,7 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
             onChange={handleCountryChange}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           >
-            {STRIPE_COUNTRIES.map((country) => (
+            {getSupportedCountries().map((country) => (
               <option key={country.code} value={country.code}>
                 {country.name}
               </option>
@@ -275,7 +295,7 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
   );
 }
 
-export default function CustomCheckout({ planType, userEmail, onSuccess }: Props) {
+export default function CustomCheckout({ planType, userEmail, onSuccess, onCountryChange }: Props) {
   const options: StripeElementsOptions = {
     appearance: {
       theme: "stripe",
@@ -285,7 +305,12 @@ export default function CustomCheckout({ planType, userEmail, onSuccess }: Props
 
   return (
     <Elements stripe={stripePromise} options={options}>
-      <CheckoutForm planType={planType} userEmail={userEmail} onSuccess={onSuccess} />
+      <CheckoutForm 
+        planType={planType} 
+        userEmail={userEmail} 
+        onSuccess={onSuccess}
+        onCountryChange={onCountryChange}
+      />
     </Elements>
   );
 }

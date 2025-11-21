@@ -1,5 +1,6 @@
 // Stripe-supported countries with their currencies and postal code terminology
 // Source: https://stripe.com/gb/global
+// Only countries using USD, GBP, EUR, CAD, or AUD are included
 
 export interface CountryInfo {
   code: string;
@@ -7,6 +8,9 @@ export interface CountryInfo {
   currency: string;
   postalCodeLabel: string;
 }
+
+// Supported currencies for pricing
+const SUPPORTED_CURRENCIES = ["USD", "GBP", "EUR", "CAD", "AUD"];
 
 export const STRIPE_COUNTRIES: CountryInfo[] = [
   { code: "AU", name: "Australia", currency: "AUD", postalCodeLabel: "Postcode" },
@@ -69,5 +73,14 @@ export function getCountryByCode(code: string): CountryInfo | undefined {
 export function getDefaultCountry(): CountryInfo {
   // Default to US, but could be based on user location or other logic
   return getCountryByCode("US") || STRIPE_COUNTRIES[0];
+}
+
+/**
+ * Get only countries that use supported currencies (USD, GBP, EUR, CAD, AUD)
+ */
+export function getSupportedCountries(): CountryInfo[] {
+  return STRIPE_COUNTRIES.filter((country) =>
+    SUPPORTED_CURRENCIES.includes(country.currency)
+  );
 }
 

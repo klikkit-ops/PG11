@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planType, paymentMethodId } = body;
+    const { planType, paymentMethodId, currency, stripePriceId } = body;
 
     if (!planType || !(planType in PLANS)) {
       return NextResponse.json(
@@ -45,7 +45,10 @@ export async function POST(request: NextRequest) {
 
     const plan = PLANS[planType as keyof typeof PLANS];
 
-    if (!plan.stripePriceId) {
+    // Use the provided stripePriceId (currency-specific) or fall back to default
+    const priceIdToUse = stripePriceId || plan.stripePriceId;
+
+    if (!priceIdToUse) {
       return NextResponse.json(
         { error: "Stripe price ID not configured for this plan" },
         { status: 500 }
@@ -103,12 +106,19 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // Get the weekly price ID for the selected currency
+      // If stripePriceId was provided, we need to get the weekly price for that currency
+      // For now, we'll use the weekly price from the plan, but ideally we'd look it up by currency
+      const weeklyPriceIdForCurrency = currency 
+        ? (await import("@/lib/currency-pricing")).getStripePriceId("WEEKLY", currency) || weeklyPriceId
+        : weeklyPriceId;
+
       // Create subscription with trial period
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [
           {
-            price: weeklyPriceId, // $7.99/week
+            price: weeklyPriceIdForCurrency || weeklyPriceId,
           },
         ],
         trial_period_days: plan.trialDays, // 3 days
@@ -118,6 +128,7 @@ export async function POST(request: NextRequest) {
           is_trial: "true",
           renews_to: "WEEKLY",
           checkout_type: "custom", // Mark as custom checkout to avoid double-charging in webhook
+          currency: currency || "USD",
         },
       });
 
@@ -149,12 +160,13 @@ export async function POST(request: NextRequest) {
       customer: customerId,
       items: [
         {
-          price: plan.stripePriceId,
+          price: priceIdToUse,
         },
       ],
       metadata: {
         user_id: user.id,
         plan_type: planType,
+        currency: currency || "USD",
       },
     });
 
