@@ -141,8 +141,8 @@ export default function SubscriptionPage({ user }: Props) {
                             </h2>
                             <p className="text-muted-foreground">
                                 {selectedPlan === "WEEKLY"
-                                    ? `${currentPlan.creditsPerPeriod} credits per ${currentPlan.billingPeriod}`
-                                    : `${currentPlan.creditsPerPeriod} credits per ${currentPlan.billingPeriod}`}
+                                    ? `${currentPlan.creditsPerPeriod.toLocaleString()} Coins per ${currentPlan.billingPeriod} (renews weekly)`
+                                    : `${currentPlan.creditsPerPeriod.toLocaleString()} Coins (provided upfront)`}
                             </p>
                         </div>
 
@@ -162,8 +162,9 @@ export default function SubscriptionPage({ user }: Props) {
                                     <Check className="h-4 w-4 text-green-600" />
                                 </div>
                                 <span className="text-base">
-                                    {currentPlan.creditsPerPeriod} video generations per{" "}
-                                    {currentPlan.billingPeriod === "week" ? "week" : "year"}
+                                    {selectedPlan === "WEEKLY" 
+                                        ? "10 video generations per week"
+                                        : "70 video generations (provided upfront)"}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
@@ -228,7 +229,7 @@ export default function SubscriptionPage({ user }: Props) {
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1">Unlimited Video Generations</h4>
                                         <p className="text-sm text-muted-foreground">
-                                            Create as many dancing videos as your credits allow. Credits reset each billing period.
+                                            Create as many dancing videos as your coins allow. {selectedPlan === "WEEKLY" ? "Coins renew weekly." : "All coins provided upfront."}
                                         </p>
                                     </div>
                                 </div>

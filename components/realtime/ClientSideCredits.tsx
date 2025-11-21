@@ -53,7 +53,7 @@ export default function ClientSideCredits({
           height={16}
           className="flex-shrink-0"
         />
-        <span className="whitespace-nowrap">Credits: {creditCount}</span>
+        <span className="whitespace-nowrap">Coins: {creditCount}</span>
       </div>
     </Link>
   );

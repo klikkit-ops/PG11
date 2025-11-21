@@ -6,14 +6,14 @@
 export const PLANS = {
   WEEKLY: {
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '',
-    creditsPerPeriod: 10, // 10 videos per week
+    creditsPerPeriod: 1000, // 1,000 coins per week (10 videos at 100 coins each)
     label: "Weekly",
     price: 7.99,
     billingPeriod: "week" as const,
   },
   ANNUAL: {
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL || '',
-    creditsPerPeriod: 600, // 600 videos per year (approximately 11-12 per week)
+    creditsPerPeriod: 7000, // 7,000 coins per year (provided upfront)
     label: "Annual",
     price: 69.99,
     billingPeriod: "year" as const,

@@ -46,20 +46,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Videos are always 5 seconds (1 credit)
+    // Videos are always 5 seconds (100 coins per video)
     const duration = 5;
-    const requiredCredits = 1;
+    const requiredCoins = 100; // 100 coins per video
 
-    // Check user has sufficient credits
+    // Check user has sufficient coins
     const { data: creditsData, error: creditsError } = await supabase
       .from("credits")
       .select("*")
       .eq("user_id", user.id)
       .single();
 
-    if (creditsError || !creditsData || creditsData.credits < requiredCredits) {
+    if (creditsError || !creditsData || creditsData.credits < requiredCoins) {
       return NextResponse.json(
-        { error: "Insufficient credits. Please subscribe to generate videos." },
+        { error: "Insufficient coins. Please subscribe to generate videos." },
         { status: 403 }
       );
     }
@@ -108,11 +108,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Deduct credits immediately (based on duration)
+    // Deduct coins immediately (100 coins per video)
     const { error: creditUpdateError } = await serviceSupabase
       .from("credits")
       .update({
-        credits: creditsData.credits - requiredCredits,
+        credits: creditsData.credits - requiredCoins,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);
