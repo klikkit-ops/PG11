@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { PLANS } from "@/lib/billing";
+import { STRIPE_COUNTRIES, getCountryByCode, getDefaultCountry, type CountryInfo } from "@/lib/countries";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
@@ -30,9 +31,18 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<CountryInfo>(getDefaultCountry());
 
   const plan = PLANS[planType];
   const isTrial = planType === "TRIAL";
+
+  const handleCountryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryCode = event.target.value;
+    const country = getCountryByCode(countryCode);
+    if (country) {
+      setSelectedCountry(country);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -51,10 +61,20 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
     }
 
     try {
+      // Get postal code from form
+      const zipInput = document.getElementById("zip") as HTMLInputElement;
+      const postalCode = zipInput?.value || "";
+
       // Create payment method
       const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
         type: "card",
         card: cardElement,
+        billing_details: {
+          address: {
+            country: selectedCountry.code,
+            postal_code: postalCode,
+          },
+        },
       });
 
       if (pmError || !paymentMethod) {
@@ -196,7 +216,7 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
         />
       </div>
 
-      {/* Country and ZIP */}
+      {/* Country and Postal Code */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="country" className="block text-sm font-medium mb-2 text-foreground/90">
@@ -204,23 +224,32 @@ function CheckoutForm({ planType, userEmail, onSuccess }: Props) {
           </label>
           <select
             id="country"
+            value={selectedCountry.code}
+            onChange={handleCountryChange}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           >
-            <option value="US">United States</option>
-            <option value="GB">United Kingdom</option>
-            <option value="CA">Canada</option>
-            <option value="AU">Australia</option>
-            {/* Add more countries as needed */}
+            {STRIPE_COUNTRIES.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.name}
+              </option>
+            ))}
           </select>
         </div>
         <div>
           <label htmlFor="zip" className="block text-sm font-medium mb-2 text-foreground/90">
-            ZIP
+            {selectedCountry.postalCodeLabel}
           </label>
           <input
             type="text"
             id="zip"
-            placeholder="12345"
+            placeholder={
+              selectedCountry.code === "US" ? "12345" :
+              selectedCountry.code === "GB" ? "SW1A 1AA" :
+              selectedCountry.code === "CA" ? "K1A 0A6" :
+              selectedCountry.code === "AU" ? "2000" :
+              selectedCountry.code === "IE" ? "D02 AF30" :
+              "12345"
+            }
             className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
           />
         </div>
@@ -251,6 +280,7 @@ export default function CustomCheckout({ planType, userEmail, onSuccess }: Props
     appearance: {
       theme: "stripe",
     },
+    locale: "en", // You could make this dynamic based on country
   };
 
   return (
