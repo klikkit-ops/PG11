@@ -429,7 +429,7 @@ async function generateVideoAsync(
     if (videoResponse.status === "processing" || videoResponse.status === "queued") {
       console.log(
         `[Video Generation] Video ${videoId} is ${videoResponse.status}. ` +
-        `RunComfy request_id: ${videoResponse.id}. ` +
+        `Replicate prediction_id: ${videoResponse.id}. ` +
         `Status will be checked via polling.`
       );
     } else if (videoResponse.status === "succeeded") {
