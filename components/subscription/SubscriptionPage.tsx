@@ -78,8 +78,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
 
                 {/* Plan Toggle */}
                 <div className="flex justify-center">
-                    <div className="w-full max-w-full mx-auto">
-                        <div className="flex gap-1.5 sm:gap-2 p-1 sm:p-1.5 glass-panel w-full justify-center">
+                    <div className="inline-flex gap-1.5 sm:gap-2 p-1 sm:p-1.5 glass-panel">
                         {!hasUsedTrial && (
                             <button
                                 onClick={() => setSelectedPlan("TRIAL")}
