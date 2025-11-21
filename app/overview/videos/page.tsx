@@ -163,12 +163,17 @@ export default async function VideosPage() {
                   )}
 
                   {/* Status Badge */}
-                  <div className="absolute top-3 right-3">
-                    <div className="bg-black/60 backdrop-blur-md rounded-full px-3 py-1 flex items-center gap-2 border border-white/10">
-                      {getStatusIcon(video.status)}
-                      <span className="text-xs font-medium text-white capitalize">
-                        {getStatusText(video.status)}
-                      </span>
+                  <div className="absolute top-3 right-3 z-30">
+                    <div className="relative rounded-full px-3 py-1 flex items-center gap-2 border border-white/10">
+                      {/* Blurred background layer */}
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-md rounded-full -z-10" />
+                      {/* Sharp content layer */}
+                      <div className="relative flex items-center gap-2">
+                        {getStatusIcon(video.status)}
+                        <span className="text-xs font-medium text-white capitalize">
+                          {getStatusText(video.status)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
