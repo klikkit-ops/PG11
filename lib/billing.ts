@@ -5,13 +5,14 @@
 
 export const PLANS = {
   TRIAL: {
-    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '', // Uses weekly price, but with trial
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL || process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '', // Trial price ($0.49) or fallback to weekly
     creditsPerPeriod: 100, // 100 coins for 1 generation during trial
     label: "3-Day Trial",
     price: 0.49,
     billingPeriod: "trial" as const,
     trialDays: 3,
     renewsTo: "WEEKLY" as const,
+    weeklyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '', // Weekly price to convert to after trial
   },
   WEEKLY: {
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '',

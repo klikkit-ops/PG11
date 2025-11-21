@@ -77,37 +77,81 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Create subscription with 3-day trial that auto-renews to weekly
-      // We'll charge $0.49 as a setup fee using invoice items in the webhook
-      const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price: plan.stripePriceId, // Weekly price - will start after trial
-            quantity: 1,
-          },
-        ],
-        subscription_data: {
-          trial_period_days: plan.trialDays,
+      // For trial, we need to charge $0.49 upfront
+      // We'll create a one-time payment for $0.49, then create the subscription with trial in the webhook
+      // First, check if we have a trial price ID, otherwise create a one-time payment session
+      
+      // Check if there's a dedicated trial price ($0.49 one-time)
+      const trialPriceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL;
+      const weeklyPriceId = 'weeklyPriceId' in plan ? plan.weeklyPriceId : plan.stripePriceId;
+      
+      if (trialPriceId) {
+        // Use the trial price for checkout - this will show $0.49 on the checkout page
+        // In the webhook, we'll create the subscription with trial period
+        const session = await stripe.checkout.sessions.create({
+          mode: "payment", // One-time payment for trial
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price: trialPriceId, // $0.49 one-time price
+              quantity: 1,
+            },
+          ],
+          client_reference_id: user.id,
+          customer_email: user.email || undefined,
+          success_url: `${deploymentUrl}/overview/videos?success=true&trial=true`,
+          cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
           metadata: {
             user_id: user.id,
             plan_type: planType,
             is_trial: "true",
-            renews_to: plan.renewsTo || "WEEKLY",
+            weekly_price_id: weeklyPriceId, // Store weekly price ID for webhook
+            trial_days: plan.trialDays.toString(),
           },
-        },
-        payment_method_collection: "always", // Require payment method upfront
-        client_reference_id: user.id,
-        customer_email: user.email || undefined,
-        success_url: `${deploymentUrl}/overview/videos?success=true`,
-        cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
-        metadata: {
-          user_id: user.id,
-          plan_type: planType,
-          is_trial: "true",
-        },
-      });
+        });
+
+        return NextResponse.json({
+          sessionId: session.id,
+          url: session.url,
+        });
+      } else {
+        // Fallback: Create subscription with trial period (will show as "free")
+        // The $0.49 will be charged via invoice item in webhook
+        const session = await stripe.checkout.sessions.create({
+          mode: "subscription",
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price: weeklyPriceId, // Weekly price - will start after trial
+              quantity: 1,
+            },
+          ],
+          subscription_data: {
+            trial_period_days: plan.trialDays,
+            metadata: {
+              user_id: user.id,
+              plan_type: planType,
+              is_trial: "true",
+              renews_to: plan.renewsTo || "WEEKLY",
+            },
+          },
+          payment_method_collection: "always",
+          client_reference_id: user.id,
+          customer_email: user.email || undefined,
+          success_url: `${deploymentUrl}/overview/videos?success=true`,
+          cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
+          metadata: {
+            user_id: user.id,
+            plan_type: planType,
+            is_trial: "true",
+          },
+        });
+
+        return NextResponse.json({
+          sessionId: session.id,
+          url: session.url,
+        });
+      }
 
       return NextResponse.json({
         sessionId: session.id,

@@ -193,15 +193,76 @@ async function handleCheckoutSessionCompleted(
       );
     }
   } else if (checkoutSession.mode === "payment") {
-    // Handle one-time payments (legacy support)
-    const lineItems = await stripe.checkout.sessions.listLineItems(
-      checkoutSession.id
-    );
-    const priceId = lineItems.data[0]?.price?.id;
-    if (priceId) {
-      const creditsPerPeriod = getCreditsPerPeriod(priceId);
-      if (creditsPerPeriod > 0) {
-        await addCreditsToUser(userId, creditsPerPeriod, supabase);
+    // Handle one-time payments (including trial payments)
+    const isTrial = checkoutSession.metadata?.is_trial === "true";
+    
+    if (isTrial) {
+      // This is a trial payment - create subscription with trial period
+      const weeklyPriceId = checkoutSession.metadata?.weekly_price_id;
+      const trialDays = parseInt(checkoutSession.metadata?.trial_days || "3");
+      
+      if (!weeklyPriceId) {
+        console.error("Missing weekly_price_id in trial checkout metadata");
+        return;
+      }
+      
+      // Get or create customer
+      let customerId: string;
+      if (checkoutSession.customer) {
+        customerId = checkoutSession.customer as string;
+      } else {
+        // Create customer from email
+        const customer = await stripe.customers.create({
+          email: checkoutSession.customer_email || undefined,
+          metadata: {
+            user_id: userId,
+          },
+        });
+        customerId = customer.id;
+      }
+      
+      // Create subscription with trial period
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [
+          {
+            price: weeklyPriceId,
+          },
+        ],
+        trial_period_days: trialDays,
+        metadata: {
+          user_id: userId,
+          plan_type: "TRIAL",
+          is_trial: "true",
+          renews_to: "WEEKLY",
+        },
+      });
+      
+      // Grant 100 coins for trial
+      await addCreditsToUser(userId, 100, supabase);
+      
+      // Mark user as having used the trial
+      await markTrialAsUsed(userId, supabase);
+      
+      // Store Stripe customer and subscription info
+      await updateUserStripeInfo(
+        userId,
+        customerId,
+        subscription.id,
+        subscription.status,
+        supabase
+      );
+    } else {
+      // Legacy one-time payment support
+      const lineItems = await stripe.checkout.sessions.listLineItems(
+        checkoutSession.id
+      );
+      const priceId = lineItems.data[0]?.price?.id;
+      if (priceId) {
+        const creditsPerPeriod = getCreditsPerPeriod(priceId);
+        if (creditsPerPeriod > 0) {
+          await addCreditsToUser(userId, creditsPerPeriod, supabase);
+        }
       }
     }
   }
