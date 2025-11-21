@@ -140,49 +140,23 @@ async function handleCheckoutSessionCompleted(
     const isTrial = checkoutSession.metadata?.is_trial === "true" || subscription.metadata?.is_trial === "true";
     
     // Handle trial subscription
-    if (isTrial && subscription.status === "trialing") {
+    if (isTrial) {
       // Grant 100 coins for trial (1 generation)
       await addCreditsToUser(userId, 100, supabase);
       
       // Mark user as having used the trial
       await markTrialAsUsed(userId, supabase);
       
-      // Charge $0.49 immediately as a setup fee
-      try {
-        const customerId = subscription.customer as string;
-        await stripe.invoiceItems.create({
-          customer: customerId,
-          amount: 49, // $0.49 in cents
-          currency: "usd",
-          description: "3-Day Trial Fee",
-        });
-        
-        // Create and pay the invoice immediately
-        const invoice = await stripe.invoices.create({
-          customer: customerId,
-          auto_advance: true, // Auto-finalize
-        });
-        await stripe.invoices.pay(invoice.id);
-        
-        console.log(`[Webhook] Charged $0.49 trial fee to customer ${customerId}`);
-      } catch (error) {
-        console.error("Error charging trial fee:", error);
-        // Continue even if fee charging fails - user still gets trial
-      }
-      
-      // Create a subscription schedule to show correct pricing on future invoices
-      // Phase 1: $0.49 for first billing cycle (3 days)
-      // Phase 2: $7.99/week after that
+      // Create a subscription schedule to switch from $0.49/week to $7.99/week after first billing cycle
       const trialPriceId = subscription.metadata?.trial_price_id;
       const weeklyPriceId = subscription.metadata?.weekly_price_id;
       const trialEndTimestamp = parseInt(subscription.metadata?.trial_end_timestamp || "0");
       
-      if (trialPriceId && weeklyPriceId && subscription.items.data.length > 0) {
+      if (trialPriceId && weeklyPriceId && subscription.items.data.length > 0 && trialEndTimestamp > 0) {
         try {
-          const subscriptionItemId = subscription.items.data[0].id;
-          
           // Create subscription schedule with two phases
-          // This ensures the subscription charges $0.49 for the first cycle, then $7.99/week
+          // Phase 1: $0.49/week for first billing cycle (until trial end)
+          // Phase 2: $7.99/week after trial ends
           await stripe.subscriptionSchedules.create({
             from_subscription: subscription.id,
             phases: [
@@ -208,16 +182,17 @@ async function handleCheckoutSessionCompleted(
             ],
           });
           
-          console.log(`[Webhook] Created subscription schedule for trial subscription ${subscription.id}`);
+          console.log(`[Webhook] Created subscription schedule for trial subscription ${subscription.id}: $0.49/week until ${new Date(trialEndTimestamp * 1000).toISOString()}, then $7.99/week`);
         } catch (error) {
           console.error("Error creating subscription schedule:", error);
-          // Fallback: Update subscription item directly
+          // Fallback: Update subscription item to weekly price after first billing cycle
           try {
+            const subscriptionItemId = subscription.items.data[0].id;
             await stripe.subscriptionItems.update(subscriptionItemId, {
               price: weeklyPriceId,
-              proration_behavior: 'none',
+              proration_behavior: 'none', // Don't prorate, wait until next billing cycle
             });
-            console.log(`[Webhook] Fallback: Updated subscription item to weekly price`);
+            console.log(`[Webhook] Fallback: Updated subscription item to weekly price (will take effect at next billing cycle)`);
           } catch (updateError) {
             console.error("Error updating subscription item:", updateError);
           }
