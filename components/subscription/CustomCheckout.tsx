@@ -368,18 +368,20 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
 
       {/* Apple Pay / Google Pay Button */}
       {canUseApplePay && paymentRequest && (
-        <div className="pb-2">
-          <PaymentRequestButtonElement
-            options={{
-              paymentRequest,
-              style: {
-                paymentRequestButton: {
-                  theme: "dark",
-                  height: "48px",
+        <div className="pb-2 w-full overflow-x-hidden">
+          <div className="w-full max-w-full">
+            <PaymentRequestButtonElement
+              options={{
+                paymentRequest,
+                style: {
+                  paymentRequestButton: {
+                    theme: "dark",
+                    height: "48px",
+                  },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
