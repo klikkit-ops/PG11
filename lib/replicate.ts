@@ -24,9 +24,9 @@ export interface ReplicateVideoResponse {
 // Environment variables
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 const REPLICATE_BASE_URL = 'https://api.replicate.com/v1';
-// Replicate model identifier - we'll use the model name and let Replicate resolve to latest version
-// Alternatively, you can specify a specific version hash like: "abc123def456..."
-const MODEL_IDENTIFIER = 'wan-video/wan-2.5-i2v';
+// Replicate model identifier
+const MODEL_OWNER = 'wan-video';
+const MODEL_NAME = 'wan-2.5-i2v';
 
 /**
  * Generate a video from an image using Replicate Wan 2.5 API
