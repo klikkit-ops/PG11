@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         dance_style: danceStyle,
         prompt: prompt,
         status: "queued",
-        provider: "runcomfy",
+        provider: "replicate",
       })
       .select()
       .single();
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     }
 
     // CRITICAL FIX: Vercel serverless functions terminate when the response is sent
-    // We MUST create the RunComfy task and save the request_id BEFORE returning
+    // We MUST create the Replicate prediction and save the prediction_id BEFORE returning
     // Otherwise, the background async operation will be killed and never complete
     
     const videoId = videoRecord.id;
@@ -337,12 +337,12 @@ async function generateVideoAsync(
       throw new Error(`Failed to update video status: ${updateError.message}`);
     }
 
-    // Call RunComfy API to generate video
-    console.log(`[Video Generation] Calling RunComfy API for video ${videoId}`);
-    console.log(`[Video Generation] RunComfy API call parameters:`, {
+    // Call Replicate API to generate video
+    console.log(`[Video Generation] Calling Replicate API for video ${videoId}`);
+    console.log(`[Video Generation] Replicate API call parameters:`, {
       imageUrl: imageUrl.substring(0, 100) + '...',
       promptLength: prompt.length,
-      duration: 8,
+      numFrames: 12,
     });
     
     let videoResponse;
@@ -380,13 +380,13 @@ async function generateVideoAsync(
     });
     
     if (!videoResponse.id) {
-      console.error(`[Video Generation] CRITICAL: RunComfy API returned no request_id for video ${videoId}!`);
+      console.error(`[Video Generation] CRITICAL: Replicate API returned no prediction_id for video ${videoId}!`);
       console.error(`[Video Generation] Full response:`, JSON.stringify(videoResponse, null, 2));
-      throw new Error('RunComfy API did not return a request_id');
+      throw new Error('Replicate API did not return a prediction_id');
     }
 
-    // Update video record with result, including RunComfy request_id
-    console.log(`[Video Generation] Updating video ${videoId} with RunComfy response`);
+    // Update video record with result, including Replicate prediction_id
+    console.log(`[Video Generation] Updating video ${videoId} with Replicate response`);
     console.log(`[Video Generation] Update payload:`, {
       status: videoResponse.status,
       hasVideoUrl: !!videoResponse.videoUrl,
@@ -400,14 +400,15 @@ async function generateVideoAsync(
         status: videoResponse.status,
         video_url: videoResponse.videoUrl || null,
         error_message: videoResponse.error || null,
-        runway_video_id: videoResponse.id || null, // CRITICAL: Save RunComfy request_id (reusing field name)
+        runway_video_id: videoResponse.id || null, // CRITICAL: Save Replicate prediction_id (reusing field name)
+        provider: 'replicate', // Set provider to replicate
         updated_at: new Date().toISOString(),
       })
       .eq("id", videoId)
       .select();
       
     if (updateResponseError) {
-      console.error(`[Video Generation] FAILED to update video with RunComfy response:`, updateResponseError);
+      console.error(`[Video Generation] FAILED to update video with Replicate response:`, updateResponseError);
       console.error(`[Video Generation] Update error details:`, {
         code: updateResponseError.code,
         message: updateResponseError.message,
@@ -417,7 +418,7 @@ async function generateVideoAsync(
       throw new Error(`Failed to update video record: ${updateResponseError.message}`);
     }
     
-    console.log(`[Video Generation] Successfully updated video ${videoId} with RunComfy request_id: ${videoResponse.id}`);
+    console.log(`[Video Generation] Successfully updated video ${videoId} with Replicate prediction_id: ${videoResponse.id}`);
     console.log(`[Video Generation] Updated record:`, updateData?.[0] ? {
       id: updateData[0].id,
       status: updateData[0].status,
