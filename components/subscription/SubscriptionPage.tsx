@@ -11,12 +11,13 @@ import { PetAvatar } from "@/components/ui/pet-avatar";
 
 type Props = {
     user: User;
+    hasUsedTrial?: boolean;
 };
 
 type PlanType = "TRIAL" | "WEEKLY" | "ANNUAL";
 
-export default function SubscriptionPage({ user }: Props) {
-    const [selectedPlan, setSelectedPlan] = useState<PlanType>("TRIAL");
+export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) {
+    const [selectedPlan, setSelectedPlan] = useState<PlanType>(hasUsedTrial ? "WEEKLY" : "TRIAL");
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
@@ -116,18 +117,20 @@ export default function SubscriptionPage({ user }: Props) {
                 {/* Plan Toggle */}
                 <div className="flex justify-center">
                     <div className="inline-flex gap-2 p-1.5 glass-panel">
-                        <button
-                            onClick={() => setSelectedPlan("TRIAL")}
-                            className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative ${selectedPlan === "TRIAL"
-                                ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
-                                : "text-muted-foreground hover:text-foreground"
-                                }`}
-                        >
-                            Trial
-                            <span className="ml-2 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30">
-                                $0.49
-                            </span>
-                        </button>
+                        {!hasUsedTrial && (
+                            <button
+                                onClick={() => setSelectedPlan("TRIAL")}
+                                className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative ${selectedPlan === "TRIAL"
+                                    ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
+                                    : "text-muted-foreground hover:text-foreground"
+                                    }`}
+                            >
+                                Trial
+                                <span className="ml-2 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30">
+                                    $0.49
+                                </span>
+                            </button>
+                        )}
                         <button
                             onClick={() => setSelectedPlan("WEEKLY")}
                             className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 ${selectedPlan === "WEEKLY"

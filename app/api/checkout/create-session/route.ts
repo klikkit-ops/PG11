@@ -54,6 +54,29 @@ export async function POST(request: NextRequest) {
 
     // Handle trial subscription
     if (planType === "TRIAL" && 'trialDays' in plan) {
+      // Check if user has already used a trial
+      const { data: creditsData, error: creditsError } = await supabase
+        .from("credits")
+        .select("has_used_trial")
+        .eq("user_id", user.id)
+        .single();
+
+      if (creditsError && creditsError.code !== "PGRST116") {
+        console.error("Error checking trial status:", creditsError);
+        return NextResponse.json(
+          { error: "Failed to check trial eligibility" },
+          { status: 500 }
+        );
+      }
+
+      // If user has already used a trial, prevent them from starting another one
+      if (creditsData?.has_used_trial) {
+        return NextResponse.json(
+          { error: "You have already used your trial. Please choose a regular subscription plan." },
+          { status: 400 }
+        );
+      }
+
       // Create subscription with 3-day trial that auto-renews to weekly
       // We'll charge $0.49 as a setup fee using invoice items in the webhook
       const session = await stripe.checkout.sessions.create({

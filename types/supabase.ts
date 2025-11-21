@@ -16,6 +16,7 @@ export interface Database {
           id: number
           user_id: string
           updated_at: string
+          has_used_trial: boolean
         }
         Insert: {
           created_at?: string
@@ -23,6 +24,7 @@ export interface Database {
           id?: number
           user_id: string
           updated_at?: string
+          has_used_trial?: boolean
         }
         Update: {
           created_at?: string
@@ -30,6 +32,7 @@ export interface Database {
           id?: number
           user_id?: string
           updated_at?: string
+          has_used_trial?: boolean
         }
         Relationships: [
           {

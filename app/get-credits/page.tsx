@@ -17,5 +17,14 @@ export default async function GetCreditsPage() {
     return redirect("/login");
   }
 
-  return <SubscriptionPage user={user} />;
+  // Check if user has already used the trial
+  const { data: creditsData } = await supabase
+    .from("credits")
+    .select("has_used_trial")
+    .eq("user_id", user.id)
+    .single();
+
+  const hasUsedTrial = creditsData?.has_used_trial ?? false;
+
+  return <SubscriptionPage user={user} hasUsedTrial={hasUsedTrial} />;
 }

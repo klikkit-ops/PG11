@@ -144,6 +144,9 @@ async function handleCheckoutSessionCompleted(
       // Grant 100 coins for trial (1 generation)
       await addCreditsToUser(userId, 100, supabase);
       
+      // Mark user as having used the trial
+      await markTrialAsUsed(userId, supabase);
+      
       // Charge $0.49 as an invoice item
       try {
         const customerId = subscription.customer as string;
@@ -325,6 +328,52 @@ async function addCreditsToUser(
       console.error("Error creating credits:", error);
       throw error;
     }
+  }
+}
+
+/**
+ * Mark user as having used the trial
+ */
+async function markTrialAsUsed(
+  userId: string,
+  supabase: ReturnType<typeof createClient<Database>>
+) {
+  const { error } = await supabase
+    .from("credits")
+    .update({
+      has_used_trial: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error marking trial as used:", error);
+    // Don't throw - this is not critical enough to fail the webhook
+  } else {
+    console.log(`[Webhook] Marked user ${userId} as having used trial`);
+  }
+}
+
+/**
+ * Mark user as having used the trial
+ */
+async function markTrialAsUsed(
+  userId: string,
+  supabase: ReturnType<typeof createClient<Database>>
+) {
+  const { error } = await supabase
+    .from("credits")
+    .update({
+      has_used_trial: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error marking trial as used:", error);
+    // Don't throw - this is not critical enough to fail the webhook
+  } else {
+    console.log(`[Webhook] Marked user ${userId} as having used trial`);
   }
 }
 
