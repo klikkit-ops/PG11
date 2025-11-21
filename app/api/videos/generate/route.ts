@@ -2,7 +2,7 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
-import { generateVideo as generateVideoRunComfy } from "@/lib/runcomfy";
+import { generateVideo as generateVideoReplicate } from "@/lib/replicate";
 import { generateDancePrompt } from "@/lib/runway";
 import { createClient } from "@supabase/supabase-js";
 import { processImageTo9x16, uploadProcessedImage, get9x16Dimensions } from "@/lib/imageProcessing";
@@ -125,9 +125,9 @@ export async function POST(request: Request) {
     
     const videoId = videoRecord.id;
     console.log(`[Video Generation] Starting video generation for video ${videoId}`);
-    console.log(`[Video Generation] Environment check:`, {
-      hasRunComfyApiKey: !!process.env.RUNCOMFY_API_KEY,
-    });
+      console.log(`[Video Generation] Environment check:`, {
+        hasReplicateApiToken: !!process.env.REPLICATE_API_TOKEN,
+      });
     
     try {
       // Update status to processing immediately
@@ -186,46 +186,44 @@ export async function POST(request: Request) {
         console.log(`[Video Generation] Proceeding without audio for dance style: ${danceStyle}`);
       }
 
-      // CRITICAL: Call RunComfy API
-      // This ensures the request_id is saved before Vercel kills the function
+      // CRITICAL: Call Replicate API
+      // This ensures the prediction_id is saved before Vercel kills the function
       console.log(`[Video Generation] ===== STARTING VIDEO GENERATION FOR ${videoId} =====`);
-      console.log(`[Video Generation] Attempting RunComfy API first for video ${videoId}`);
+      console.log(`[Video Generation] Calling Replicate API for video ${videoId}`);
       console.log(`[Video Generation] Environment check:`, {
-        hasRunComfyKey: !!process.env.RUNCOMFY_API_KEY,
+        hasReplicateApiToken: !!process.env.REPLICATE_API_TOKEN,
         hasBlobToken: !!process.env.BLOB_READ_WRITE_TOKEN,
       });
       console.log(`[Video Generation] API call parameters:`, {
         imageUrl: processedImageUrl.substring(0, 100) + '...',
         promptLength: prompt.length,
-        duration: 10,
-        resolution: '480P',
+        resolution: '480p',
         hasAudioUrl: !!audioUrl,
         audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
       
-      // Call RunComfy API
-      console.log(`[Video Generation] === CALLING RUNCOMFY API ===`);
+      // Call Replicate API
+      console.log(`[Video Generation] === CALLING REPLICATE API ===`);
       console.log(`[Video Generation] Request payload:`, {
         imageUrl: processedImageUrl.substring(0, 150),
         prompt: prompt.substring(0, 200) + '...',
         promptLength: prompt.length,
-        duration: 10,
-        resolution: '480P',
+        resolution: '480p',
         hasNegativePrompt: true,
         hasAudioUrl: !!audioUrl,
         audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
       
-      const videoResponse = await generateVideoRunComfy({
+      const videoResponse = await generateVideoReplicate({
         imageUrl: processedImageUrl, // Use processed 9:16 image
         prompt,
-        duration: 10, // Wan 2.5 supports 5 or 10 seconds
-        resolution: '480P', // 480P, 720P, or 1080P
+        resolution: '480p', // 480p, 720p, or 1080p
+        numFrames: 24, // Default number of frames for ~10 seconds at ~2.4 fps
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
         audioUrl: audioUrl || undefined, // Include audio URL if available
       });
       
-      console.log(`[Video Generation] === RUNCOMFY API CALL SUCCEEDED ===`);
+      console.log(`[Video Generation] === REPLICATE API CALL SUCCEEDED ===`);
       console.log(`[Video Generation] Response:`, {
         id: videoResponse.id,
         status: videoResponse.status,
@@ -234,32 +232,32 @@ export async function POST(request: Request) {
       });
 
       if (!videoResponse.id) {
-        console.error(`[Video Generation] CRITICAL: RunComfy API returned no request_id for video ${videoId}!`);
-        throw new Error(`RunComfy API did not return a request_id`);
+        console.error(`[Video Generation] CRITICAL: Replicate API returned no prediction_id for video ${videoId}!`);
+        throw new Error(`Replicate API did not return a prediction_id`);
       }
 
-      // CRITICAL: Save the request_id BEFORE returning the response
+      // CRITICAL: Save the prediction_id BEFORE returning the response
       // This is the key fix - we must save it synchronously, not in a background task
-      console.log(`[Video Generation] Saving RunComfy request_id for video ${videoId}: ${videoResponse.id}`);
+      console.log(`[Video Generation] Saving Replicate prediction_id for video ${videoId}: ${videoResponse.id}`);
       const { error: updateResponseError, data: updateData } = await serviceSupabase
         .from("videos")
         .update({
           status: videoResponse.status,
           video_url: videoResponse.videoUrl || null,
           error_message: videoResponse.error || null,
-          runway_video_id: videoResponse.id, // Save the request_id
-          provider: 'runcomfy', // Always RunComfy now
+          runway_video_id: videoResponse.id, // Save the prediction_id (reusing field name)
+          provider: 'replicate', // Use 'replicate' as provider
           updated_at: new Date().toISOString(),
         })
         .eq("id", videoId)
         .select();
         
       if (updateResponseError) {
-        console.error(`[Video Generation] FAILED to save RunComfy request_id:`, updateResponseError);
-        throw new Error(`Failed to save RunComfy request_id: ${updateResponseError.message}`);
+        console.error(`[Video Generation] FAILED to save Replicate prediction_id:`, updateResponseError);
+        throw new Error(`Failed to save Replicate prediction_id: ${updateResponseError.message}`);
       }
       
-      console.log(`[Video Generation] Successfully saved RunComfy request_id for video ${videoId}: ${videoResponse.id}`);
+      console.log(`[Video Generation] Successfully saved Replicate prediction_id for video ${videoId}: ${videoResponse.id}`);
       console.log(`[Video Generation] Updated record:`, updateData?.[0] ? {
         id: updateData[0].id,
         status: updateData[0].status,
@@ -275,8 +273,8 @@ export async function POST(request: Request) {
         message: "Video generation started",
       });
     } catch (error) {
-      // If RunComfy API call fails, update video status to failed
-      console.error(`[Video Generation] Error creating RunComfy task for video ${videoId}:`, error);
+      // If Replicate API call fails, update video status to failed
+      console.error(`[Video Generation] Error creating Replicate prediction for video ${videoId}:`, error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
       try {
@@ -310,7 +308,7 @@ export async function POST(request: Request) {
 
 /**
  * Generate video asynchronously
- * This function handles the actual video generation with RunComfy API
+ * This function handles the actual video generation with Replicate API
  */
 async function generateVideoAsync(
   videoId: string,

@@ -2,7 +2,7 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
-import { checkVideoStatus as checkVideoStatusRunComfy } from "@/lib/runcomfy";
+import { checkVideoStatus as checkVideoStatusReplicate } from "@/lib/replicate";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
@@ -57,14 +57,14 @@ export async function GET(request: Request) {
       );
     }
 
-    // If video is still processing, check with RunComfy API
+    // If video is still processing, check with Replicate API
     if (video.status === "processing" || video.status === "queued") {
       try {
-        const requestId = video.runway_video_id; // This field stores the RunComfy request_id
+        const predictionId = video.runway_video_id; // This field stores the Replicate prediction_id
         
-        if (requestId) {
-          console.log(`[Video Status] Checking RunComfy API for video ${videoId}, request_id: ${requestId}`);
-          const statusResponse = await checkVideoStatusRunComfy(requestId);
+        if (predictionId) {
+          console.log(`[Video Status] Checking Replicate API for video ${videoId}, prediction_id: ${predictionId}`);
+          const statusResponse = await checkVideoStatusReplicate(predictionId);
           
           // Update database if status changed
           if (statusResponse.status !== video.status || statusResponse.videoUrl) {
@@ -99,10 +99,10 @@ export async function GET(request: Request) {
             }
           }
         } else {
-          console.warn(`Video ${videoId} is processing but no request_id found.`);
+          console.warn(`Video ${videoId} is processing but no prediction_id found.`);
         }
       } catch (error) {
-        console.error(`Error checking video status with RunComfy API:`, error);
+        console.error(`Error checking video status with Replicate API:`, error);
         // Continue and return current database status
         // Don't fail the request if API check fails
       }
