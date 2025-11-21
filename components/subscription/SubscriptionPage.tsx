@@ -59,9 +59,6 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
     };
 
     const currentPlan = selectedPlan === "TRIAL" ? trialPlan : selectedPlan === "WEEKLY" ? weeklyPlan : annualPlan;
-    const savings = annualPlan.price < weeklyPlan.price * 52
-        ? Math.round(((weeklyPlan.price * 52 - annualPlan.price) / (weeklyPlan.price * 52)) * 100)
-        : 0;
 
     return (
         <div className="min-h-screen relative">
@@ -114,11 +111,6 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                 }`}
                         >
                             Yearly
-                            {savings > 0 && (
-                                <span className="ml-1.5 sm:ml-2 text-xs bg-white/90 text-purple-700 px-1.5 sm:px-2 py-0.5 rounded-full border border-white/50 shadow-sm font-semibold">
-                                    Save {savings}%
-                                </span>
-                            )}
                         </button>
                         </div>
                     </div>
@@ -181,16 +173,6 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                 </div>
                                 <span className="text-base text-foreground font-medium">Download anytime</span>
                             </div>
-                            {selectedPlan === "ANNUAL" && savings > 0 && (
-                                <div className="flex items-center gap-3 pt-2 border-t border-border/50">
-                                    <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                                        <Check className="h-4 w-4 text-green-600" />
-                                    </div>
-                                    <span className="text-base font-semibold text-green-600">
-                                        Save {savings}% compared to weekly billing
-                                    </span>
-                                </div>
-                            )}
                         </div>
 
                         <Button
