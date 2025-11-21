@@ -77,14 +77,23 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // For trial, we'll create a subscription that charges $0.49 upfront
-      // Then after 3 days, it will convert to the weekly subscription
-      // We'll use a custom price_data to charge $0.49 for the first billing period
+      // For trial, we'll use a separate $0.49/week Stripe price
+      // This will show "$0.49 per week" on checkout
+      // In the webhook, we'll update the subscription to use the weekly price after the first billing cycle
       
       // TypeScript knows this is TRIAL plan, so we can safely access weeklyPriceId if it exists
+      const trialPriceId = plan.stripePriceId; // This should be NEXT_PUBLIC_STRIPE_PRICE_TRIAL ($0.49/week)
       const weeklyPriceId = (plan as typeof PLANS.TRIAL).weeklyPriceId || PLANS.WEEKLY.stripePriceId;
       
-      // Validate that we have a valid weekly price ID
+      // Validate that we have both price IDs
+      if (!trialPriceId) {
+        console.error("Missing trial price ID - NEXT_PUBLIC_STRIPE_PRICE_TRIAL must be set");
+        return NextResponse.json(
+          { error: "Trial subscription configuration error: Trial price ID (NEXT_PUBLIC_STRIPE_PRICE_TRIAL) is required. Please create a $0.49/week price in Stripe." },
+          { status: 500 }
+        );
+      }
+      
       if (!weeklyPriceId) {
         console.error("Missing weekly price ID for trial subscription");
         return NextResponse.json(
@@ -93,39 +102,35 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      // Get the weekly price details to use for the recurring amount
-      let weeklyPrice;
       try {
-        weeklyPrice = await stripe.prices.retrieve(weeklyPriceId);
-      } catch (error) {
-        console.error("Error retrieving weekly price:", error);
-        return NextResponse.json(
-          { error: "Failed to retrieve subscription price details" },
-          { status: 500 }
-        );
-      }
-      
-      try {
-        // Create subscription with trial period and setup fee
-        // We'll use the weekly price with trial_period_days, then charge $0.49 as a setup fee in the webhook
-        // Unfortunately, Stripe will show "free" during checkout, but we'll charge $0.49 immediately after
+        // Calculate when the trial period ends (3 days from now)
+        const trialEndDate = Math.floor(Date.now() / 1000) + (plan.trialDays * 24 * 60 * 60);
+        
+        // Create subscription with the $0.49/week trial price
+        // Set billing_cycle_anchor to 3 days from now so the first charge happens then
+        // This will show "$0.49 per week" on checkout, with the first charge in 3 days
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
           payment_method_types: ["card"],
           line_items: [
             {
-              price: weeklyPriceId, // Weekly price - will start after trial
+              price: trialPriceId, // $0.49/week price - will show on checkout!
               quantity: 1,
             },
           ],
           subscription_data: {
-            trial_period_days: plan.trialDays,
             metadata: {
               user_id: user.id,
               plan_type: planType,
               is_trial: "true",
-              renews_to: plan.renewsTo || "WEEKLY",
+              renews_to: "WEEKLY",
+              weekly_price_id: weeklyPriceId, // Store weekly price ID to switch to after first billing cycle
+              trial_days: plan.trialDays.toString(),
+              trial_end_timestamp: trialEndDate.toString(),
             },
+            // Set billing cycle anchor to 3 days from now
+            // This means the first $0.49 charge happens in 3 days
+            billing_cycle_anchor: trialEndDate,
           },
           payment_method_collection: "always", // Require payment method upfront
           client_reference_id: user.id,
