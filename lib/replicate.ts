@@ -107,6 +107,7 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
       promptLength: promptText.length,
       numFrames: input.num_frames,
       resolution: input.resolution,
+      aspectRatio: input.aspect_ratio,
       hasAudio: !!input.audio,
     });
 
