@@ -128,8 +128,6 @@ export async function POST(request: NextRequest) {
           checkout_type: "custom", // Mark as custom checkout to avoid double-charging in webhook
           currency: currency || "USD",
         },
-        // Set the currency for the subscription
-        currency: currency?.toLowerCase() || "usd",
       });
 
       // Charge $0.49 immediately (already done via payment intent)
@@ -170,8 +168,6 @@ export async function POST(request: NextRequest) {
         plan_type: planType,
         currency: currency || "USD",
       },
-      // Set the currency for the subscription
-      currency: currency?.toLowerCase() || "usd",
     });
 
     return NextResponse.json({
