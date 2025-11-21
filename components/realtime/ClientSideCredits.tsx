@@ -12,7 +12,7 @@ type ClientSideCreditsProps = {
 };
 
 import Link from "next/link";
-import { Coins } from "lucide-react";
+import Image from "next/image";
 
 export default function ClientSideCredits({
   creditsRow,
@@ -46,7 +46,13 @@ export default function ClientSideCredits({
   return (
     <Link href="/get-credits">
       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-sm font-medium transition-colors border border-primary/20 cursor-pointer whitespace-nowrap">
-        <Coins className="w-4 h-4 text-primary flex-shrink-0" />
+        <Image
+          src="/coin-icon.png"
+          alt="Credit"
+          width={16}
+          height={16}
+          className="flex-shrink-0"
+        />
         <span className="whitespace-nowrap">Credits: {creditCount}</span>
       </div>
     </Link>

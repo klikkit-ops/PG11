@@ -1,5 +1,5 @@
 import { AvatarIcon } from "@radix-ui/react-icons";
-import { Camera, Menu } from "lucide-react"
+import { Camera } from "lucide-react"
 import Image from "next/image";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
@@ -16,7 +16,6 @@ import { Button } from "./ui/button";
 import React from "react";
 import { Database } from "@/types/supabase";
 import ClientSideCredits from "./realtime/ClientSideCredits";
-import MobileNavMenu from "./MobileNavMenu";
 
 export const dynamic = "force-dynamic";
 
@@ -81,11 +80,8 @@ export default async function Navbar() {
 
           {user && (
             <>
-              {/* Mobile hamburger menu */}
-              <MobileNavMenu user={user} stripeIsConfigured={stripeIsConfigured} />
-              
-              {/* Desktop: Credits and Profile */}
-              <div className="hidden md:flex items-center gap-4">
+              {/* Credits and Profile - Desktop and Mobile */}
+              <div className="flex items-center gap-2 md:gap-4">
                 {stripeIsConfigured && (
                   <ClientSideCredits creditsRow={credits ? credits : null} />
                 )}
@@ -100,35 +96,27 @@ export default async function Navbar() {
                       {user.email}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-border/50" />
-                    <form action="/auth/sign-out" method="post">
-                      <Button
-                        type="submit"
-                        className="w-full text-left hover:bg-primary/10 hover:text-primary"
-                        variant="ghost"
-                      >
-                        Log out
-                      </Button>
-                    </form>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Mobile: Credits and Profile */}
-              <div className="flex md:hidden items-center gap-2">
-                {stripeIsConfigured && (
-                  <ClientSideCredits creditsRow={credits ? credits : null} />
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-full border border-border/50">
-                      <AvatarIcon className="h-5 w-5 text-primary" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 z-[101] glass-panel border-0">
-                    <DropdownMenuLabel className="text-primary text-center overflow-hidden text-ellipsis">
-                      {user.email}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-border/50" />
+                    {/* Navigation links - visible on mobile */}
+                    <div className="md:hidden">
+                      <DropdownMenuItem asChild>
+                        <Link href="/overview/videos" className="cursor-pointer">
+                          Videos
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/overview/videos/generate" className="cursor-pointer">
+                          Create Video
+                        </Link>
+                      </DropdownMenuItem>
+                      {stripeIsConfigured && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/get-credits" className="cursor-pointer">
+                            Get Credits
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator className="bg-border/50" />
+                    </div>
                     <form action="/auth/sign-out" method="post">
                       <Button
                         type="submit"
