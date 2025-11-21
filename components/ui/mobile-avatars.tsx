@@ -12,6 +12,7 @@ export function MobileAvatars() {
     }
 
     const isCheckoutPage = pathname === "/checkout";
+    const isLoginPage = pathname === "/login";
 
     return (
         <>
@@ -21,7 +22,7 @@ export function MobileAvatars() {
                 style={{ 
                     position: 'absolute', 
                     ...(isCheckoutPage ? { top: '25rem', right: '0rem' } : { bottom: '1rem', right: '-1rem' }), 
-                    transform: isCheckoutPage ? 'rotate(-10deg) scale(1.5)' : 'rotate(-10deg)', 
+                    transform: isCheckoutPage ? 'rotate(-10deg) scale(1.5)' : isLoginPage ? 'rotate(-10deg) scale(1.5)' : 'rotate(-10deg)', 
                     zIndex: 40 
                 }}
                 className="block md:hidden pointer-events-none opacity-80"
