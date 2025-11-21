@@ -8,7 +8,6 @@ import { PLANS } from "@/lib/billing";
 import { Check, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { PetAvatar } from "@/components/ui/pet-avatar";
-import CustomCheckout from "@/components/subscription/CustomCheckout";
 
 type Props = {
     user: User;
@@ -20,7 +19,6 @@ type PlanType = "TRIAL" | "WEEKLY" | "ANNUAL";
 export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) {
     const [selectedPlan, setSelectedPlan] = useState<PlanType>(hasUsedTrial ? "WEEKLY" : "TRIAL");
     const [isLoading, setIsLoading] = useState(false);
-    const [showCheckout, setShowCheckout] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
 
@@ -56,13 +54,8 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
             return;
         }
 
-        // Show custom checkout instead of redirecting to Stripe
-        setShowCheckout(true);
-    };
-
-    const handleCheckoutSuccess = () => {
-        setShowCheckout(false);
-        router.push("/overview/videos?success=true");
+        // Redirect to custom checkout page
+        router.push(`/checkout?plan=${selectedPlan}`);
     };
 
     const currentPlan = selectedPlan === "TRIAL" ? trialPlan : selectedPlan === "WEEKLY" ? weeklyPlan : annualPlan;
@@ -198,37 +191,21 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                             )}
                         </div>
 
-                        {!showCheckout ? (
-                            <Button
-                                onClick={handleSubscribe}
-                                disabled={isLoading}
-                                variant="gradient"
-                                className="w-full h-14 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Processing...
-                                    </>
-                                ) : (
-                                    "Subscribe Now"
-                                )}
-                            </Button>
-                        ) : (
-                            <div className="space-y-4">
-                                <Button
-                                    onClick={() => setShowCheckout(false)}
-                                    variant="outline"
-                                    className="w-full"
-                                >
-                                    ← Back to Plans
-                                </Button>
-                                <CustomCheckout 
-                                    planType={selectedPlan}
-                                    onSuccess={handleCheckoutSuccess}
-                                />
-                            </div>
-                        )}
+                        <Button
+                            onClick={handleSubscribe}
+                            disabled={isLoading}
+                            variant="gradient"
+                            className="w-full h-14 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Processing...
+                                </>
+                            ) : (
+                                "Subscribe Now"
+                            )}
+                        </Button>
                     </div>
 
                     {/* Right Column: Benefits */}

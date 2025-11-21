@@ -124,11 +124,8 @@ function CheckoutForm({ planType, onSuccess }: Props) {
         description: "Your subscription has been activated.",
       });
 
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push("/overview/videos?success=true");
-      }
+      // Redirect to success page
+      router.push("/overview/videos?success=true");
     } catch (error) {
       console.error("Error processing payment:", error);
       toast({
