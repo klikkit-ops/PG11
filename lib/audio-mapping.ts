@@ -98,10 +98,18 @@ export function getAudioUrlForDanceStyle(danceStyleId: string): string | null {
     return null;
   }
   
-  // Skip if this is a preview deployment (contains vercel.app but not the production domain)
-  // Preview deployments may require authentication and won't be accessible to Replicate
-  if (baseUrl.includes('vercel.app') && !baseUrl.includes('petgroove.app')) {
-    console.warn(`[AudioMapping] Preview deployment detected, skipping audio to avoid 401 errors: ${baseUrl}`);
+  // CRITICAL: Skip if this is a preview deployment URL
+  // Preview deployments (vercel.app URLs) may require authentication and won't be accessible to Replicate
+  // Only allow production domain (petgroove.app) or custom domains
+  if (baseUrl.includes('vercel.app')) {
+    console.warn(`[AudioMapping] Preview deployment URL detected (vercel.app), skipping audio to avoid 401 errors: ${baseUrl}`);
+    console.warn(`[AudioMapping] Please set NEXT_PUBLIC_APP_URL to your production domain (e.g., https://petgroove.app)`);
+    return null;
+  }
+  
+  // Additional validation: ensure it's a proper HTTPS URL
+  if (!baseUrl.startsWith('https://')) {
+    console.warn(`[AudioMapping] Base URL must start with https://, skipping audio: ${baseUrl}`);
     return null;
   }
   
