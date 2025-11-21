@@ -10,13 +10,20 @@ PetGroove uses **Stripe Subscriptions** with a custom checkout flow. Even though
 1. User selects a plan (Trial, Weekly, or Annual) on `/get-credits`
 2. User is redirected to `/checkout` (custom checkout page)
 3. User enters payment details
-4. **For Trial:**
+4. **Payment Method Handling:**
+   - Create payment method from card details
+   - Get or create Stripe customer
+   - **Attach payment method to customer FIRST** (this allows reuse)
+5. **For Trial:**
    - Payment Intent is created and charged immediately ($0.59)
-   - Subscription is created with 3-day trial period
+   - Subscription is created with 3-day trial period using the attached payment method
    - Subscription uses the **Weekly** price but starts in "trialing" status
-5. **For Weekly/Annual:**
-   - Subscription is created immediately with the selected price
-6. Webhook processes the subscription and grants coins
+   - If subscription creation fails after payment, refund is attempted
+6. **For Weekly/Annual:**
+   - Subscription is created immediately with the attached payment method and selected price
+7. Webhook processes the subscription and grants coins
+
+**Important Note:** The payment method MUST be attached to a customer BEFORE being used in a payment intent, otherwise Stripe won't allow it to be reused for subscription creation. This is why the flow attaches the payment method first, then uses it for both payment intent and subscription.
 
 ### 2. Stripe Products & Prices
 
