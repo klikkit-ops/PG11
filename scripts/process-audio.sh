@@ -1,25 +1,18 @@
 #!/bin/bash
 
-# Script to process audio files for dance styles
-# This script extracts 5 seconds from each audio file and saves them to public/audio/
+# Script to convert 10-second audio files to 5-second files
+# This script takes existing 10-second audio files and trims them to 5 seconds
 # Compatible with both bash and zsh
 
 # Requirements:
 # - ffmpeg must be installed: brew install ffmpeg (on macOS) or apt-get install ffmpeg (on Linux)
-# - Audio files should be downloaded from Pixabay and placed in a temporary directory
+# - Existing 10-second audio files should be in public/audio/ directory
 
 # Usage:
-# 1. Download audio files from Pixabay links in public/music.md
-# 2. Place them in a directory (e.g., ./temp-audio/)
-# 3. Run: ./scripts/process-audio.sh ./temp-audio/
+# Run: ./scripts/process-audio.sh
+# This will convert all -10s.mp3 files in public/audio/ to -5s.mp3 files
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <input-directory>"
-    echo "Example: $0 ./temp-audio/"
-    exit 1
-fi
-
-INPUT_DIR="$1"
+INPUT_DIR="public/audio"
 OUTPUT_DIR="public/audio"
 
 # Create output directory if it doesn't exist
@@ -32,57 +25,22 @@ if ! command -v ffmpeg &> /dev/null; then
     exit 1
 fi
 
-# Function to get output filename based on input filename
+# Function to get output filename from 10s input filename
 get_output_filename() {
     local input_name="$1"
-    local lower_name=$(echo "$input_name" | tr '[:upper:]' '[:lower:]')
     
-    # Remove common prefixes/suffixes and normalize
-    lower_name=$(echo "$lower_name" | sed 's/^[^a-z]*//;s/[^a-z]*$//')
-    
-    # Map various filename patterns to output names
-    case "$lower_name" in
-        *macarena*)
-            echo "macarena-5s.mp3"
-            ;;
-        *salsa*)
-            echo "salsa-5s.mp3"
-            ;;
-        *hip*hop*|*hiphop*)
-            echo "hip-hop-5s.mp3"
-            ;;
-        *robot*)
-            echo "robot-5s.mp3"
-            ;;
-        *ballet*)
-            echo "ballet-5s.mp3"
-            ;;
-        *disco*)
-            echo "disco-5s.mp3"
-            ;;
-        *breakdance*|*break*dance*)
-            echo "breakdance-5s.mp3"
-            ;;
-        *waltz*)
-            echo "waltz-5s.mp3"
-            ;;
-        *tango*)
-            echo "tango-5s.mp3"
-            ;;
-        *)
-            # Default: use input name with -5s suffix
-            echo "${lower_name}-5s.mp3"
-            ;;
-    esac
+    # Replace -10s with -5s
+    echo "${input_name/-10s/-5s}"
 }
 
-# Process each audio file
+# Process each 10-second audio file
 # Handle both bash and zsh glob patterns
 shopt -s nullglob 2>/dev/null || setopt nullglob 2>/dev/null
 
 processed_count=0
 
-for input_file in "$INPUT_DIR"/*.mp3 "$INPUT_DIR"/*.wav "$INPUT_DIR"/*.m4a "$INPUT_DIR"/*.ogg; do
+# Only process files ending with -10s.mp3
+for input_file in "$INPUT_DIR"/*-10s.mp3; do
     # Skip if no files match the pattern
     [ -e "$input_file" ] || continue
     
@@ -91,17 +49,22 @@ for input_file in "$INPUT_DIR"/*.mp3 "$INPUT_DIR"/*.wav "$INPUT_DIR"/*.m4a "$INP
     fi
 
     filename=$(basename "$input_file")
-    name_without_ext="${filename%.*}"
     
-    # Get output filename based on input filename
-    output_name=$(get_output_filename "$name_without_ext")
+    # Get output filename by replacing -10s with -5s
+    output_name=$(get_output_filename "$filename")
     output_path="$OUTPUT_DIR/$output_name"
+
+    # Skip if output file already exists (unless we want to overwrite)
+    if [ -f "$output_path" ]; then
+        echo "⚠ Skipping $filename (output already exists: $output_name)"
+        continue
+    fi
 
     echo "Processing: $filename -> $output_name"
     
-    # Extract first 5 seconds and convert to MP3
+    # Extract first 5 seconds from the 10-second file
     # -t 5: duration of 5 seconds (matches video duration)
-    # -ss 0: start from beginning (you can change this to start from a different point)
+    # -ss 0: start from beginning
     # -acodec libmp3lame: use MP3 codec
     # -ar 44100: sample rate 44100 Hz
     # -b:a 192k: bitrate 192 kbps
@@ -116,8 +79,12 @@ done
 
 echo ""
 if [ $processed_count -gt 0 ]; then
-    echo "Done! Processed $processed_count audio file(s) in $OUTPUT_DIR/"
+    echo "Done! Converted $processed_count audio file(s) from 10s to 5s in $OUTPUT_DIR/"
     echo "Files are accessible at /audio/<filename> in your Next.js app"
+    echo ""
+    echo "Note: Original 10-second files are still in $INPUT_DIR/"
+    echo "You can delete them if you no longer need them."
 else
-    echo "No audio files were processed. Check that files exist in $INPUT_DIR/"
+    echo "No 10-second audio files found in $INPUT_DIR/"
+    echo "Looking for files matching pattern: *-10s.mp3"
 fi
