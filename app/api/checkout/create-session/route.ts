@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
       
       // Check if there's a dedicated trial price ($0.49 one-time)
       const trialPriceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_TRIAL;
-      const weeklyPriceId = 'weeklyPriceId' in plan ? plan.weeklyPriceId : plan.stripePriceId;
+      // TypeScript knows this is TRIAL plan, so we can safely access weeklyPriceId if it exists
+      const weeklyPriceId = (plan as typeof PLANS.TRIAL).weeklyPriceId || plan.stripePriceId;
       
       if (trialPriceId) {
         // Use the trial price for checkout - this will show $0.49 on the checkout page
