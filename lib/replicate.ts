@@ -10,6 +10,7 @@ export interface ReplicateVideoRequest {
   prompt: string;
   numFrames?: number; // Number of frames (default: 24)
   resolution?: '480p' | '720p' | '1080p'; // Resolution options
+  aspectRatio?: '9:16' | '16:9' | '1:1'; // Aspect ratio (default: 9:16)
   negativePrompt?: string;
   audioUrl?: string; // Optional audio file URL
 }
@@ -89,6 +90,9 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
     }
     if (request.resolution) {
       input.resolution = request.resolution;
+    }
+    if (request.aspectRatio) {
+      input.aspect_ratio = request.aspectRatio; // Try aspect_ratio parameter
     }
     if (request.negativePrompt) {
       input.negative_prompt = request.negativePrompt;

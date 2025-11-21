@@ -218,6 +218,7 @@ export async function POST(request: Request) {
         imageUrl: processedImageUrl, // Use processed 9:16 image
         prompt,
         resolution: '480p', // 480p, 720p, or 1080p
+        aspectRatio: '9:16', // Explicitly set 9:16 aspect ratio
         numFrames: 12, // ~5 seconds at ~2.4 fps
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
         audioUrl: audioUrl || undefined, // Include audio URL if available
