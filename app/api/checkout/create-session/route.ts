@@ -106,41 +106,26 @@ export async function POST(request: NextRequest) {
       }
       
       try {
-        // Create subscription with $0.49 upfront charge
-        // We'll use price_data to create a custom price that charges $0.49 for the first billing period
-        // In the webhook, we'll update the subscription to use the weekly price after the first billing cycle
-        const trialEndDate = Math.floor(Date.now() / 1000) + (plan.trialDays * 24 * 60 * 60); // 3 days from now
-        
+        // Create subscription with trial period and setup fee
+        // We'll use the weekly price with trial_period_days, then charge $0.49 as a setup fee in the webhook
+        // Unfortunately, Stripe will show "free" during checkout, but we'll charge $0.49 immediately after
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
           payment_method_types: ["card"],
           line_items: [
             {
-              price_data: {
-                currency: "usd",
-                product: weeklyPrice.product as string,
-                recurring: {
-                  interval: "week",
-                  interval_count: 1,
-                },
-                unit_amount: 49, // $0.49 in cents - this will show on checkout!
-              },
+              price: weeklyPriceId, // Weekly price - will start after trial
               quantity: 1,
             },
           ],
           subscription_data: {
+            trial_period_days: plan.trialDays,
             metadata: {
               user_id: user.id,
               plan_type: planType,
               is_trial: "true",
-              renews_to: "WEEKLY",
-              weekly_price_id: weeklyPriceId, // Store weekly price ID to switch to after trial
-              trial_days: plan.trialDays.toString(),
-              trial_end_timestamp: trialEndDate.toString(),
+              renews_to: plan.renewsTo || "WEEKLY",
             },
-            // Set billing cycle anchor to 3 days from now
-            // This ensures the subscription renews at the weekly price after the trial
-            billing_cycle_anchor: trialEndDate,
           },
           payment_method_collection: "always", // Require payment method upfront
           client_reference_id: user.id,
