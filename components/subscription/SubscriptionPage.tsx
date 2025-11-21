@@ -111,7 +111,6 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                         >
                             Yearly
                         </button>
-                        </div>
                     </div>
                 </div>
 
