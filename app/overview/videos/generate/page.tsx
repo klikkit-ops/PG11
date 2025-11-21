@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -24,6 +24,11 @@ export default function GenerateVideoPage() {
     const [selectedDanceStyle, setSelectedDanceStyle] = useState<string>("robot");
     const [isGenerating, setIsGenerating] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
+    
+    // Refs for smooth scrolling to each step
+    const step1Ref = useRef<HTMLDivElement>(null);
+    const step2Ref = useRef<HTMLDivElement>(null);
+    const step3Ref = useRef<HTMLDivElement>(null);
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -54,6 +59,17 @@ export default function GenerateVideoPage() {
                 setImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
+            
+            // Smooth scroll to Step 2 after image is selected (on mobile)
+            setTimeout(() => {
+                if (step2Ref.current && window.innerWidth < 1024) {
+                    step2Ref.current.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }
+            }, 300); // Small delay to ensure image preview is rendered
         }
     };
 
@@ -148,6 +164,22 @@ export default function GenerateVideoPage() {
 
     const selectedStyle = getDanceStyleById(selectedDanceStyle);
 
+    // Smooth scroll to Step 3 when dance style is selected (on mobile)
+    useEffect(() => {
+        if (selectedDanceStyle && selectedImage && step3Ref.current && window.innerWidth < 1024) {
+            // Small delay to ensure UI updates are complete
+            const timer = setTimeout(() => {
+                step3Ref.current?.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }, 300);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [selectedDanceStyle, selectedImage]);
+
     return (
         <div className="min-h-screen relative">
             {/* Decorative pet avatars in side margins */}
@@ -166,7 +198,7 @@ export default function GenerateVideoPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Step 1: Upload */}
-                    <div className="glass-panel p-8 space-y-6">
+                    <div ref={step1Ref} className="glass-panel p-8 space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
                                 1
@@ -220,7 +252,7 @@ export default function GenerateVideoPage() {
                     </div>
 
                     {/* Step 2: Choose Dance */}
-                    <div className="glass-panel p-8 space-y-6">
+                    <div ref={step2Ref} className="glass-panel p-8 space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
                                 2
@@ -289,7 +321,7 @@ export default function GenerateVideoPage() {
                     </div>
 
                     {/* Step 3: Preview */}
-                    <div className="glass-panel p-8 space-y-6">
+                    <div ref={step3Ref} className="glass-panel p-8 space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
                                 3
