@@ -103,18 +103,18 @@ export async function POST(request: NextRequest) {
       }
       
       try {
-        // Calculate when the trial period ends (3 days from now)
-        const trialEndDate = Math.floor(Date.now() / 1000) + (plan.trialDays * 24 * 60 * 60);
+        // Calculate when the subscription should start charging (3 days from now)
+        const subscriptionStartDate = Math.floor(Date.now() / 1000) + (plan.trialDays * 24 * 60 * 60);
         
-        // Use the $0.49/week trial price
-        // Checkout will show "$0.49 per week" 
-        // We'll create a subscription schedule in the webhook to switch to $7.99/week after first billing cycle
+        // Use the weekly price ($7.99/week) with billing_cycle_anchor set to 3 days from now
+        // This means: $0.49 charged immediately in webhook, then $7.99/week starting in 3 days
+        // Checkout will show "$7.99 per week" starting in 3 days
         const session = await stripe.checkout.sessions.create({
           mode: "subscription",
           payment_method_types: ["card"],
           line_items: [
             {
-              price: trialPriceId, // $0.49/week price - will show on checkout
+              price: weeklyPriceId, // $7.99/week price - will show on checkout
               quantity: 1,
             },
           ],
@@ -124,14 +124,12 @@ export async function POST(request: NextRequest) {
               plan_type: planType,
               is_trial: "true",
               renews_to: "WEEKLY",
-              trial_price_id: trialPriceId,
-              weekly_price_id: weeklyPriceId, // Store weekly price ID for schedule
               trial_days: plan.trialDays.toString(),
-              trial_end_timestamp: trialEndDate.toString(),
+              subscription_start_timestamp: subscriptionStartDate.toString(),
             },
             // Set billing cycle anchor to 3 days from now
-            // This means the first $0.49 charge happens in 3 days
-            billing_cycle_anchor: trialEndDate,
+            // This means the first $7.99 charge happens in 3 days
+            billing_cycle_anchor: subscriptionStartDate,
           },
           payment_method_collection: "always", // Require payment method upfront
           client_reference_id: user.id,
