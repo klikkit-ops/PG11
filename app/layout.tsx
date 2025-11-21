@@ -78,7 +78,7 @@ export default function RootLayout({
           >
             <Navbar />
           </Suspense>
-          <main className="flex-1 container mx-auto px-4 py-8">
+          <main className="flex-1 container mx-auto px-4 py-8 overflow-x-hidden w-full max-w-full">
             {children}
           </main>
           <Toaster />
