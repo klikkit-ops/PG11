@@ -20,9 +20,8 @@ export function MobileAvatars() {
                 size="sm"
                 style={{ 
                     position: 'absolute', 
-                    ...(isCheckoutPage ? { top: '25rem' } : { bottom: '1rem' }), 
-                    right: '-1rem', 
-                    transform: isCheckoutPage ? 'rotate(-10deg) scale(1.2)' : 'rotate(-10deg)', 
+                    ...(isCheckoutPage ? { top: '25rem', right: '0rem' } : { bottom: '1rem', right: '-1rem' }), 
+                    transform: isCheckoutPage ? 'rotate(-10deg) scale(1.5)' : 'rotate(-10deg)', 
                     zIndex: 40 
                 }}
                 className="block md:hidden pointer-events-none opacity-80"
