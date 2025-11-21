@@ -353,11 +353,12 @@ CRITICAL REQUIREMENTS:
 - **Camera should maintain appropriate distance to keep the full pet in frame, even during dance movements**
 - Describe specific ${danceStyle} dance movements and choreography that keep the pet centered and fully visible
 - ALWAYS include a detailed, themed background that matches the ${danceStyle} dance style (e.g., Latin club for salsa, urban street for hip hop, elegant ballroom for waltz, etc.)
+- **MOST IMPORTANT: The pet must be INTEGRATED INTO and DANCING WITHIN the themed environment - the pet should appear physically present in the actual themed location (e.g., dancing on the disco dance floor, not shown separately from it). The pet and environment must be in the SAME unified scene together, NOT in a split-screen or separate composition.**
 - The background MUST be rich, detailed, and thematically appropriate - NEVER plain, white, empty, or solid color backgrounds
 - Specify vertical 9:16 aspect ratio (portrait orientation)
 - Include keywords: photorealistic, realistic, natural, authentic, high-quality photography, vertical 9:16 aspect ratio, full body visible, pet always in frame, complete pet visible
-- Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look", "themed background matching ${danceStyle} style", "keep pet fully in frame at all times", "entire pet always visible", "no cropping of pet"
-- Avoid any mention of cartoon, animation, illustration, stylized art, plain backgrounds, empty backgrounds, white backgrounds, cropped pet, partial pet, pet out of frame
+- Explicitly state: "maintain realistic photographic appearance", "preserve original pet's authentic look", "themed background matching ${danceStyle} style", "keep pet fully in frame at all times", "entire pet always visible", "no cropping of pet", "pet integrated into the themed environment", "unified composition with pet and environment in same scene"
+- Avoid any mention of cartoon, animation, illustration, stylized art, plain backgrounds, empty backgrounds, white backgrounds, cropped pet, partial pet, pet out of frame, split-screen, separate scenes, separate compositions
 - Keep it detailed (150-200 words, under 2000 characters)
 - Focus on smooth, natural movements that match the ${danceStyle} style while ensuring the pet stays fully visible and centered in frame
 
