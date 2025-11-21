@@ -311,8 +311,8 @@ export default function GenerateVideoPage() {
                                             <Image
                                                 src="/coin-icon.png"
                                                 alt="Coins"
-                                                width={18}
-                                                height={18}
+                                                width={36}
+                                                height={36}
                                                 className="flex-shrink-0"
                                             />
                                         </span>
