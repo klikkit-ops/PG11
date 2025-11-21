@@ -41,7 +41,7 @@ export function PetAvatar({
                 src={`/avatars/pet-${petId}.png`}
                 alt="Dancing pet mascot"
                 fill
-                className="object-contain drop-shadow-2xl"
+                className="object-contain"
             />
         </div>
     );
