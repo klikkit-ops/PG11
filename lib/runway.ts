@@ -254,6 +254,27 @@ export async function checkVideoStatus(videoId: string): Promise<RunwayVideoResp
  * Generate a dance prompt based on dance style and pet characteristics
  * Uses OpenAI GPT-4 mini to create an optimized prompt for the video model
  */
+/**
+ * Get dance-specific background description
+ */
+function getDanceSpecificBackground(danceStyle: string): string {
+  const backgroundDescriptions: Record<string, string> = {
+    macarena: 'vibrant beach party scene with palm trees, colorful beach umbrellas, and festive decorations',
+    salsa: 'lively Latin dance club with warm lighting, tropical plants, colorful papel picado banners, and festive atmosphere',
+    'hip hop': 'urban street scene with graffiti art walls, city lights, and dynamic urban environment',
+    'hip_hop': 'urban street scene with graffiti art walls, city lights, and dynamic urban environment',
+    robot: 'futuristic sci-fi setting with neon lights, metallic surfaces, and high-tech industrial background',
+    ballet: 'elegant theater stage with velvet curtains, ornate decorations, soft stage lighting, and classical architecture',
+    disco: 'retro disco club with mirror balls, colorful neon lights, disco floor patterns, and 70s party atmosphere',
+    breakdance: 'urban street scene with cardboard dance floor, city backdrop, street art, and hip-hop culture elements',
+    waltz: 'grand ballroom with crystal chandeliers, elegant decor, ornate walls, and sophisticated classical setting',
+    tango: 'dramatic tango hall with dim mood lighting, vintage decor, red curtains, and passionate atmosphere',
+    cha_cha: 'vibrant Latin dance studio with colorful walls, tropical decorations, festive lights, and energetic atmosphere',
+  };
+  
+  return backgroundDescriptions[danceStyle.toLowerCase()] || `themed background matching the ${danceStyle} dance style`;
+}
+
 export async function generateDancePrompt(
   danceStyle: string,
   petDescription?: string
@@ -352,7 +373,7 @@ CRITICAL REQUIREMENTS:
 - **The pet must NEVER be cropped, cut off, or partially out of frame - the entire pet body, head, and all features must always be visible**
 - **Camera should maintain appropriate distance to keep the full pet in frame, even during dance movements**
 - Describe specific ${danceStyle} dance movements and choreography that keep the pet centered and fully visible
-- ALWAYS include a detailed, themed background that matches the ${danceStyle} dance style (e.g., Latin club for salsa, urban street for hip hop, elegant ballroom for waltz, etc.)
+- **ALWAYS include a detailed, themed background that is SPECIFIC to the ${danceStyle} dance style. Use the appropriate environment for ${danceStyle}: ${getDanceSpecificBackground(danceStyle)}. The pet must be INTEGRATED INTO and DANCING WITHIN this specific themed environment - appearing physically present in the actual location, not shown separately.**
 - **MOST IMPORTANT: The pet must be INTEGRATED INTO and DANCING WITHIN the themed environment - the pet should appear physically present in the actual themed location (e.g., dancing on the disco dance floor, not shown separately from it). The pet and environment must be in the SAME unified scene together, NOT in a split-screen or separate composition.**
 - The background MUST be rich, detailed, and thematically appropriate - NEVER plain, white, empty, or solid color backgrounds
 - Specify vertical 9:16 aspect ratio (portrait orientation)
