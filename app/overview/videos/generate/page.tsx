@@ -121,6 +121,17 @@ export default function GenerateVideoPage() {
 
         setIsGenerating(true);
 
+        // Smooth scroll to Step 3 when generation starts (on mobile)
+        if (step3Ref.current && window.innerWidth < 1024) {
+            setTimeout(() => {
+                step3Ref.current?.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center',
+                    inline: 'nearest'
+                });
+            }, 100);
+        }
+
         try {
             // Upload image first
             const imageUrl = await uploadImage(selectedImage);
@@ -163,37 +174,6 @@ export default function GenerateVideoPage() {
     };
 
     const selectedStyle = getDanceStyleById(selectedDanceStyle);
-    const prevDanceStyleRef = useRef<string | null>(null);
-
-    // Smooth scroll to Step 3 when dance style is changed (on mobile)
-    // Only trigger when dance style actually changes, not on initial load
-    useEffect(() => {
-        // Only scroll if:
-        // 1. Image is selected
-        // 2. Dance style has changed (not just set for the first time)
-        // 3. We're on mobile
-        if (
-            selectedImage && 
-            prevDanceStyleRef.current !== null && 
-            prevDanceStyleRef.current !== selectedDanceStyle &&
-            step3Ref.current && 
-            window.innerWidth < 1024
-        ) {
-            // Small delay to ensure UI updates are complete
-            const timer = setTimeout(() => {
-                step3Ref.current?.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center',
-                    inline: 'nearest'
-                });
-            }, 300);
-            
-            return () => clearTimeout(timer);
-        }
-        
-        // Update the previous dance style ref
-        prevDanceStyleRef.current = selectedDanceStyle;
-    }, [selectedDanceStyle, selectedImage]);
 
     return (
         <div className="min-h-screen relative">
