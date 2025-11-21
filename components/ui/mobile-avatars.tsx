@@ -22,7 +22,7 @@ export function MobileAvatars() {
                     position: 'absolute', 
                     ...(isCheckoutPage ? { top: '25rem' } : { bottom: '1rem' }), 
                     right: '-1rem', 
-                    transform: 'rotate(-10deg)', 
+                    transform: isCheckoutPage ? 'rotate(-10deg) scale(1.2)' : 'rotate(-10deg)', 
                     zIndex: 40 
                 }}
                 className="block md:hidden pointer-events-none opacity-80"
