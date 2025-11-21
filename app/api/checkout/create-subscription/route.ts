@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planType, paymentMethodId, currency, stripePriceId } = body;
+    const { planType, paymentMethodId, currency, stripePriceId, customerId: providedCustomerId } = body;
 
     if (!planType || !(planType in PLANS)) {
       return NextResponse.json(
@@ -55,16 +55,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get or create customer
-    // First, try to find existing customer by email
+    // Use provided customer ID or get/create customer
     let customerId: string;
-    const existingCustomers = await stripe.customers.list({
-      email: user.email || undefined,
-      limit: 1,
-    });
-
-    if (existingCustomers.data.length > 0) {
-      customerId = existingCustomers.data[0].id;
+    
+    if (providedCustomerId) {
+      // Use the provided customer ID (customer was created in checkout flow)
+      customerId = providedCustomerId;
       // Update metadata to ensure user_id is set
       await stripe.customers.update(customerId, {
         metadata: {
@@ -72,13 +68,29 @@ export async function POST(request: NextRequest) {
         },
       });
     } else {
-      const customer = await stripe.customers.create({
+      // Fallback: Get or create customer (for backwards compatibility)
+      const existingCustomers = await stripe.customers.list({
         email: user.email || undefined,
-        metadata: {
-          user_id: user.id,
-        },
+        limit: 1,
       });
-      customerId = customer.id;
+
+      if (existingCustomers.data.length > 0) {
+        customerId = existingCustomers.data[0].id;
+        // Update metadata to ensure user_id is set
+        await stripe.customers.update(customerId, {
+          metadata: {
+            user_id: user.id,
+          },
+        });
+      } else {
+        const customer = await stripe.customers.create({
+          email: user.email || undefined,
+          metadata: {
+            user_id: user.id,
+          },
+        });
+        customerId = customer.id;
+      }
     }
 
     // Handle trial subscription
@@ -92,11 +104,20 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Attach payment method to customer
+      // Payment method should already be attached from checkout flow
+      // But ensure it's set as default payment method
       if (paymentMethodId) {
-        await stripe.paymentMethods.attach(paymentMethodId, {
-          customer: customerId,
-        });
+        // Try to attach if not already attached (won't error if already attached)
+        try {
+          await stripe.paymentMethods.attach(paymentMethodId, {
+            customer: customerId,
+          });
+        } catch (error: any) {
+          // Ignore error if already attached
+          if (error?.code !== 'resource_already_exists') {
+            console.warn("[Subscription] Payment method attach warning:", error.message);
+          }
+        }
 
         // Set as default payment method
         await stripe.customers.update(customerId, {
@@ -152,11 +173,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle regular subscriptions
-    // Attach payment method to customer
+    // Payment method should already be attached from checkout flow
     if (paymentMethodId) {
-      await stripe.paymentMethods.attach(paymentMethodId, {
-        customer: customerId,
-      });
+      // Try to attach if not already attached (won't error if already attached)
+      try {
+        await stripe.paymentMethods.attach(paymentMethodId, {
+          customer: customerId,
+        });
+      } catch (error: any) {
+        // Ignore error if already attached
+        if (error?.code !== 'resource_already_exists') {
+          console.warn("[Subscription] Payment method attach warning:", error.message);
+        }
+      }
 
       await stripe.customers.update(customerId, {
         invoice_settings: {

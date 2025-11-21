@@ -135,17 +135,26 @@ credits (
 - **Check:** Webhook events in Stripe Dashboard → Developers → Webhooks
 - **Check:** Vercel logs for webhook processing errors
 - **Check:** Subscription metadata includes `is_trial: "true"` and `checkout_type: "custom"`
+- **Check:** Look for `customer.subscription.created` events in Stripe Dashboard → Developers → Events
+- **If no subscription events:** The subscription creation is failing. Check Vercel logs for errors.
 
-#### Issue: Subscription creation fails
+#### Issue: Subscription creation fails (No `customer.subscription.created` events)
+- **Check:** Vercel logs for detailed error messages (look for `[Subscription]` and `[Checkout]` logs)
 - **Check:** Price IDs are correct in environment variables
-- **Check:** Prices are recurring (not one-time)
-- **Check:** Prices support the selected currency
-- **Check:** Payment method is attached to customer
+- **Check:** Prices are recurring (not one-time) - Go to Product Catalogue → Click on price → Verify "Recurring" is selected
+- **Check:** Payment method is attached to customer before creating subscription
+- **Check:** Payment intent is confirmed before subscription creation
+- **Common errors:**
+  - `No such price: price_xxxxx` - Price ID doesn't exist or is wrong
+  - `This price is not recurring` - Price is set as one-time instead of recurring
+  - `No such payment_method: pm_xxxxx` - Payment method wasn't created or attached correctly
+  - `You must provide a payment method` - Payment method not attached to customer
 
 #### Issue: Trial not granting coins
 - **Check:** Webhook is listening for `customer.subscription.created`
 - **Check:** Subscription status is `trialing`
 - **Check:** Subscription metadata includes `is_trial: "true"`
+- **Check:** Webhook endpoint is receiving events (Stripe Dashboard → Developers → Webhooks → Click endpoint → View events)
 
 ### 9. Stripe Dashboard Checklist
 

@@ -242,8 +242,39 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
         return;
       }
 
-      // For trial, create subscription first, then charge
-      // This prevents charging without creating subscription
+      // Get or create customer FIRST, before using payment method
+      // This ensures payment method can be attached to customer
+      const customerResponse = await fetch("/api/checkout/get-or-create-customer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userEmail || (document.getElementById("email") as HTMLInputElement)?.value,
+        }),
+      });
+
+      const customerData = await customerResponse.json();
+      if (!customerResponse.ok) {
+        throw new Error(customerData.error || "Failed to get or create customer");
+      }
+
+      const customerId = customerData.customerId;
+
+      // Attach payment method to customer BEFORE using it
+      // This allows us to reuse the payment method for subscription
+      await stripe.paymentMethods.attach(paymentMethod.id, {
+        customer: customerId,
+      });
+
+      // Set as default payment method
+      await stripe.customers.update(customerId, {
+        invoice_settings: {
+          default_payment_method: paymentMethod.id,
+        },
+      });
+
+      // For trial, charge the trial price immediately
       let paymentIntentId: string | null = null;
       
       if (isTrial) {
@@ -253,7 +284,7 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ planType, currency: currencyCode }),
+          body: JSON.stringify({ planType, currency: currencyCode, customerId }),
         });
 
         const paymentIntentData = await paymentIntentResponse.json();
@@ -264,7 +295,7 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
 
         paymentIntentId = paymentIntentData.paymentIntentId || null;
 
-        // Confirm payment for $0.49
+        // Confirm payment for $0.49 using the attached payment method
         const { error: confirmError } = await stripe.confirmCardPayment(
           paymentIntentData.clientSecret,
           {
@@ -316,6 +347,7 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
           paymentMethodId: paymentMethod.id,
           currency: currencyCode,
           stripePriceId: stripePriceId,
+          customerId: customerId, // Pass customer ID so we don't create duplicate
         }),
       });
 

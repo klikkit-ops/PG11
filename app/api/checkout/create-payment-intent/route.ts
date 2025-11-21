@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planType, currency = "USD" } = body;
+    const { planType, currency = "USD", customerId } = body;
 
     if (!planType || !(planType in PLANS)) {
       return NextResponse.json(
@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency: currency.toLowerCase(),
+        customer: customerId, // Attach to customer if provided
         metadata: {
           user_id: user.id,
           plan_type: planType,
