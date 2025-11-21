@@ -74,7 +74,7 @@ export default async function CheckoutPage({
             </div>
 
             <div className="space-y-6">
-              <div className="p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/40 shadow-lg">
+              <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                     {isTrial ? "$0.49" : `$${plan.price.toFixed(2)}`}
@@ -153,7 +153,7 @@ export default async function CheckoutPage({
 
           {/* Right Column - Payment Form */}
           <div className="space-y-6">
-            <div>
+            <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-sm border border-white/60 shadow-xl">
               <h2 className="text-2xl font-semibold mb-6 text-foreground">Pay with card</h2>
               <CustomCheckout planType={planType} userEmail={user.email || undefined} />
             </div>
