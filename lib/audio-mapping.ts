@@ -12,58 +12,58 @@ export interface DanceAudioMapping {
 /**
  * Mapping of dance styles to their audio files
  * Audio files should be stored in public/audio/ directory
- * and trimmed to exactly 10 seconds
+ * and trimmed to exactly 5 seconds (to match video duration)
  */
 export const DANCE_AUDIO_MAPPING: Record<string, DanceAudioMapping> = {
   macarena: {
     danceStyleId: 'macarena',
-    audioUrl: '/audio/macarena-10s.mp3',
+    audioUrl: '/audio/macarena-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/upbeat-party-salsa-music-350025/',
   },
   salsa: {
     danceStyleId: 'salsa',
-    audioUrl: '/audio/salsa-10s.mp3',
+    audioUrl: '/audio/salsa-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/comedy-salsa-latin-party-music-349496/',
   },
   hip_hop: {
     danceStyleId: 'hip_hop',
-    audioUrl: '/audio/hip-hop-10s.mp3',
+    audioUrl: '/audio/hip-hop-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/beats-experimental-cinematic-hip-hop-315904/',
   },
   robot: {
     danceStyleId: 'robot',
-    audioUrl: '/audio/robot-10s.mp3',
+    audioUrl: '/audio/robot-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/upbeat-la-danse-des-robots-11919/',
   },
   ballet: {
     danceStyleId: 'ballet',
-    audioUrl: '/audio/ballet-10s.mp3',
+    audioUrl: '/audio/ballet-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/modern-classical-ballet-music-dancing-in-the-moonlight-218472/',
   },
   disco: {
     danceStyleId: 'disco',
-    audioUrl: '/audio/disco-10s.mp3',
+    audioUrl: '/audio/disco-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/upbeat-upbeat-disco-funk-house-instrumental-version-264050/',
   },
   breakdance: {
     danceStyleId: 'breakdance',
-    audioUrl: '/audio/breakdance-10s.mp3',
+    audioUrl: '/audio/breakdance-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/dance-freccero-record-to-the-decks-116085/',
   },
   waltz: {
     danceStyleId: 'waltz',
-    audioUrl: '/audio/waltz-10s.mp3',
+    audioUrl: '/audio/waltz-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/modern-classical-piano-waltz-elegant-and-graceful-instrumental-music-285601/',
   },
   tango: {
     danceStyleId: 'tango',
-    audioUrl: '/audio/tango-10s.mp3',
+    audioUrl: '/audio/tango-5s.mp3',
     pixabayUrl: 'https://pixabay.com/music/tango-tango-instrumental-music-trongmusic-408675/',
   },
   // Note: cha_cha is not in music.md, so we'll skip it for now
   // cha_cha: {
   //   danceStyleId: 'cha_cha',
-  //   audioUrl: '/audio/cha-cha-10s.mp3',
+  //   audioUrl: '/audio/cha-cha-5s.mp3',
   //   pixabayUrl: '',
   // },
 };
@@ -71,7 +71,8 @@ export const DANCE_AUDIO_MAPPING: Record<string, DanceAudioMapping> = {
 /**
  * Get the audio URL for a given dance style
  * Returns the full URL (including domain) for the audio file
- * This is required because RunComfy API needs a publicly accessible HTTPS URL
+ * This is required because Replicate API needs a publicly accessible HTTPS URL
+ * Audio files are 5 seconds long to match the video duration
  */
 export function getAudioUrlForDanceStyle(danceStyleId: string): string | null {
   const mapping = DANCE_AUDIO_MAPPING[danceStyleId];

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to process audio files for dance styles
-# This script extracts 10 seconds from each audio file and saves them to public/audio/
+# This script extracts 5 seconds from each audio file and saves them to public/audio/
 # Compatible with both bash and zsh
 
 # Requirements:
@@ -43,35 +43,35 @@ get_output_filename() {
     # Map various filename patterns to output names
     case "$lower_name" in
         *macarena*)
-            echo "macarena-10s.mp3"
+            echo "macarena-5s.mp3"
             ;;
         *salsa*)
-            echo "salsa-10s.mp3"
+            echo "salsa-5s.mp3"
             ;;
         *hip*hop*|*hiphop*)
-            echo "hip-hop-10s.mp3"
+            echo "hip-hop-5s.mp3"
             ;;
         *robot*)
-            echo "robot-10s.mp3"
+            echo "robot-5s.mp3"
             ;;
         *ballet*)
-            echo "ballet-10s.mp3"
+            echo "ballet-5s.mp3"
             ;;
         *disco*)
-            echo "disco-10s.mp3"
+            echo "disco-5s.mp3"
             ;;
         *breakdance*|*break*dance*)
-            echo "breakdance-10s.mp3"
+            echo "breakdance-5s.mp3"
             ;;
         *waltz*)
-            echo "waltz-10s.mp3"
+            echo "waltz-5s.mp3"
             ;;
         *tango*)
-            echo "tango-10s.mp3"
+            echo "tango-5s.mp3"
             ;;
         *)
-            # Default: use input name with -10s suffix
-            echo "${lower_name}-10s.mp3"
+            # Default: use input name with -5s suffix
+            echo "${lower_name}-5s.mp3"
             ;;
     esac
 }
@@ -99,14 +99,14 @@ for input_file in "$INPUT_DIR"/*.mp3 "$INPUT_DIR"/*.wav "$INPUT_DIR"/*.m4a "$INP
 
     echo "Processing: $filename -> $output_name"
     
-    # Extract first 10 seconds and convert to MP3
-    # -t 10: duration of 10 seconds
+    # Extract first 5 seconds and convert to MP3
+    # -t 5: duration of 5 seconds (matches video duration)
     # -ss 0: start from beginning (you can change this to start from a different point)
     # -acodec libmp3lame: use MP3 codec
     # -ar 44100: sample rate 44100 Hz
     # -b:a 192k: bitrate 192 kbps
     # -y: overwrite output file if it exists
-    if ffmpeg -i "$input_file" -t 10 -ss 0 -acodec libmp3lame -ar 44100 -b:a 192k -y "$output_path" 2>/dev/null; then
+    if ffmpeg -i "$input_file" -t 5 -ss 0 -acodec libmp3lame -ar 44100 -b:a 192k -y "$output_path" 2>/dev/null; then
         echo "✓ Successfully created: $output_path"
         processed_count=$((processed_count + 1))
     else
