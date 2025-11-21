@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { DANCE_STYLES, getDanceStyleById } from "@/lib/dance-styles";
-import { Upload, Loader2, ChevronDown, Film } from "lucide-react";
+import { Upload, Loader2, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { PetAvatar } from "@/components/ui/pet-avatar";
 import {
@@ -303,13 +303,20 @@ export default function GenerateVideoPage() {
                                         {uploadingImage ? "Uploading..." : "Generating..."}
                                     </>
                                 ) : (
-                                    <>
-                                        <Film className="mr-2 h-5 w-5" />
-                                        <span className="flex items-center gap-2">
-                                            <span>Generate Video</span>
-                                            <span className="text-sm opacity-90">• 100 Coins</span>
+                                    <span className="flex items-center gap-2">
+                                        <span>Generate Video</span>
+                                        <span className="text-sm opacity-90 flex items-center gap-1.5">
+                                            <span>•</span>
+                                            <span>100</span>
+                                            <Image
+                                                src="/coin-icon.png"
+                                                alt="Coins"
+                                                width={18}
+                                                height={18}
+                                                className="flex-shrink-0"
+                                            />
                                         </span>
-                                    </>
+                                    </span>
                                 )}
                             </Button>
                         </div>
