@@ -18,7 +18,13 @@ export function MobileAvatars() {
             <PetAvatar
                 petId={1}
                 size="sm"
-                style={{ position: 'absolute', bottom: '1rem', right: '-1rem', transform: 'rotate(-10deg)', zIndex: 40 }}
+                style={{ 
+                    position: 'absolute', 
+                    ...(isCheckoutPage ? { top: '25rem' } : { bottom: '1rem' }), 
+                    right: '-1rem', 
+                    transform: 'rotate(-10deg)', 
+                    zIndex: 40 
+                }}
                 className="block md:hidden pointer-events-none opacity-80"
             />
             {!isCheckoutPage && (
