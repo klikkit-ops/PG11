@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
           plan_type: planType,
           is_trial: "true",
           renews_to: "WEEKLY",
+          checkout_type: "custom", // Mark as custom checkout to avoid double-charging in webhook
         },
       });
 

@@ -148,31 +148,35 @@ async function handleCheckoutSessionCompleted(
       await markTrialAsUsed(userId, supabase);
       
       // Charge $0.49 immediately as an upfront trial fee
-      try {
-        const customerId = subscription.customer as string;
-        await stripe.invoiceItems.create({
-          customer: customerId,
-          amount: 49, // $0.49 in cents
-          currency: "usd",
-          description: "3-Day Trial Fee",
-        });
-        
-        // Create and pay the invoice immediately
-        const invoice = await stripe.invoices.create({
-          customer: customerId,
-          auto_advance: true, // Auto-finalize
-        });
-        await stripe.invoices.pay(invoice.id);
-        
-        console.log(`[Webhook] Charged $0.49 trial fee immediately to customer ${customerId}`);
-      } catch (error) {
-        console.error("Error charging trial fee:", error);
-        // Continue even if fee charging fails - user still gets trial
-      }
+      // Only charge if subscription was created via Stripe Checkout (not custom checkout)
+      // Custom checkout already charges $0.49 via payment intent
+      const isCustomCheckout = subscription.metadata?.checkout_type === "custom";
       
-      // Subscription is already set up with weekly price ($7.99/week)
-      // billing_cycle_anchor is set to 3 days from now, so first $7.99 charge happens then
-      // No need for subscription schedule - subscription is already configured correctly
+      if (!isCustomCheckout) {
+        try {
+          const customerId = subscription.customer as string;
+          await stripe.invoiceItems.create({
+            customer: customerId,
+            amount: 49, // $0.49 in cents
+            currency: "usd",
+            description: "3-Day Trial Fee",
+          });
+          
+          // Create and pay the invoice immediately
+          const invoice = await stripe.invoices.create({
+            customer: customerId,
+            auto_advance: true, // Auto-finalize
+          });
+          await stripe.invoices.pay(invoice.id);
+          
+          console.log(`[Webhook] Charged $0.49 trial fee immediately to customer ${customerId}`);
+        } catch (error) {
+          console.error("Error charging trial fee:", error);
+          // Continue even if fee charging fails - user still gets trial
+        }
+      } else {
+        console.log(`[Webhook] Skipping $0.49 charge - already charged via custom checkout`);
+      }
       
       // Store Stripe customer and subscription info
       await updateUserStripeInfo(
