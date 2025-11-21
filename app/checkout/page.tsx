@@ -74,7 +74,7 @@ export default async function CheckoutPage({
             </div>
 
             <div className="space-y-6">
-              <div>
+              <div className="p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/40 shadow-lg">
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                     {isTrial ? "$0.49" : `$${plan.price.toFixed(2)}`}
