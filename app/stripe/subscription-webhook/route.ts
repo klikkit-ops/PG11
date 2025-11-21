@@ -416,29 +416,6 @@ async function markTrialAsUsed(
 }
 
 /**
- * Mark user as having used the trial
- */
-async function markTrialAsUsed(
-  userId: string,
-  supabase: ReturnType<typeof createClient<Database>>
-) {
-  const { error } = await supabase
-    .from("credits")
-    .update({
-      has_used_trial: true,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Error marking trial as used:", error);
-    // Don't throw - this is not critical enough to fail the webhook
-  } else {
-    console.log(`[Webhook] Marked user ${userId} as having used trial`);
-  }
-}
-
-/**
  * Update user's Stripe customer and subscription information
  * Note: This assumes you have a users table or profile table with these columns
  * You may need to create a migration to add these columns
