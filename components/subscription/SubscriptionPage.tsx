@@ -256,7 +256,7 @@ export default function SubscriptionPage({ user }: Props) {
                                         <h4 className="font-semibold text-lg mb-1">Unlimited Video Generations</h4>
                                         <p className="text-sm text-foreground">
                                             {selectedPlan === "TRIAL" 
-                                                ? "Try PetGroove risk-free! Get 1 video generation for $0.49."
+                                                ? "Try PetGroove risk-free! Get 100 coins for $0.49."
                                                 : `Create as many dancing videos as your coins allow. ${selectedPlan === "WEEKLY" ? "Coins renew weekly." : "All coins provided upfront."}`}
                                         </p>
                                     </div>
