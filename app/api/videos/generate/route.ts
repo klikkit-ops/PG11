@@ -116,9 +116,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Calculate required credits based on duration
-    const requiredCredits = duration === 5 ? 1 : 2;
-
     // Deduct credits immediately (based on duration)
     const { error: creditUpdateError } = await serviceSupabase
       .from("credits")
