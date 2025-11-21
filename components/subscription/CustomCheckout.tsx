@@ -299,6 +299,13 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
 
       // Create subscription
       // Stripe will automatically use the correct currency price based on the currency parameter
+      console.log("[Checkout] Creating subscription with:", {
+        planType,
+        paymentMethodId: paymentMethod.id,
+        currency: currencyCode,
+        stripePriceId: stripePriceId,
+      });
+      
       const subscriptionResponse = await fetch("/api/checkout/create-subscription", {
         method: "POST",
         headers: {
@@ -313,6 +320,11 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
       });
 
       const subscriptionData = await subscriptionResponse.json();
+      console.log("[Checkout] Subscription response:", {
+        ok: subscriptionResponse.ok,
+        status: subscriptionResponse.status,
+        data: subscriptionData,
+      });
 
       if (!subscriptionResponse.ok) {
         const errorMessage = subscriptionData.details || subscriptionData.error || "Failed to create subscription";

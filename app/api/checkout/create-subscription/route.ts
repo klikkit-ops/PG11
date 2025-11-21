@@ -111,6 +111,13 @@ export async function POST(request: NextRequest) {
 
       // Create subscription with trial period
       // Stripe will automatically use the correct currency price from the multi-currency Price object
+      console.log("[Subscription] Creating trial subscription:", {
+        customerId,
+        weeklyPriceId,
+        paymentMethodId,
+        trialDays: plan.trialDays,
+      });
+      
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [
@@ -128,6 +135,11 @@ export async function POST(request: NextRequest) {
           checkout_type: "custom", // Mark as custom checkout to avoid double-charging in webhook
           currency: currency || "USD",
         },
+      });
+      
+      console.log("[Subscription] Trial subscription created successfully:", {
+        subscriptionId: subscription.id,
+        status: subscription.status,
       });
 
       // Charge $0.49 immediately (already done via payment intent)
@@ -155,6 +167,13 @@ export async function POST(request: NextRequest) {
 
     // Create subscription
     // Stripe will automatically use the correct currency price from the multi-currency Price object
+    console.log("[Subscription] Creating subscription:", {
+      customerId,
+      priceIdToUse,
+      paymentMethodId,
+      planType,
+    });
+    
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [
@@ -168,6 +187,11 @@ export async function POST(request: NextRequest) {
         plan_type: planType,
         currency: currency || "USD",
       },
+    });
+    
+    console.log("[Subscription] Subscription created successfully:", {
+      subscriptionId: subscription.id,
+      status: subscription.status,
     });
 
     return NextResponse.json({
