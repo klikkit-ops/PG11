@@ -230,12 +230,12 @@ export default function GenerateVideoPage() {
 
                         <div className="space-y-4">
                             <Select value={selectedDanceStyle} onValueChange={setSelectedDanceStyle}>
-                                <SelectTrigger className="w-full h-14 rounded-full border-primary/20 hover:border-primary/40 transition-colors">
+                                <SelectTrigger className="w-full h-14 rounded-full border-primary/20 hover:border-primary/40 transition-colors [&>span]:line-clamp-none">
                                     <SelectValue>
                                         {selectedStyle ? (
-                                            <span className="flex items-center gap-3 text-base">
-                                                <span className="text-2xl">{selectedStyle.emoji}</span>
-                                                <span className="font-medium">The {selectedStyle.name}</span>
+                                            <span className="flex items-center gap-3 text-base whitespace-nowrap">
+                                                <span className="text-2xl flex-shrink-0">{selectedStyle.emoji}</span>
+                                                <span className="font-medium truncate">{selectedStyle.name}</span>
                                             </span>
                                         ) : (
                                             "Select a dance style"
