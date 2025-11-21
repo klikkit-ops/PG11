@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planType } = body; // "WEEKLY" or "ANNUAL"
+    const { planType } = body; // "TRIAL", "WEEKLY", or "ANNUAL"
 
     if (!planType || !(planType in PLANS)) {
       return NextResponse.json(
@@ -52,7 +52,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Stripe Checkout Session
+    // Handle trial subscription
+    if (planType === "TRIAL" && 'trialDays' in plan) {
+      // Create subscription with 3-day trial that auto-renews to weekly
+      // We'll charge $0.49 as a setup fee using invoice items in the webhook
+      const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price: plan.stripePriceId, // Weekly price - will start after trial
+            quantity: 1,
+          },
+        ],
+        subscription_data: {
+          trial_period_days: plan.trialDays,
+          metadata: {
+            user_id: user.id,
+            plan_type: planType,
+            is_trial: "true",
+            renews_to: plan.renewsTo || "WEEKLY",
+          },
+        },
+        payment_method_collection: "always", // Require payment method upfront
+        client_reference_id: user.id,
+        customer_email: user.email || undefined,
+        success_url: `${deploymentUrl}/overview/videos?success=true`,
+        cancel_url: `${deploymentUrl}/get-credits?canceled=true`,
+        metadata: {
+          user_id: user.id,
+          plan_type: planType,
+          is_trial: "true",
+        },
+      });
+
+      return NextResponse.json({
+        sessionId: session.id,
+        url: session.url,
+      });
+    }
+
+    // Create Stripe Checkout Session for regular plans
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],

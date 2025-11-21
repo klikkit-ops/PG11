@@ -137,10 +137,48 @@ async function handleCheckoutSessionCompleted(
       checkoutSession.subscription as string
     );
     const priceId = subscription.items.data[0].price.id;
-    const creditsPerPeriod = getCreditsPerPeriod(priceId);
-
-    if (creditsPerPeriod > 0) {
-      await addCreditsToUser(userId, creditsPerPeriod, supabase);
+    const isTrial = checkoutSession.metadata?.is_trial === "true" || subscription.metadata?.is_trial === "true";
+    
+    // Handle trial subscription
+    if (isTrial && subscription.status === "trialing") {
+      // Grant 100 coins for trial (1 generation)
+      await addCreditsToUser(userId, 100, supabase);
+      
+      // Charge $0.49 as an invoice item
+      try {
+        const customerId = subscription.customer as string;
+        await stripe.invoiceItems.create({
+          customer: customerId,
+          amount: 49, // $0.49 in cents
+          currency: "usd",
+          description: "3-Day Trial Fee",
+        });
+        
+        // Create and pay the invoice immediately
+        const invoice = await stripe.invoices.create({
+          customer: customerId,
+          auto_advance: true, // Auto-finalize
+        });
+        await stripe.invoices.pay(invoice.id);
+      } catch (error) {
+        console.error("Error charging trial fee:", error);
+        // Continue even if fee charging fails - user still gets trial
+      }
+      
+      // Store Stripe customer and subscription info
+      await updateUserStripeInfo(
+        userId,
+        subscription.customer as string,
+        subscription.id,
+        subscription.status,
+        supabase
+      );
+    } else {
+      // Regular subscription
+      const creditsPerPeriod = getCreditsPerPeriod(priceId);
+      if (creditsPerPeriod > 0) {
+        await addCreditsToUser(userId, creditsPerPeriod, supabase);
+      }
       
       // Store Stripe customer and subscription info
       await updateUserStripeInfo(
@@ -187,6 +225,7 @@ async function handleSubscriptionUpdate(
   }
 
   const priceId = subscription.items.data[0].price.id;
+  const isTrial = subscription.metadata?.is_trial === "true";
   const creditsPerPeriod = getCreditsPerPeriod(priceId);
 
   // Update user's Stripe info
@@ -198,8 +237,14 @@ async function handleSubscriptionUpdate(
     supabase
   );
 
-  // If subscription is active, ensure user has credits
-  if (subscription.status === "active" && creditsPerPeriod > 0) {
+  // Handle trial-to-active conversion (when trial ends and converts to weekly)
+  if (isTrial && subscription.status === "active" && subscription.trial_end && subscription.trial_end < Math.floor(Date.now() / 1000)) {
+    // Trial has ended, grant weekly credits (1000 coins)
+    if (creditsPerPeriod > 0) {
+      await addCreditsToUser(userId, creditsPerPeriod, supabase);
+    }
+  } else if (subscription.status === "active" && creditsPerPeriod > 0) {
+    // Regular active subscription renewal
     await addCreditsToUser(userId, creditsPerPeriod, supabase);
   }
 }

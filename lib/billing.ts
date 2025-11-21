@@ -4,6 +4,15 @@
  */
 
 export const PLANS = {
+  TRIAL: {
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '', // Uses weekly price, but with trial
+    creditsPerPeriod: 100, // 100 coins for 1 generation during trial
+    label: "3-Day Trial",
+    price: 0.49,
+    billingPeriod: "trial" as const,
+    trialDays: 3,
+    renewsTo: "WEEKLY" as const,
+  },
   WEEKLY: {
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WEEKLY || '',
     creditsPerPeriod: 1000, // 1,000 coins per week (10 videos at 100 coins each)
@@ -21,13 +30,15 @@ export const PLANS = {
 } as const;
 
 export type PlanType = keyof typeof PLANS;
-export type BillingPeriod = "week" | "year";
+export type BillingPeriod = "trial" | "week" | "year";
 
 /**
  * Get plan by Stripe price ID
  */
-export function getPlanByPriceId(priceId: string): typeof PLANS.WEEKLY | typeof PLANS.ANNUAL | null {
+export function getPlanByPriceId(priceId: string): typeof PLANS.WEEKLY | typeof PLANS.ANNUAL | typeof PLANS.TRIAL | null {
   if (priceId === PLANS.WEEKLY.stripePriceId) {
+    // Check if this is a trial subscription by checking subscription metadata
+    // For now, we'll return WEEKLY and handle trial logic in webhook
     return PLANS.WEEKLY;
   }
   if (priceId === PLANS.ANNUAL.stripePriceId) {

@@ -13,18 +13,28 @@ type Props = {
     user: User;
 };
 
-type PlanType = "WEEKLY" | "ANNUAL";
+type PlanType = "TRIAL" | "WEEKLY" | "ANNUAL";
 
 export default function SubscriptionPage({ user }: Props) {
-    const [selectedPlan, setSelectedPlan] = useState<PlanType>("WEEKLY");
+    const [selectedPlan, setSelectedPlan] = useState<PlanType>("TRIAL");
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
 
+    const trialPlan = PLANS.TRIAL;
     const weeklyPlan = PLANS.WEEKLY;
     const annualPlan = PLANS.ANNUAL;
 
     const handleSubscribe = async () => {
+        if (!trialPlan.stripePriceId && selectedPlan === "TRIAL") {
+            toast({
+                title: "Configuration Error",
+                description: "Trial plan is not configured. Please contact support.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         if (!weeklyPlan.stripePriceId && selectedPlan === "WEEKLY") {
             toast({
                 title: "Configuration Error",
@@ -82,7 +92,7 @@ export default function SubscriptionPage({ user }: Props) {
         }
     };
 
-    const currentPlan = selectedPlan === "WEEKLY" ? weeklyPlan : annualPlan;
+    const currentPlan = selectedPlan === "TRIAL" ? trialPlan : selectedPlan === "WEEKLY" ? weeklyPlan : annualPlan;
     const savings = annualPlan.price < weeklyPlan.price * 52
         ? Math.round(((weeklyPlan.price * 52 - annualPlan.price) / (weeklyPlan.price * 52)) * 100)
         : 0;
@@ -106,6 +116,18 @@ export default function SubscriptionPage({ user }: Props) {
                 {/* Plan Toggle */}
                 <div className="flex justify-center">
                     <div className="inline-flex gap-2 p-1.5 glass-panel">
+                        <button
+                            onClick={() => setSelectedPlan("TRIAL")}
+                            className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative ${selectedPlan === "TRIAL"
+                                ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
+                                : "text-muted-foreground hover:text-foreground"
+                                }`}
+                        >
+                            Trial
+                            <span className="ml-2 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30">
+                                $0.49
+                            </span>
+                        </button>
                         <button
                             onClick={() => setSelectedPlan("WEEKLY")}
                             className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 ${selectedPlan === "WEEKLY"
@@ -140,7 +162,9 @@ export default function SubscriptionPage({ user }: Props) {
                                 PetGroove {currentPlan.label}
                             </h2>
                             <p className="text-muted-foreground">
-                                {selectedPlan === "WEEKLY"
+                                {selectedPlan === "TRIAL"
+                                    ? `${currentPlan.creditsPerPeriod} Coins (1 generation) • Auto-renews to Weekly after 3 days`
+                                    : selectedPlan === "WEEKLY"
                                     ? `${currentPlan.creditsPerPeriod.toLocaleString()} Coins per ${currentPlan.billingPeriod} (renews weekly)`
                                     : `${currentPlan.creditsPerPeriod.toLocaleString()} Coins (provided upfront)`}
                             </p>
@@ -151,7 +175,7 @@ export default function SubscriptionPage({ user }: Props) {
                                 ${currentPlan.price.toFixed(2)}
                             </span>
                             <span className="text-xl text-muted-foreground">
-                                / {currentPlan.billingPeriod === "week" ? "week" : "year"}
+                                {selectedPlan === "TRIAL" ? " for 3-day trial" : ` / ${currentPlan.billingPeriod === "week" ? "week" : "year"}`}
                             </span>
                         </div>
 
@@ -162,7 +186,9 @@ export default function SubscriptionPage({ user }: Props) {
                                     <Check className="h-4 w-4 text-green-600" />
                                 </div>
                                 <span className="text-base">
-                                    {selectedPlan === "WEEKLY" 
+                                    {selectedPlan === "TRIAL"
+                                        ? "1 video generation (100 coins)"
+                                        : selectedPlan === "WEEKLY" 
                                         ? "10 video generations per week"
                                         : "70 video generations (provided upfront)"}
                                 </span>
@@ -229,7 +255,9 @@ export default function SubscriptionPage({ user }: Props) {
                                     <div>
                                         <h4 className="font-semibold text-lg mb-1">Unlimited Video Generations</h4>
                                         <p className="text-sm text-muted-foreground">
-                                            Create as many dancing videos as your coins allow. {selectedPlan === "WEEKLY" ? "Coins renew weekly." : "All coins provided upfront."}
+                                            {selectedPlan === "TRIAL" 
+                                                ? "Try PetGroove risk-free! Get 1 video generation for $0.49. After 3 days, your subscription automatically converts to our Weekly plan ($7.99/week)."
+                                                : `Create as many dancing videos as your coins allow. ${selectedPlan === "WEEKLY" ? "Coins renew weekly." : "All coins provided upfront."}`}
                                         </p>
                                     </div>
                                 </div>
