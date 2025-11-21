@@ -91,7 +91,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                     }`}
                             >
                                 Trial
-                                <span className="ml-2 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30">
+                                <span className="ml-2 text-xs bg-white/90 text-purple-700 px-2 py-0.5 rounded-full border border-white/50 shadow-sm font-semibold">
                                     $0.59
                                 </span>
                             </button>
@@ -114,7 +114,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                         >
                             Yearly
                             {savings > 0 && (
-                                <span className="ml-2 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30">
+                                <span className="ml-2 text-xs bg-white/90 text-purple-700 px-2 py-0.5 rounded-full border border-white/50 shadow-sm font-semibold">
                                     Save {savings}%
                                 </span>
                             )}
