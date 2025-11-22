@@ -150,11 +150,13 @@ export function MagicHero({
               <div className="rounded-[2rem] shadow-2xl bg-white/5 backdrop-blur-sm border border-white/20 p-2">
                 {videoSrc ? (
                   <video
+                    ref={videoRef}
                     src={videoSrc}
                     autoPlay
                     loop
                     muted
                     playsInline
+                    preload="auto"
                     className="rounded-3xl w-full h-auto object-cover aspect-[4/3]"
                   />
                 ) : (
