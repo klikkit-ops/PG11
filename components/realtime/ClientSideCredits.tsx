@@ -97,11 +97,11 @@ export default function ClientSideCredits({
         }
       });
 
-    // Set up periodic refresh as fallback (every 5 seconds)
+    // Set up periodic refresh as fallback (every 3 seconds for faster updates)
     const refreshInterval = setInterval(() => {
       console.log("[ClientSideCredits] Periodic refresh triggered");
       refreshCredits();
-    }, 5000);
+    }, 3000);
 
     return () => {
       console.log("[ClientSideCredits] Unsubscribing from credits updates");
@@ -119,6 +119,35 @@ export default function ClientSideCredits({
     
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
+  }, [refreshCredits]);
+
+  // Refresh immediately on mount and after navigation (especially after checkout)
+  useEffect(() => {
+    console.log("[ClientSideCredits] Component mounted, refreshing credits immediately");
+    // Refresh immediately
+    refreshCredits();
+    
+    // Also refresh after a short delay to catch any updates from server-side rendering
+    const immediateRefresh = setTimeout(() => {
+      console.log("[ClientSideCredits] Immediate refresh after mount");
+      refreshCredits();
+    }, 500);
+
+    // Check if we're coming from a successful checkout
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("success") === "true") {
+        console.log("[ClientSideCredits] Detected success parameter, refreshing credits");
+        // Multiple refreshes to ensure we catch the update
+        setTimeout(() => refreshCredits(), 1000);
+        setTimeout(() => refreshCredits(), 2000);
+        setTimeout(() => refreshCredits(), 3000);
+      }
+    }
+
+    return () => {
+      clearTimeout(immediateRefresh);
+    };
   }, [refreshCredits]);
 
   const creditCount = credits?.credits ?? 0;
