@@ -137,7 +137,7 @@ export function MagicHero({
                         loop
                         muted
                         playsInline
-                        webkit-playsinline="true"
+                        webkit-playsinline
                         preload="auto"
                         className="w-full h-full object-cover"
                       />
