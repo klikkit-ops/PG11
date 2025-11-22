@@ -97,6 +97,37 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
       setIsLoading(true);
 
       try {
+        // Get or create customer FIRST
+        const customerResponse = await fetch("/api/checkout/get-or-create-customer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: userEmail || ev.payerEmail,
+          }),
+        });
+
+        const customerData = await customerResponse.json();
+        if (!customerResponse.ok) {
+          ev.complete("fail");
+          throw new Error(customerData.error || "Failed to get or create customer");
+        }
+
+        const customerId = customerData.customerId;
+
+        // Attach payment method to customer
+        await stripe.paymentMethods.attach(ev.paymentMethod.id, {
+          customer: customerId,
+        });
+
+        // Set as default payment method
+        await stripe.customers.update(customerId, {
+          invoice_settings: {
+            default_payment_method: ev.paymentMethod.id,
+          },
+        });
+
         const currencyCode = selectedCountry.currency;
         const stripePriceId = getStripePriceId(planType);
 
@@ -118,7 +149,7 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ planType, currency: currencyCode }),
+            body: JSON.stringify({ planType, currency: currencyCode, customerId }),
           });
 
           const paymentIntentData = await paymentIntentResponse.json();
@@ -160,6 +191,7 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
             paymentMethodId: ev.paymentMethod.id,
             currency: currencyCode,
             stripePriceId: stripePriceId,
+            customerId: customerId, // Pass customer ID
           }),
         });
 

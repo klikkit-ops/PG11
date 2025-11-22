@@ -36,6 +36,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { planType, currency = "USD", customerId } = body;
 
+    // Customer ID is required for all payment intents
+    if (!customerId) {
+      return NextResponse.json(
+        { error: "Customer ID is required" },
+        { status: 400 }
+      );
+    }
+
     if (!planType || !(planType in PLANS)) {
       return NextResponse.json(
         { error: "Invalid plan type" },
@@ -105,6 +113,7 @@ export async function POST(request: NextRequest) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: currency.toLowerCase(),
+      customer: customerId, // Attach to customer
       metadata: {
         user_id: user.id,
         plan_type: planType,
