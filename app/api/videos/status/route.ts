@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Database } from "@/types/supabase";
 import { checkVideoStatus as checkVideoStatusReplicate } from "@/lib/replicate";
 import { createClient } from "@supabase/supabase-js";
+import { downloadAndStoreVideo } from "@/lib/videoStorage";
 
 export const dynamic = "force-dynamic";
 
@@ -79,11 +80,46 @@ export async function GET(request: Request) {
               }
             );
             
+            // If video is ready and we have a Replicate URL, download and store it permanently
+            let finalVideoUrl = statusResponse.videoUrl || video.video_url || null;
+            
+            if (statusResponse.status === "succeeded" && statusResponse.videoUrl) {
+              // Check if this is a Replicate URL (contains replicate.com or cdn.replicate.delivery)
+              const isReplicateUrl = statusResponse.videoUrl.includes("replicate.com") || 
+                                    statusResponse.videoUrl.includes("replicate.delivery");
+              
+              // Check if we already stored it (not a Replicate URL or already a Blob URL)
+              const isBlobUrl = finalVideoUrl && finalVideoUrl.includes("blob.vercel-storage.com");
+              
+              if (isReplicateUrl && !isBlobUrl) {
+                console.log(`[Video Status] Downloading and storing video permanently for video ${videoId}`);
+                try {
+                  const storageResult = await downloadAndStoreVideo(
+                    statusResponse.videoUrl,
+                    user.id,
+                    videoId
+                  );
+                  
+                  if (storageResult.success) {
+                    finalVideoUrl = storageResult.url;
+                    console.log(`[Video Status] Successfully stored video permanently at: ${finalVideoUrl}`);
+                  } else {
+                    console.error(`[Video Status] Failed to store video permanently: ${storageResult.error}`);
+                    // Keep the Replicate URL as fallback, but log the warning
+                    // The video will expire after 24 hours, but at least it will work for now
+                  }
+                } catch (error) {
+                  console.error(`[Video Status] Exception storing video permanently:`, error);
+                  // Keep the Replicate URL as fallback
+                }
+              }
+            }
+            
             await serviceSupabase
               .from("videos")
               .update({
                 status: statusResponse.status,
-                video_url: statusResponse.videoUrl || video.video_url || null,
+                video_url: finalVideoUrl,
                 error_message: statusResponse.error || video.error_message || null,
                 updated_at: new Date().toISOString(),
               })
@@ -91,8 +127,8 @@ export async function GET(request: Request) {
             
             // Update local video object for response
             video.status = statusResponse.status;
-            if (statusResponse.videoUrl) {
-              video.video_url = statusResponse.videoUrl;
+            if (finalVideoUrl) {
+              video.video_url = finalVideoUrl;
             }
             if (statusResponse.error) {
               video.error_message = statusResponse.error;
