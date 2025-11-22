@@ -196,3 +196,38 @@ credits (
 - **Multi-currency:** Stripe handles currency conversion automatically. You don't need separate price IDs for each currency if using Stripe's multi-currency feature.
 - **Webhook is critical:** All coin granting happens via webhooks. If webhooks fail, users won't get coins even if payment succeeds.
 
+### 12. Manually Associating Payments with Customers
+
+If a payment was created under a "Guest" customer and you need to associate it with the correct customer:
+
+**Option 1: Using Stripe Dashboard (Recommended)**
+1. Go to Stripe Dashboard → **Payments**
+2. Find the payment intent (search by amount, date, or payment intent ID like `pi_xxxxx`)
+3. Click on the payment to open details
+4. Note: **Payment Intents cannot be reassigned to different customers after creation**
+5. However, you can add metadata or notes to track which customer it belongs to
+
+**Option 2: Using Stripe API (Advanced)**
+Since Payment Intents cannot be reassigned, if you need to track the relationship:
+1. Add customer metadata to the payment intent:
+   ```javascript
+   await stripe.paymentIntents.update('pi_xxxxx', {
+     metadata: {
+       actual_customer_id: 'cus_xxxxx',
+       actual_customer_email: 'customer@example.com'
+     }
+   });
+   ```
+2. Or create a refund and re-charge the correct customer:
+   - Refund the "Guest" payment
+   - Create a new payment intent with the correct customer ID
+   - Confirm the payment
+
+**Option 3: Leave as-is (Simplest)**
+- If the payment is already successful and the subscription wasn't created:
+  - The payment shows under "Guest" but is still valid
+  - You can manually grant coins to the user in your database
+  - Future payments will be correctly associated due to the fix
+
+**Note:** The best solution is to ensure customers are created before payment intents (which is now fixed). Historical "Guest" payments can remain as-is if they're already processed successfully.
+
