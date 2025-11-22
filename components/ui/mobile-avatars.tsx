@@ -6,8 +6,14 @@ import { PetAvatar } from "@/components/ui/pet-avatar";
 export function MobileAvatars() {
     const pathname = usePathname();
 
-    // Don't show on landing page, video pages, or get-credits page
-    if (pathname === "/" || pathname?.startsWith("/overview/videos") || pathname === "/get-credits") {
+    // Don't show on landing page, video pages, get-credits page, terms, or privacy pages
+    if (
+        pathname === "/" || 
+        pathname?.startsWith("/overview/videos") || 
+        pathname === "/get-credits" ||
+        pathname === "/terms" ||
+        pathname === "/privacy"
+    ) {
         return null;
     }
 
