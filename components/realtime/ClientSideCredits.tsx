@@ -24,22 +24,47 @@ export default function ClientSideCredits({
   );
   const [credits, setCredits] = useState<creditsRow | null>(creditsRow);
 
+  // Get user_id from the initial creditsRow
+  const userId = creditsRow?.user_id;
+
   useEffect(() => {
+    // Only subscribe if we have a user_id
+    if (!userId) {
+      return;
+    }
+
+    // Create a unique channel name per user to avoid conflicts
+    const channelName = `realtime-credits-${userId}`;
+    
     const channel = supabase
-      .channel("realtime credits")
+      .channel(channelName)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "credits" },
-        (payload: { new: creditsRow }) => {
-          setCredits(payload.new);
+        { 
+          event: "UPDATE", 
+          schema: "public", 
+          table: "credits",
+          filter: `user_id=eq.${userId}` // Filter by user_id
+        },
+        (payload: { new: creditsRow; old: creditsRow }) => {
+          // Double-check it's for this user before updating
+          if (payload.new.user_id === userId) {
+            console.log("[ClientSideCredits] Credits updated:", payload.new.credits);
+            setCredits(payload.new);
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("[ClientSideCredits] Subscribed to credits updates for user:", userId);
+        }
+      });
 
     return () => {
+      console.log("[ClientSideCredits] Unsubscribing from credits updates");
       supabase.removeChannel(channel);
     };
-  }, [supabase, setCredits]);
+  }, [supabase, userId]);
 
   const creditCount = credits?.credits ?? 0;
 
