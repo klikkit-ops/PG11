@@ -34,7 +34,7 @@ export function PetAvatar({
 
     return (
         <div
-            className={`${baseClasses} ${sizeClasses[size]} ${className} opacity-90 hover:opacity-100 transition-opacity duration-300 z-10`}
+            className={`${baseClasses} ${sizeClasses[size]} ${className} opacity-100 z-10`}
             style={style}
         >
             <Image

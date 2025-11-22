@@ -31,14 +31,14 @@ export function MobileAvatars() {
                     transform: isCheckoutPage ? 'rotate(-10deg) scale(1.5)' : isLoginPage ? 'rotate(-10deg) scale(1.5)' : 'rotate(-10deg)', 
                     zIndex: 40 
                 }}
-                className="block md:hidden pointer-events-none opacity-80"
+                className="block md:hidden pointer-events-none"
             />
             {!isCheckoutPage && (
                 <PetAvatar
                     petId={3}
                     size="sm"
                     style={{ position: 'absolute', top: '15%', left: '-1.5rem', transform: 'rotate(10deg)', zIndex: 40 }}
-                    className="block md:hidden pointer-events-none opacity-80"
+                    className="block md:hidden pointer-events-none"
                 />
             )}
         </>

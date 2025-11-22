@@ -90,7 +90,7 @@ export default async function VideosPage() {
       
       {/* Decorative pet avatars in side margins */}
       <PetAvatar petId={5} size="lg" style={{ position: 'fixed', bottom: '6rem', right: '1rem' }} className="hidden 2xl:block" />
-      <div className="hidden 2xl:block absolute w-60 h-60 md:w-80 md:h-80 pointer-events-none select-none opacity-90 hover:opacity-100 transition-opacity duration-300 z-10" style={{ position: 'fixed', top: '10rem', left: '1rem' }}>
+      <div className="hidden 2xl:block absolute w-60 h-60 md:w-80 md:h-80 pointer-events-none select-none opacity-100 z-10" style={{ position: 'fixed', top: '10rem', left: '1rem' }}>
         <Image
           src="/avatars/catballet.png"
           alt="Dancing cat mascot"
