@@ -97,9 +97,12 @@ export default async function VideoDetailPage({ params }: PageProps) {
               {video.video_url && video.status === "succeeded" ? (
                 <video
                   src={video.video_url}
+                  poster={video.input_image_url || undefined}
                   className="w-full h-full object-contain"
                   controls
                   autoPlay
+                  preload="metadata"
+                  playsInline
                 />
               ) : video.input_image_url ? (
                 <PetImage
