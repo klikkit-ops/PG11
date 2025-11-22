@@ -46,11 +46,11 @@ export default function ClientSideCredits({
           schema: "public", 
           table: "credits"
         } as any,
-        (payload: { new: creditsRow; old: creditsRow }) => {
+        (payload: any) => {
           // Only update if this is for the current user
-          if (payload.new.user_id === userId) {
+          if (payload.new && payload.new.user_id === userId) {
             console.log("[ClientSideCredits] Credits updated:", payload.new.credits);
-            setCredits(payload.new);
+            setCredits(payload.new as creditsRow);
           }
         }
       )
