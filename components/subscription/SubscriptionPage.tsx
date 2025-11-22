@@ -17,16 +17,36 @@ type Props = {
 type PlanType = "TRIAL" | "WEEKLY" | "ANNUAL";
 
 export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) {
+    // If user has used trial, default to WEEKLY and prevent TRIAL selection
     const [selectedPlan, setSelectedPlan] = useState<PlanType>(hasUsedTrial ? "WEEKLY" : "TRIAL");
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
+
+    // Prevent TRIAL selection if user has already used it
+    const handlePlanChange = (plan: PlanType) => {
+        if (plan === "TRIAL" && hasUsedTrial) {
+            return; // Don't allow selecting trial if already used
+        }
+        setSelectedPlan(plan);
+    };
 
     const trialPlan = PLANS.TRIAL;
     const weeklyPlan = PLANS.WEEKLY;
     const annualPlan = PLANS.ANNUAL;
 
     const handleSubscribe = () => {
+        // Prevent trial subscription if user has already used it
+        if (selectedPlan === "TRIAL" && hasUsedTrial) {
+            toast({
+                title: "Trial Already Used",
+                description: "You have already used your trial. Please select a regular subscription plan.",
+                variant: "destructive",
+            });
+            setSelectedPlan("WEEKLY"); // Auto-switch to weekly
+            return;
+        }
+
         if (!trialPlan.stripePriceId && selectedPlan === "TRIAL") {
             toast({
                 title: "Configuration Error",
@@ -58,7 +78,9 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
         router.push(`/checkout?plan=${selectedPlan}`);
     };
 
-    const currentPlan = selectedPlan === "TRIAL" ? trialPlan : selectedPlan === "WEEKLY" ? weeklyPlan : annualPlan;
+    // Ensure TRIAL is never shown if user has used it
+    const effectivePlan = (hasUsedTrial && selectedPlan === "TRIAL") ? "WEEKLY" : selectedPlan;
+    const currentPlan = effectivePlan === "TRIAL" ? trialPlan : effectivePlan === "WEEKLY" ? weeklyPlan : annualPlan;
 
     return (
         <div className="min-h-screen relative">
@@ -81,7 +103,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                     <div className="inline-flex gap-1.5 sm:gap-2 p-1 sm:p-1.5 glass-panel">
                         {!hasUsedTrial && (
                             <button
-                                onClick={() => setSelectedPlan("TRIAL")}
+                                onClick={() => handlePlanChange("TRIAL")}
                                 className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 relative whitespace-nowrap flex-shrink-0 ${selectedPlan === "TRIAL"
                                     ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                                     : "text-muted-foreground hover:text-foreground"
@@ -94,7 +116,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                             </button>
                         )}
                         <button
-                            onClick={() => setSelectedPlan("WEEKLY")}
+                            onClick={() => handlePlanChange("WEEKLY")}
                             className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${selectedPlan === "WEEKLY"
                                 ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                                 : "text-muted-foreground hover:text-foreground"
@@ -103,7 +125,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                             Weekly
                         </button>
                         <button
-                            onClick={() => setSelectedPlan("ANNUAL")}
+                            onClick={() => handlePlanChange("ANNUAL")}
                             className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 relative whitespace-nowrap flex-shrink-0 ${selectedPlan === "ANNUAL"
                                 ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
                                 : "text-muted-foreground hover:text-foreground"
@@ -122,9 +144,9 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                 PetGroove {currentPlan.label}
                             </h2>
                             <p className="text-foreground font-medium">
-                                {selectedPlan === "TRIAL"
+                                {effectivePlan === "TRIAL"
                                     ? `${currentPlan.creditsPerPeriod} Coins`
-                                    : selectedPlan === "WEEKLY"
+                                    : effectivePlan === "WEEKLY"
                                     ? `${currentPlan.creditsPerPeriod.toLocaleString()} Coins per ${currentPlan.billingPeriod} (renews weekly)`
                                     : `${currentPlan.creditsPerPeriod.toLocaleString()} Coins (provided upfront)`}
                             </p>
@@ -135,7 +157,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                 ${currentPlan.price.toFixed(2)}
                             </span>
                             <span className="text-xl text-foreground/70 font-medium">
-                                {selectedPlan === "TRIAL" ? " for 3-day trial" : ` / ${currentPlan.billingPeriod === "week" ? "week" : "year"}`}
+                                {effectivePlan === "TRIAL" ? " for 3-day trial" : ` / ${currentPlan.billingPeriod === "week" ? "week" : "year"}`}
                             </span>
                         </div>
 
@@ -146,9 +168,9 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                     <Check className="h-4 w-4 text-green-600" />
                                 </div>
                                 <span className="text-base text-foreground font-medium">
-                                    {selectedPlan === "TRIAL"
+                                    {effectivePlan === "TRIAL"
                                         ? "100 Coins"
-                                        : selectedPlan === "WEEKLY" 
+                                        : effectivePlan === "WEEKLY" 
                                         ? "10 video generations per week"
                                         : "70 video generations (provided upfront)"}
                                 </span>
@@ -198,7 +220,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                 What's Included
                             </h3>
                             <div className="space-y-6">
-                                {selectedPlan === "TRIAL" ? (
+                                {effectivePlan === "TRIAL" ? (
                                     <>
                                         <div className="flex items-start gap-4">
                                             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">

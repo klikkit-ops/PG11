@@ -30,18 +30,19 @@ export default async function CheckoutPage({
 
   const plan = PLANS[planType as keyof typeof PLANS];
 
-  // For trial, check if user has already used it
-  if (planType === "TRIAL" && 'trialDays' in plan) {
-    const { data: creditsData } = await supabase
-      .from("credits")
-      .select("has_used_trial")
-      .eq("user_id", user.id)
-      .single();
+          // For trial, check if user has already used it
+          if (planType === "TRIAL" && 'trialDays' in plan) {
+            const { data: creditsData } = await supabase
+              .from("credits")
+              .select("has_used_trial")
+              .eq("user_id", user.id)
+              .single();
 
-    if (creditsData?.has_used_trial) {
-      redirect("/get-credits?error=trial_used");
-    }
-  }
+            if (creditsData?.has_used_trial) {
+              // Redirect to get-credits page without trial option
+              redirect("/get-credits?error=trial_used");
+            }
+          }
 
   const isTrial = planType === "TRIAL";
   const weeklyPlan = PLANS.WEEKLY;
