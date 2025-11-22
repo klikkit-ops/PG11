@@ -11,6 +11,7 @@ import Image from "next/image";
 import { getDanceStyleById } from "@/lib/dance-styles";
 import { AnimatedPaws } from "@/components/AnimatedPaws";
 import { PetImage } from "@/components/PetImage";
+import { VideosListPolling } from "./client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Ensure no caching
@@ -82,6 +83,11 @@ export default async function VideosPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 relative">
+      {/* Auto-poll for video status updates */}
+      {videos && videos.length > 0 && (
+        <VideosListPolling videos={videos.map((v) => ({ id: v.id, status: v.status }))} />
+      )}
+      
       {/* Decorative pet avatars in side margins */}
       <PetAvatar petId={5} size="lg" style={{ position: 'fixed', bottom: '6rem', right: '1rem' }} className="hidden 2xl:block" />
       <PetAvatar petId={3} size="md" style={{ position: 'fixed', top: '10rem', left: '1rem' }} className="hidden 2xl:block" />
