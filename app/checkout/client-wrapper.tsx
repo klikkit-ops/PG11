@@ -115,8 +115,8 @@ export default function CheckoutClientWrapper({ planType, userEmail }: ClientWra
               width={60}
               height={14}
             />
-            <span className="ml-auto hover:text-foreground transition-colors cursor-pointer text-xs">Terms</span>
-            <span className="hover:text-foreground transition-colors cursor-pointer text-xs">Privacy</span>
+            <Link href="/terms" className="ml-auto hover:text-foreground transition-colors cursor-pointer text-xs">Terms</Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors cursor-pointer text-xs">Privacy</Link>
           </div>
         </div>
       </div>
