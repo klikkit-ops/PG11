@@ -28,19 +28,29 @@ export function MagicHero({
     <section className="relative overflow-hidden">
       <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+          <div className="space-y-6 md:space-y-8">
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight -mt-4 md:mt-0">
               {title}
             </h1>
             {subtitle && (
-              <p className="text-lg md:text-xl text-base-content/70">{subtitle}</p>
+              <div className="flex items-start gap-3 md:block">
+                <p className="text-lg md:text-xl text-base-content/70 flex-1 md:flex-none">{subtitle}</p>
+                <div className="flex-shrink-0 w-24 h-24 md:hidden relative">
+                  <Image
+                    src="/avatars/catballet.png"
+                    alt="Dancing cat"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
             )}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <a
                 href={ctaHref}
                 className="
                   inline-flex items-center justify-center
-                  rounded-full px-8 py-4 text-lg font-bold text-white
+                  rounded-full px-6 py-3 md:px-8 md:py-4 text-base md:text-lg font-bold text-white
                   bg-gradient-to-r from-[#4C6FFF] via-[#A855F7] to-[#EC4899]
                   shadow-lg shadow-[#4C6FFF]/30
                   hover:scale-105 hover:shadow-xl transition-all duration-300
@@ -53,7 +63,7 @@ export function MagicHero({
                   href={secondaryCtaHref}
                   className="
                     inline-flex items-center justify-center
-                    rounded-full px-8 py-4 text-lg font-bold
+                    rounded-full px-6 py-3 md:px-8 md:py-4 text-base md:text-lg font-bold
                     bg-white/10 backdrop-blur-md border border-white/20
                     hover:bg-white/20 hover:scale-105 hover:border-white/40
                     transition-all duration-300 shadow-sm
