@@ -151,6 +151,16 @@ export default function GenerateVideoPage() {
             const data = await response.json();
 
             if (!response.ok) {
+                // If insufficient credits, redirect to get-credits page
+                if (response.status === 403 && (data.error?.includes("coins") || data.error?.includes("credits") || data.error?.includes("Insufficient"))) {
+                    toast({
+                        title: "Insufficient Coins",
+                        description: "You don't have enough coins to generate a video. Please subscribe to get more coins.",
+                        variant: "destructive",
+                    });
+                    router.push("/get-credits");
+                    return;
+                }
                 throw new Error(data.error || "Failed to generate video");
             }
 
