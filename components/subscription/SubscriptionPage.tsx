@@ -207,7 +207,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                     Processing...
                                 </>
                             ) : (
-                                "Try Now"
+                                effectivePlan === "TRIAL" ? "Try Now" : "Subscribe"
                             )}
                         </Button>
                     </div>
