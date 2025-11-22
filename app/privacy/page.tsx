@@ -87,8 +87,6 @@ export default async function PrivacyPage() {
               <li><strong className="font-semibold">Stripe:</strong> Payment processing (see Stripe's privacy policy for details)</li>
               <li><strong className="font-semibold">Supabase:</strong> Database and authentication services</li>
               <li><strong className="font-semibold">Vercel:</strong> Hosting and infrastructure</li>
-              <li><strong className="font-semibold">Replicate:</strong> AI video generation services</li>
-              <li><strong className="font-semibold">OpenAI:</strong> AI prompt generation services</li>
             </ul>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">4.2 Legal Requirements</h3>
