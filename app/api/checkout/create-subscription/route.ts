@@ -164,7 +164,57 @@ export async function POST(request: NextRequest) {
       });
 
       // Charge $0.49 immediately (already done via payment intent)
-      // The webhook will handle granting credits and marking trial as used
+      // Grant coins immediately as a backup (webhook will also handle this but may be delayed)
+      if (subscription.status === "trialing") {
+        try {
+          const { createClient } = await import("@supabase/supabase-js");
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+          const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+          if (supabaseUrl && supabaseServiceRoleKey) {
+            const serviceSupabase = createClient<Database>(
+              supabaseUrl,
+              supabaseServiceRoleKey,
+              {
+                auth: {
+                  autoRefreshToken: false,
+                  persistSession: false,
+                },
+              }
+            );
+
+            // Grant 100 coins for trial (1 generation)
+            const { data: existingCredits } = await serviceSupabase
+              .from("credits")
+              .select("credits")
+              .eq("user_id", user.id)
+              .single();
+
+            if (existingCredits) {
+              await serviceSupabase
+                .from("credits")
+                .update({ 
+                  credits: existingCredits.credits + 100,
+                  has_used_trial: true,
+                })
+                .eq("user_id", user.id);
+            } else {
+              await serviceSupabase
+                .from("credits")
+                .insert({
+                  user_id: user.id,
+                  credits: 100,
+                  has_used_trial: true,
+                });
+            }
+
+            console.log(`[Subscription] Granted 100 trial coins immediately to user ${user.id}`);
+          }
+        } catch (error) {
+          console.error("[Subscription] Error granting coins immediately:", error);
+          // Continue - webhook will handle this as fallback
+        }
+      }
 
       return NextResponse.json({
         subscriptionId: subscription.id,
