@@ -58,8 +58,8 @@ export async function downloadAndStoreVideo(
     
     console.log(`[VideoStorage] Downloaded ${videoBuffer.byteLength} bytes, uploading to Blob...`);
 
-    // Generate filename for the video
-    const filename = `${userId}/videos/${videoId}-${Date.now()}.mp4`;
+    // Generate filename for the video in user-generations folder
+    const filename = `user-generations/${userId}/${videoId}-${Date.now()}.mp4`;
 
     // Upload to Vercel Blob Storage
     const blob = await put(filename, videoBuffer, {
