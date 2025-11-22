@@ -172,7 +172,7 @@ export default function SubscriptionPage({ user, hasUsedTrial = false }: Props) 
                                         ? "100 Coins"
                                         : effectivePlan === "WEEKLY" 
                                         ? "10 video generations per week"
-                                        : "70 video generations (provided upfront)"}
+                                        : "90 video generations (provided upfront)"}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
