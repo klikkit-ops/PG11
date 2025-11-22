@@ -43,11 +43,10 @@ export default function ClientSideCredits({
         { 
           event: "UPDATE", 
           schema: "public", 
-          table: "credits",
-          filter: `user_id=eq.${userId}` // Filter by user_id
+          table: "credits"
         },
         (payload: { new: creditsRow; old: creditsRow }) => {
-          // Double-check it's for this user before updating
+          // Only update if this is for the current user
           if (payload.new.user_id === userId) {
             console.log("[ClientSideCredits] Credits updated:", payload.new.credits);
             setCredits(payload.new);
