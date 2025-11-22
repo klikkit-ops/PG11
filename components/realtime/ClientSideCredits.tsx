@@ -36,15 +36,16 @@ export default function ClientSideCredits({
     // Create a unique channel name per user to avoid conflicts
     const channelName = `realtime-credits-${userId}`;
     
+    // Use type assertion to work around TypeScript inference issue
     const channel = supabase
       .channel(channelName)
       .on(
-        "postgres_changes",
+        "postgres_changes" as any,
         { 
           event: "UPDATE", 
           schema: "public", 
           table: "credits"
-        },
+        } as any,
         (payload: { new: creditsRow; old: creditsRow }) => {
           // Only update if this is for the current user
           if (payload.new.user_id === userId) {
