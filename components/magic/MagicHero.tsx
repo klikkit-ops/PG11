@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React from "react";
+import React, { useRef, useEffect } from "react";
 
 type MagicHeroProps = {
   title: React.ReactNode;
@@ -24,6 +24,21 @@ export function MagicHero({
   videoSrc,
   beforeImageSrc,
 }: MagicHeroProps & { videoSrc?: string; beforeImageSrc?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Ensure video plays on iOS Safari
+  useEffect(() => {
+    if (videoRef.current && videoSrc) {
+      const video = videoRef.current;
+      // Force play on iOS
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.log("Video autoplay failed:", error);
+        });
+      }
+    }
+  }, [videoSrc]);
   return (
     <section className="relative overflow-hidden">
       <div className="container mx-auto px-4 py-16 md:py-24">
@@ -116,11 +131,14 @@ export function MagicHero({
                   <div className="rounded-[2rem] shadow-2xl bg-white/5 backdrop-blur-sm border border-white/20 p-2 rotate-[3deg] hover:rotate-0 transition-transform duration-500">
                     <div className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-black/10">
                       <video
+                        ref={videoRef}
                         src={videoSrc}
                         autoPlay
                         loop
                         muted
                         playsInline
+                        webkit-playsinline="true"
+                        preload="auto"
                         className="w-full h-full object-cover"
                       />
                     </div>
