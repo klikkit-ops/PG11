@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import CustomCheckout from "@/components/subscription/CustomCheckout";
 import PricingDisplay from "@/components/subscription/PricingDisplay";
 import { getDefaultCountry, type CountryInfo } from "@/lib/countries";
