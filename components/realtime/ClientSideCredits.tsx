@@ -36,6 +36,8 @@ export default function ClientSideCredits({
     // Create a unique channel name per user to avoid conflicts
     const channelName = `realtime-credits-${userId}`;
     
+    console.log("[ClientSideCredits] Setting up subscription for user:", userId);
+    
     // Use type assertion to work around TypeScript inference issue
     const channel = supabase
       .channel(channelName)
@@ -47,16 +49,26 @@ export default function ClientSideCredits({
           table: "credits"
         } as any,
         (payload: any) => {
+          console.log("[ClientSideCredits] Received postgres_changes event:", payload);
           // Only update if this is for the current user
           if (payload.new && payload.new.user_id === userId) {
-            console.log("[ClientSideCredits] Credits updated:", payload.new.credits);
+            console.log("[ClientSideCredits] Credits updated for current user:", payload.new.credits);
             setCredits(payload.new as creditsRow);
+          } else {
+            console.log("[ClientSideCredits] Ignoring update - not for current user. Payload user_id:", payload.new?.user_id, "Current user_id:", userId);
           }
         }
       )
-      .subscribe((status) => {
+      .subscribe((status, err) => {
+        console.log("[ClientSideCredits] Subscription status:", status, "Error:", err);
         if (status === "SUBSCRIBED") {
-          console.log("[ClientSideCredits] Subscribed to credits updates for user:", userId);
+          console.log("[ClientSideCredits] Successfully subscribed to credits updates for user:", userId);
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("[ClientSideCredits] Channel error:", err);
+        } else if (status === "TIMED_OUT") {
+          console.error("[ClientSideCredits] Subscription timed out");
+        } else if (status === "CLOSED") {
+          console.warn("[ClientSideCredits] Channel closed");
         }
       });
 
