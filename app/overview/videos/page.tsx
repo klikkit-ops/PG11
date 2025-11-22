@@ -142,12 +142,12 @@ export default async function VideosPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 justify-items-center">
+        <div className="grid gap-4 md:gap-8 md:grid-cols-2 lg:grid-cols-3 justify-items-center">
           {videos.map((video) => {
             const danceStyle = getDanceStyleById(video.dance_style);
             return (
               <div key={video.id} className="glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300 w-full max-w-sm">
-                <div className="relative w-full aspect-[9/16] bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10">
+                <div className="relative w-full aspect-[9/16] md:aspect-[9/16] bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10">
                   {video.video_url && video.status === "succeeded" ? (
                     <video
                       src={video.video_url}
@@ -194,21 +194,21 @@ export default async function VideosPage() {
                   </div>
                 </div>
 
-                <div className="p-5 space-y-4">
+                <div className="p-3 md:p-5 space-y-2 md:space-y-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-bold flex items-center gap-2">
-                        <span className="text-2xl">{danceStyle?.emoji}</span>
+                      <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
+                        <span className="text-xl md:text-2xl">{danceStyle?.emoji}</span>
                         {danceStyle?.name || video.dance_style}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">
                         {new Date(video.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
                   {video.error_message && (
-                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-xs text-destructive">
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 md:p-3 text-xs text-destructive">
                       <p className="font-semibold mb-1">Generation Failed</p>
                       <p className="line-clamp-2 opacity-80">
                         {video.error_message.includes("{") ? "An error occurred during generation." : video.error_message}
@@ -216,7 +216,7 @@ export default async function VideosPage() {
                     </div>
                   )}
 
-                  <div className="flex gap-3 pt-2">
+                  <div className="flex gap-2 md:gap-3 pt-1 md:pt-2">
                     <Link href={`/overview/videos/${video.id}`} className="flex-1">
                       <Button variant="outline" className="w-full rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary">
                         View Details
