@@ -46,8 +46,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Videos are always 5 seconds (100 coins per video)
-    const duration = 5;
+    // Videos are always 10 seconds (100 coins per video)
+    const duration = 10;
     const requiredCoins = 100; // 100 coins per video
 
     // Check user has sufficient coins
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
 
       // Process image to 9:16 aspect ratio before sending to API
       console.log(`[Video Generation] Processing image to 9:16 aspect ratio for video ${videoId}`);
-      const targetDimensions = get9x16Dimensions('480P');
+      const targetDimensions = get9x16Dimensions('720P');
       let processedImageUrl = imageUrl;
       
       try {
@@ -167,10 +167,10 @@ export async function POST(request: Request) {
         processedImageUrl = imageUrl;
       }
 
-      // Get audio URL for the selected dance style (5 seconds, optional - skip if URL is invalid)
+      // Get audio URL for the selected dance style (10 seconds, optional - skip if URL is invalid)
       let audioUrl: string | undefined = undefined;
       try {
-        const audioUrlResult = getAudioUrlForDanceStyle(danceStyle, 5); // Always 5 seconds
+        const audioUrlResult = getAudioUrlForDanceStyle(danceStyle, 10); // Always 10 seconds
         if (audioUrlResult && audioUrlResult.startsWith('http')) {
           // Only use audio URL if it's a valid HTTP(S) URL (not localhost in production)
           if (!audioUrlResult.includes('localhost') || process.env.NODE_ENV === 'development') {
@@ -201,9 +201,9 @@ export async function POST(request: Request) {
       console.log(`[Video Generation] API call parameters:`, {
         imageUrl: processedImageUrl.substring(0, 100) + '...',
         promptLength: prompt.length,
-        duration: '5s',
-        resolution: '480p',
-        numFrames: 12,
+        duration: '10s',
+        resolution: '720p',
+        aspectRatio: '9:16',
         hasAudioUrl: !!audioUrl,
         audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
@@ -214,9 +214,9 @@ export async function POST(request: Request) {
         imageUrl: processedImageUrl.substring(0, 150),
         prompt: prompt.substring(0, 200) + '...',
         promptLength: prompt.length,
-        duration: '5s',
-        numFrames: 12,
-        resolution: '480p',
+        duration: '10s',
+        resolution: '720p',
+        aspectRatio: '9:16',
         hasNegativePrompt: true,
         hasAudioUrl: !!audioUrl,
         audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
@@ -225,9 +225,9 @@ export async function POST(request: Request) {
       const videoResponse = await generateVideoReplicate({
         imageUrl: processedImageUrl, // Use processed 9:16 image
         prompt,
-        resolution: '480p', // 480p, 720p, or 1080p
+        resolution: '720p', // 720p resolution
         aspectRatio: '9:16', // Explicitly set 9:16 aspect ratio
-        numFrames: 12, // 5 seconds at ~2.4 fps
+        duration: 10, // 10 seconds duration
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
         audioUrl: audioUrl || undefined, // Include audio URL if available (matches duration)
       });

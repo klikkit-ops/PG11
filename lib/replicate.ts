@@ -1,14 +1,15 @@
 /**
- * Replicate API integration for Wan 2.5 image-to-video generation
+ * Replicate API integration for Seedance 1 Pro Fast image-to-video generation
  * 
- * Official API Documentation: https://replicate.com/wan-video/wan-2.5-i2v/api
+ * Official API Documentation: https://replicate.com/bytedance/seedance-1-pro-fast/api
  * Replicate API Docs: https://replicate.com/docs/reference/http
  */
 
 export interface ReplicateVideoRequest {
   imageUrl: string;
   prompt: string;
-  numFrames?: number; // Number of frames (default: 24)
+  numFrames?: number; // Number of frames (for models that use frames)
+  duration?: number; // Duration in seconds (for Seedance models)
   resolution?: '480p' | '720p' | '1080p'; // Resolution options
   aspectRatio?: '9:16' | '16:9' | '1:1'; // Aspect ratio (default: 9:16)
   negativePrompt?: string;
@@ -26,11 +27,11 @@ export interface ReplicateVideoResponse {
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 const REPLICATE_BASE_URL = 'https://api.replicate.com/v1';
 // Replicate model identifier
-const MODEL_OWNER = 'wan-video';
-const MODEL_NAME = 'wan-2.5-i2v';
+const MODEL_OWNER = 'bytedance';
+const MODEL_NAME = 'seedance-1-pro-fast';
 
 /**
- * Generate a video from an image using Replicate Wan 2.5 API
+ * Generate a video from an image using Replicate Seedance 1 Pro Fast API
  * 
  * API Endpoint: POST https://api.replicate.com/v1/predictions
  */
@@ -85,14 +86,17 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
     };
 
     // Add optional parameters
+    if (request.duration) {
+      input.duration = request.duration; // Duration in seconds (for Seedance models)
+    }
     if (request.numFrames) {
-      input.num_frames = request.numFrames;
+      input.num_frames = request.numFrames; // For models that use frames
     }
     if (request.resolution) {
       input.resolution = request.resolution;
     }
     if (request.aspectRatio) {
-      input.aspect_ratio = request.aspectRatio; // Try aspect_ratio parameter
+      input.aspect_ratio = request.aspectRatio;
     }
     if (request.negativePrompt) {
       input.negative_prompt = request.negativePrompt;
