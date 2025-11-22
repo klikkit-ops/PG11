@@ -109,6 +109,7 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
     console.log('[Replicate] Creating prediction with input:', {
       image: request.imageUrl.substring(0, 100) + '...',
       promptLength: promptText.length,
+      duration: input.duration,
       numFrames: input.num_frames,
       resolution: input.resolution,
       aspectRatio: input.aspect_ratio,
