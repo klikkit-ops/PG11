@@ -35,7 +35,7 @@ export function MagicHero({
             {subtitle && (
               <div className="flex items-start gap-3 md:block">
                 <p className="text-lg md:text-xl text-base-content/70 flex-1 md:flex-none">{subtitle}</p>
-                <div className="flex-shrink-0 w-24 h-24 md:hidden relative">
+                <div className="flex-shrink-0 w-60 h-60 md:hidden relative">
                   <Image
                     src="/avatars/catballet.png"
                     alt="Dancing cat"
