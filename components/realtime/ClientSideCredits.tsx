@@ -3,7 +3,7 @@
 import { Database } from "@/types/supabase";
 import { creditsRow } from "@/types/utils";
 import { createClient } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export const revalidate = 0;
 
@@ -26,6 +26,31 @@ export default function ClientSideCredits({
 
   // Get user_id from the initial creditsRow
   const userId = creditsRow?.user_id;
+
+  // Function to manually refresh credits from database
+  const refreshCredits = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("credits")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+      
+      if (error) {
+        console.error("[ClientSideCredits] Error refreshing credits:", error);
+        return;
+      }
+      
+      if (data) {
+        console.log("[ClientSideCredits] Manually refreshed credits:", data.credits);
+        setCredits(data);
+      }
+    } catch (err) {
+      console.error("[ClientSideCredits] Exception refreshing credits:", err);
+    }
+  }, [supabase, userId]);
 
   useEffect(() => {
     // Only subscribe if we have a user_id
@@ -72,11 +97,29 @@ export default function ClientSideCredits({
         }
       });
 
+    // Set up periodic refresh as fallback (every 5 seconds)
+    const refreshInterval = setInterval(() => {
+      console.log("[ClientSideCredits] Periodic refresh triggered");
+      refreshCredits();
+    }, 5000);
+
     return () => {
       console.log("[ClientSideCredits] Unsubscribing from credits updates");
+      clearInterval(refreshInterval);
       supabase.removeChannel(channel);
     };
-  }, [supabase, userId]);
+  }, [supabase, userId, refreshCredits]);
+
+  // Also refresh on focus (when user switches back to tab)
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log("[ClientSideCredits] Window focused, refreshing credits");
+      refreshCredits();
+    };
+    
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refreshCredits]);
 
   const creditCount = credits?.credits ?? 0;
 
