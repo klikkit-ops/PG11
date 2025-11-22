@@ -58,6 +58,45 @@ export async function GET(request: Request) {
       );
     }
 
+    // If video has a Replicate URL (temporary), download and store it permanently
+    if (video.video_url && (video.video_url.includes("replicate.com") || video.video_url.includes("replicate.delivery"))) {
+      console.log(`[Video Status] Video ${videoId} has temporary Replicate URL, downloading and storing permanently...`);
+      try {
+        const storageResult = await downloadAndStoreVideo(
+          video.video_url,
+          user.id,
+          videoId
+        );
+        
+        if (storageResult.success) {
+          const serviceSupabase = createClient<Database>(
+            supabaseUrl!,
+            supabaseServiceRoleKey!,
+            {
+              auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+              },
+            }
+          );
+          
+          await serviceSupabase
+            .from("videos")
+            .update({
+              video_url: storageResult.url,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", videoId);
+          
+          video.video_url = storageResult.url;
+          console.log(`[Video Status] Successfully migrated video to permanent storage: ${storageResult.url}`);
+        }
+      } catch (error) {
+        console.error(`[Video Status] Error migrating video to permanent storage:`, error);
+        // Continue with original URL
+      }
+    }
+
     // If video is still processing, check with Replicate API
     if (video.status === "processing" || video.status === "queued") {
       try {
