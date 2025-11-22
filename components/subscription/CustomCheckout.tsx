@@ -97,13 +97,14 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
       setIsLoading(true);
 
       try {
-        // Get or create customer FIRST
-        const customerResponse = await fetch("/api/checkout/get-or-create-customer", {
+        // Get or create customer and attach payment method (server-side)
+        const customerResponse = await fetch("/api/checkout/attach-payment-method", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            paymentMethodId: ev.paymentMethod.id,
             email: userEmail || ev.payerEmail,
           }),
         });
@@ -111,22 +112,10 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
         const customerData = await customerResponse.json();
         if (!customerResponse.ok) {
           ev.complete("fail");
-          throw new Error(customerData.error || "Failed to get or create customer");
+          throw new Error(customerData.error || "Failed to attach payment method to customer");
         }
 
         const customerId = customerData.customerId;
-
-        // Attach payment method to customer
-        await stripe.paymentMethods.attach(ev.paymentMethod.id, {
-          customer: customerId,
-        });
-
-        // Set as default payment method
-        await stripe.customers.update(customerId, {
-          invoice_settings: {
-            default_payment_method: ev.paymentMethod.id,
-          },
-        });
 
         const currencyCode = selectedCountry.currency;
         const stripePriceId = getStripePriceId(planType);
@@ -293,18 +282,22 @@ function CheckoutForm({ planType, userEmail, onSuccess, onCountryChange }: Props
 
       const customerId = customerData.customerId;
 
-      // Attach payment method to customer BEFORE using it
-      // This allows us to reuse the payment method for subscription
-      await stripe.paymentMethods.attach(paymentMethod.id, {
-        customer: customerId,
+      // Attach payment method to customer (server-side)
+      const attachResponse = await fetch("/api/checkout/attach-payment-method", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          paymentMethodId: paymentMethod.id,
+          customerId: customerId,
+        }),
       });
 
-      // Set as default payment method
-      await stripe.customers.update(customerId, {
-        invoice_settings: {
-          default_payment_method: paymentMethod.id,
-        },
-      });
+      const attachData = await attachResponse.json();
+      if (!attachResponse.ok) {
+        throw new Error(attachData.error || "Failed to attach payment method to customer");
+      }
 
       // For trial, charge the trial price immediately
       let paymentIntentId: string | null = null;
