@@ -49,7 +49,14 @@ export default async function TermsPage() {
             
             <h3 className="text-xl font-semibold mt-6 mb-3">3.1 Trial Subscription</h3>
             <p className="text-foreground/90 leading-relaxed mb-4">
-              We offer a 3-day trial subscription for $0.59 (or equivalent in your local currency). <strong className="font-semibold">By subscribing to the trial, you agree that your subscription will automatically renew to the Weekly subscription plan after 3 days at the then-current weekly rate ($7.99 USD or equivalent in your local currency).</strong> The trial provides you with 100 coins (1 video generation) to try our service. If you do not wish to continue with the subscription, you must cancel before the trial period ends.
+              We offer a 3-day trial subscription for $0.59 (or equivalent in your local currency). By subscribing to the trial, you agree that your subscription will automatically renew to the Weekly subscription plan after 3 days at the then-current weekly rate ($7.99 USD or equivalent in your local currency). The trial provides you with 100 coins (1 video generation) to try our service. If you do not wish to continue with the subscription, you must cancel before the trial period ends.{" "}
+              <Link 
+                href="/cancel-subscription" 
+                className="text-primary hover:underline font-medium"
+              >
+                Cancel your subscription here
+              </Link>
+              .
             </p>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">3.2 Weekly Subscription</h3>
