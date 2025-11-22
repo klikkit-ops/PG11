@@ -1,7 +1,7 @@
 /**
- * Replicate API integration for Seedance 1 Pro Fast image-to-video generation
+ * Replicate API integration for Wan 2.5 image-to-video generation
  * 
- * Official API Documentation: https://replicate.com/bytedance/seedance-1-pro-fast/api
+ * Official API Documentation: https://replicate.com/wan-video/wan-2-5-i2v/api
  * Replicate API Docs: https://replicate.com/docs/reference/http
  */
 
@@ -27,11 +27,11 @@ export interface ReplicateVideoResponse {
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
 const REPLICATE_BASE_URL = 'https://api.replicate.com/v1';
 // Replicate model identifier
-const MODEL_OWNER = 'bytedance';
-const MODEL_NAME = 'seedance-1-pro-fast';
+const MODEL_OWNER = 'wan-video';
+const MODEL_NAME = 'wan-2.5-i2v';
 
 /**
- * Generate a video from an image using Replicate Seedance 1 Pro Fast API
+ * Generate a video from an image using Replicate Wan 2.5 API
  * 
  * API Endpoint: POST https://api.replicate.com/v1/predictions
  */
@@ -86,32 +86,26 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
     };
 
     // Add optional parameters
-    if (request.duration) {
-      input.duration = request.duration; // Duration in seconds (for Seedance models)
-    }
     if (request.numFrames) {
-      input.num_frames = request.numFrames; // For models that use frames
+      input.num_frames = request.numFrames;
     }
     if (request.resolution) {
       input.resolution = request.resolution;
     }
     if (request.aspectRatio) {
-      input.aspect_ratio = request.aspectRatio;
+      input.aspect_ratio = request.aspectRatio; // Try aspect_ratio parameter
     }
     if (request.negativePrompt) {
       input.negative_prompt = request.negativePrompt;
     }
-    // Note: Seedance 1 Pro Fast does not support audio input
-    // Audio must be added separately during post-production if needed
-    // if (request.audioUrl) {
-    //   input.audio = request.audioUrl;
-    // }
+    if (request.audioUrl) {
+      input.audio = request.audioUrl;
+    }
 
     // Submit generation request
     console.log('[Replicate] Creating prediction with input:', {
       image: request.imageUrl.substring(0, 100) + '...',
       promptLength: promptText.length,
-      duration: input.duration,
       numFrames: input.num_frames,
       resolution: input.resolution,
       aspectRatio: input.aspect_ratio,

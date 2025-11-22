@@ -46,8 +46,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Videos are always 10 seconds (100 coins per video)
-    const duration = 10;
+    // Videos are always 5 seconds (100 coins per video)
+    const duration = 5;
     const requiredCoins = 100; // 100 coins per video
 
     // Check user has sufficient coins
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
 
       // Process image to 9:16 aspect ratio before sending to API
       console.log(`[Video Generation] Processing image to 9:16 aspect ratio for video ${videoId}`);
-      const targetDimensions = get9x16Dimensions('720P');
+      const targetDimensions = get9x16Dimensions('480P');
       let processedImageUrl = imageUrl;
       
       try {
@@ -167,10 +167,28 @@ export async function POST(request: Request) {
         processedImageUrl = imageUrl;
       }
 
-      // Note: Seedance 1 Pro Fast does not support audio input
-      // Audio must be added separately during post-production if needed
-      // Skipping audio URL retrieval since the model doesn't accept it
-      console.log(`[Video Generation] Seedance 1 Pro Fast does not support audio input - proceeding without audio`);
+      // Get audio URL for the selected dance style (5 seconds, optional - skip if URL is invalid)
+      let audioUrl: string | undefined = undefined;
+      try {
+        const audioUrlResult = getAudioUrlForDanceStyle(danceStyle, 5); // Always 5 seconds
+        if (audioUrlResult && audioUrlResult.startsWith('http')) {
+          // Only use audio URL if it's a valid HTTP(S) URL (not localhost in production)
+          if (!audioUrlResult.includes('localhost') || process.env.NODE_ENV === 'development') {
+            audioUrl = audioUrlResult;
+            console.log(`[Video Generation] Using audio for dance style ${danceStyle}: ${audioUrl}`);
+          } else {
+            console.warn(`[Video Generation] Skipping audio URL (localhost in production): ${audioUrlResult}`);
+          }
+        } else if (audioUrlResult) {
+          console.warn(`[Video Generation] Invalid audio URL format, skipping: ${audioUrlResult}`);
+        }
+      } catch (audioError) {
+        console.error(`[Video Generation] Error getting audio URL, proceeding without audio:`, audioError);
+      }
+      
+      if (!audioUrl) {
+        console.log(`[Video Generation] Proceeding without audio for dance style: ${danceStyle}`);
+      }
 
       // CRITICAL: Call Replicate API
       // This ensures the prediction_id is saved before Vercel kills the function
@@ -183,10 +201,11 @@ export async function POST(request: Request) {
       console.log(`[Video Generation] API call parameters:`, {
         imageUrl: processedImageUrl.substring(0, 100) + '...',
         promptLength: prompt.length,
-        duration: '10s',
-        resolution: '720p',
-        aspectRatio: '9:16',
-        audio: 'not supported by Seedance model',
+        duration: '5s',
+        resolution: '480p',
+        numFrames: 12,
+        hasAudioUrl: !!audioUrl,
+        audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
       
       // Call Replicate API
@@ -195,21 +214,22 @@ export async function POST(request: Request) {
         imageUrl: processedImageUrl.substring(0, 150),
         prompt: prompt.substring(0, 200) + '...',
         promptLength: prompt.length,
-        duration: '10s',
-        resolution: '720p',
-        aspectRatio: '9:16',
+        duration: '5s',
+        numFrames: 12,
+        resolution: '480p',
         hasNegativePrompt: true,
-        audio: 'not supported by Seedance model',
+        hasAudioUrl: !!audioUrl,
+        audioUrl: audioUrl ? audioUrl.substring(0, 100) + '...' : 'none',
       });
 
       const videoResponse = await generateVideoReplicate({
         imageUrl: processedImageUrl, // Use processed 9:16 image
         prompt,
-        resolution: '720p', // 720p resolution
+        resolution: '480p', // 480p, 720p, or 1080p
         aspectRatio: '9:16', // Explicitly set 9:16 aspect ratio
-        duration: 10, // 10 seconds duration
+        numFrames: 12, // 5 seconds at ~2.4 fps
         negativePrompt: 'plain background, white background, empty background, solid color background, blank background, simple background, minimal background, cropped pet, pet out of frame, partial pet, pet cut off, pet partially visible, pet cropped out',
-        // Note: Seedance 1 Pro Fast does not support audio input
+        audioUrl: audioUrl || undefined, // Include audio URL if available (matches duration)
       });
       
       console.log(`[Video Generation] === REPLICATE API CALL SUCCEEDED ===`);
