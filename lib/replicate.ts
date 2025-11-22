@@ -101,9 +101,11 @@ export async function generateVideo(request: ReplicateVideoRequest): Promise<Rep
     if (request.negativePrompt) {
       input.negative_prompt = request.negativePrompt;
     }
-    if (request.audioUrl) {
-      input.audio = request.audioUrl;
-    }
+    // Note: Seedance 1 Pro Fast does not support audio input
+    // Audio must be added separately during post-production if needed
+    // if (request.audioUrl) {
+    //   input.audio = request.audioUrl;
+    // }
 
     // Submit generation request
     console.log('[Replicate] Creating prediction with input:', {
