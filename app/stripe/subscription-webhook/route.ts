@@ -96,6 +96,7 @@ export async function POST(request: Request) {
 
     case "customer.subscription.created":
     case "customer.subscription.updated":
+      console.log(`[Webhook] Received ${event.type} event`);
       await handleSubscriptionUpdate(event, stripe, supabase);
       return NextResponse.json({ message: "success" }, { status: 200 });
 
@@ -289,12 +290,21 @@ async function handleSubscriptionUpdate(
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
 
+  console.log(`[Webhook] Processing subscription event: ${event.type}`, {
+    subscriptionId: subscription.id,
+    status: subscription.status,
+    metadata: subscription.metadata,
+  });
+
   // Get user ID from customer metadata or lookup
   const customer = await stripe.customers.retrieve(customerId);
   const userId = (customer as Stripe.Customer).metadata?.user_id;
 
   if (!userId) {
-    console.error("Missing user_id in customer metadata");
+    console.error("[Webhook] Missing user_id in customer metadata", {
+      customerId,
+      customerMetadata: (customer as Stripe.Customer).metadata,
+    });
     return;
   }
 
@@ -302,6 +312,16 @@ async function handleSubscriptionUpdate(
   const isTrial = subscription.metadata?.is_trial === "true";
   const creditsPerPeriod = getCreditsPerPeriod(priceId);
   const isCustomCheckout = subscription.metadata?.checkout_type === "custom";
+
+  console.log(`[Webhook] Subscription details:`, {
+    subscriptionId: subscription.id,
+    userId,
+    priceId,
+    isTrial,
+    isCustomCheckout,
+    status: subscription.status,
+    creditsPerPeriod,
+  });
 
   // Update user's Stripe info
   await updateUserStripeInfo(
@@ -314,14 +334,32 @@ async function handleSubscriptionUpdate(
 
   // Handle trial subscription creation (when subscription is first created with trialing status)
   if (isTrial && subscription.status === "trialing" && isCustomCheckout) {
-    // Grant 100 coins for trial (1 generation)
-    await addCreditsToUser(userId, 100, supabase);
+    console.log(`[Webhook] Processing trial subscription creation for user ${userId}`);
     
-    // Mark user as having used the trial
-    await markTrialAsUsed(userId, supabase);
+    try {
+      // Grant 100 coins for trial (1 generation)
+      await addCreditsToUser(userId, 100, supabase);
+      
+      // Mark user as having used the trial
+      await markTrialAsUsed(userId, supabase);
+      
+      console.log(`[Webhook] Successfully granted 100 trial coins to user ${userId} for subscription ${subscription.id}`);
+    } catch (error) {
+      console.error(`[Webhook] Error granting trial coins:`, error);
+      throw error; // Re-throw to trigger webhook retry
+    }
     
-    console.log(`[Webhook] Granted 100 trial coins to user ${userId} for subscription ${subscription.id}`);
     return; // Don't process further for trialing subscriptions
+  }
+
+  // Log why trial processing was skipped
+  if (isTrial) {
+    console.log(`[Webhook] Trial subscription but conditions not met:`, {
+      status: subscription.status,
+      isTrialing: subscription.status === "trialing",
+      isCustomCheckout,
+      required: "status === 'trialing' && isCustomCheckout",
+    });
   }
 
   // Handle trial-to-active conversion (when trial ends and converts to weekly)
