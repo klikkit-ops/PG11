@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import React, { useRef, useEffect } from "react";
 
@@ -137,7 +139,6 @@ export function MagicHero({
                         loop
                         muted
                         playsInline
-                        webkit-playsinline
                         preload="auto"
                         className="w-full h-full object-cover"
                       />
