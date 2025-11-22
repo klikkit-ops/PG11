@@ -135,11 +135,11 @@ export default async function VideosPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 justify-items-center">
           {videos.map((video) => {
             const danceStyle = getDanceStyleById(video.dance_style);
             return (
-              <div key={video.id} className="glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300">
+              <div key={video.id} className="glass-panel overflow-hidden group hover:border-primary/50 transition-all duration-300 w-full max-w-sm">
                 <div className="relative w-full aspect-[9/16] bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10">
                   {video.video_url && video.status === "succeeded" ? (
                     <video
