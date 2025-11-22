@@ -94,12 +94,21 @@ Ensure your production environment has:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon key
 - `NEXT_PUBLIC_APP_URL` - Set to `https://petgroove.app` (or your production domain)
 
-## Important Notes
+## Why the Supabase URL Still Appears
 
-- The "to continue to" text in Google's OAuth screen shows the **redirect URI domain**, not the application name
-- To show "PetGroove" instead of the domain, you need to configure the **OAuth consent screen** application name
-- The redirect URI domain will still show `petgroove.app` (or your domain), but the application name will show "PetGroove"
-- It may take a few minutes for Google's changes to propagate
+The "to continue to" text in Google's OAuth screen shows the **redirect URI domain** that Google receives during the OAuth flow. 
+
+**The Problem**: Supabase's OAuth flow always uses the Supabase project URL (`nvfeyuzohfopxkiegxey.supabase.co/auth/v1/callback`) as the redirect URI, even if you configure custom redirect URLs in your app. This is because Supabase handles the OAuth exchange server-side.
+
+**The Solution**: To change the redirect URI domain that Google sees, you **must** set up a **custom domain for Supabase Auth**. This is a paid feature that allows you to use a subdomain like `auth.petgroove.app` instead of the Supabase project URL.
+
+**What You Can Do Without Custom Domain**:
+- Change the **Application name** to "PetGroove" in Google's OAuth consent screen
+- This will show "PetGroove" in the consent screen, but the "to continue to" text will still show `nvfeyuzohfopxkiegxey.supabase.co`
+
+**What Requires Custom Domain**:
+- Changing the "to continue to" text to show your custom domain instead of the Supabase URL
+- This requires a paid Supabase plan and custom domain setup
 
 ## Testing
 
